@@ -8,6 +8,9 @@ class Room extends Model
 {
         protected $fillable = [
         'name',
+        'type',
+        'is_active',
+        'is_occupied',
         'capacity',
         'status'
         ];

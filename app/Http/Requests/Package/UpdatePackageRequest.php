@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Room;
+namespace App\Http\Requests\Package;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateRoomRequest extends FormRequest
+class UpdatePackageRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -21,9 +21,10 @@ class UpdateRoomRequest extends FormRequest
      */
     public function rules(): array
     {
-    return [
-        
-            'status'=>['required','in:active,inactive']
+        return [
+            "price"=>"required|numeric",
+            "duration_hours"=>"required|integer",
+            'status'=>['sometimes','in:active,inactive']
         ];
     }
 }

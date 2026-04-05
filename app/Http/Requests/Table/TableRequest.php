@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Room;
+namespace App\Http\Requests\Table;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateRoomRequest extends FormRequest
+class TableRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -21,9 +21,10 @@ class UpdateRoomRequest extends FormRequest
      */
     public function rules(): array
     {
-    return [
-        
-            'status'=>['required','in:active,inactive']
+        return [
+            'table_num'=>'required|integer',
+            'is_active'=>'somtimes|boolean',
+            "room_id"=>'required|exists:rooms,id'
         ];
     }
 }

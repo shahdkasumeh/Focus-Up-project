@@ -13,13 +13,36 @@ return new class extends Migration
     {
         Schema::create('consumption_packages', function (Blueprint $table) {
             $table->id();
+
+            // ربط الباقة بالمستخدم
+            $table->foreignId('user_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
+
+
+            // تاريخ بداية ونهاية الاشتراك
+            $table->timestamp('starts_at')->nullable();
+            $table->timestamp('expires_at')->nullable();
+
+
+
+            // الساعات
+            $table->decimal('total_hours', 8, 2)->default(0);
+            $table->decimal('remaining_hours', 8, 2)->default(0);
+
+            // السعر
+            $table->decimal('total_price', 10, 2)->default(0);
+            $table->decimal('remaining_price', 10, 2)->default(0);
+
+            // الحالة
+            $table->enum('status', ['pending', 'active', 'expired', 'cancelled'])
+                ->default('pending');
+
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('consumption_packages');

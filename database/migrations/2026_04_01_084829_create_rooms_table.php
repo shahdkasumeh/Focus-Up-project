@@ -14,7 +14,11 @@ return new class extends Migration
         Schema::create('rooms', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->enum('type',['quiet','social','social_ns','discussion']);
             $table->unsignedInteger('capacity');
+            $table->boolean('is_active')->default(true);
+            $table->boolean('is_occupied')->default(false);
+
             $table->enum('status',['active','inactive'])->default('active');
             $table->timestamps();
         });

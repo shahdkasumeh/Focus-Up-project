@@ -30,6 +30,7 @@ class RoomController extends Controller
 
     public function show(Room $room)
     {
+        $room->load('tables');
         return $this->success(
             RoomResource::make($room)
         );

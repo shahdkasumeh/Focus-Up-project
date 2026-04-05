@@ -2,47 +2,49 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Table\TableRequest;
+use App\Http\Resources\TableResource;
+use App\Models\Table;
+use App\Services\TableService;
 use Illuminate\Http\Request;
 
 class TableController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
     public function index()
     {
-        //
+            return $this->success(
+            TableResource::collection(
+                TableService::query()->get()
+            )
+        );
+    }
+    public function store(TableRequest $request)
+    {
+        return $this->success(
+            TableResource::make(
+                TableService::create($request->validated())
+            )
+        );
+
+    }
+    public function show(Table $table)
+    {
+        return $this->success(
+            
+            TableResource::make($table)
+        );
+    }
+    public function update(TableRequest $request,Table $table)
+    {
+            return TableResource::make(
+                TableService::update($request->validated(), $table)
+    );
+    }
+    public function destroy(Table $table)
+    {
+        TableService::delete($table);
+            return $this->success('delete table successfuly');
+    }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
-}
