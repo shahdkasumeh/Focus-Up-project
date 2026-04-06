@@ -5,9 +5,15 @@ import { Button } from "../components/Button";
 import { Input } from "../components/Input";
 import { useAuth } from "../context/GlobalState";
 import logo from "../assets/logo.svg";
+import { useNavigate } from "react-router-dom";
 
-export function Login() {
-  const { state, dispatch } = useAuth();
+interface LoginProps {
+  setLogin: (value: boolean) => void;
+}
+
+export function Login({ setLogin }: LoginProps) {
+  const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,6 +24,13 @@ export function Login() {
     e.preventDefault();
     console.log("محاولة تسجيل الدخول:", { email, password, rememberMe });
     // TODO: إضافة منطق تسجيل الدخول لاحقاً
+  };
+
+  const handleLogin = () => {
+    setLogin(true);
+    navigate("/");
+    // أو
+    // navigate('/dashboard');
   };
 
   return (
@@ -123,6 +136,7 @@ export function Login() {
                 variant="primary"
                 size="lg"
                 className="w-full max-w-md mx-auto"
+                onClick={handleLogin}
               >
                 تسجيل الدخول
               </Button>

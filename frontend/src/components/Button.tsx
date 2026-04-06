@@ -12,6 +12,8 @@ interface ButtonProps {
     | "danger";
   size?: "sm" | "md" | "lg";
   className?: string;
+  disabled?: boolean;
+  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 export function Button({
@@ -19,7 +21,7 @@ export function Button({
   size = "md",
   children,
   className = "",
-  ...props // استقبال باقي الـ props
+  ...props
 }: ButtonProps) {
   const baseClasses = "rounded-lg font-medium transition-all duration-200";
 
@@ -29,6 +31,10 @@ export function Button({
     outline:
       "border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground",
     ghost: "text-foreground hover:bg-muted active:scale-95",
+    success:
+      "bg-[#10B981] text-white hover:bg-[#059669] active:scale-95 shadow-sm",
+    danger:
+      "bg-[#EF4444] text-white hover:bg-[#dc2626] active:scale-95 shadow-sm",
   };
 
   const sizeClasses = {
