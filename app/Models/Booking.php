@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Booking extends Model
 {
-      protected $fillable = [
+    protected $fillable = [
         'user_id',
         'table_id',
         'room_id',
@@ -19,6 +19,19 @@ class Booking extends Model
         'discount_amount',
         'status',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'scheduled_start' => 'datetime',
+            'actual_start'    => 'datetime',
+            'actual_end'      => 'datetime',
+            'hours'           => 'decimal:2',
+            'total_price'     => 'decimal:2',
+            'discount_percent'=> 'decimal:2',
+            'discount_amount' => 'decimal:2',
+        ];
+    }
 
 
 public function room()

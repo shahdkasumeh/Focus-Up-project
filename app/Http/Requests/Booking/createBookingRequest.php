@@ -36,7 +36,7 @@ class createBookingRequest extends FormRequest
     {
         return [
             'table_id'=>'nullable|exists:tables,id',
-            'room_id'=>'nullable|rooms,id',
+            'room_id'=>'nullable|exists:rooms,id',
             'scheduled_start'=>'required|date'
         ];
     }

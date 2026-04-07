@@ -21,11 +21,11 @@ class BookingService
     {
         return DB::transaction(function () use ($userId, $tableId, $roomId, $scheduledStart) {
 
-            $scheduledStart = Carbon::parse($scheduledStart);
+            $scheduledStart = Carbon::parse($scheduledStart,config('app.timezone'));
 
-            // if ($scheduledStart->isPast()) {
-            //     throw new \Exception('لا يمكن الحجز في وقت ماضٍ.');
-            // }
+            if ($scheduledStart->isPast()) {
+                throw new \Exception('لا يمكن الحجز في وقت ماضٍ.');
+            }
 
             // التحقق من أن الطالب ليس لديه حجز نشط أو pending في نفس الوقت
             $conflict = Booking::where('user_id', $userId)
@@ -247,7 +247,7 @@ class BookingService
                 ->lockForUpdate()
                 ->findOrFail($bookingId);
 
-            if ($booking->status !== 'active') {
+            if ($booking->status !== 'active' && $booking->status !=='pending') {
                 throw new \Exception('لا يمكن إلغاء حجز منتهٍ أو مُلغى.');
             }
 
