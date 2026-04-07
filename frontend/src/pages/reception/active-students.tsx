@@ -11,10 +11,8 @@ import {
   Mail,
 } from "lucide-react";
 import { Button } from "../../components/Button";
-
-interface ActiveStudentsProps {
-  onBack: () => void;
-}
+import { useNavigate } from "react-router-dom";
+import { StudentsDetailsModel } from "./components/StudentsDetailsModel";
 
 interface Student {
   id: string;
@@ -27,7 +25,9 @@ interface Student {
   email: string;
 }
 
-export function ActiveStudents({ onBack }: ActiveStudentsProps) {
+export function ActiveStudents() {
+  const navigate = useNavigate();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
@@ -91,19 +91,23 @@ export function ActiveStudents({ onBack }: ActiveStudentsProps) {
       student.table.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
+  const handleBack = () => {
+    navigate(-1);
+  };
+
   const handleCheckOut = (student: Student) => {
     console.log(`تسجيل خروج للطالب: ${student.name}`);
     setSelectedStudent(null);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-50">
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#034363] to-[#045a85] text-white p-6 shadow-lg">
+      <div className="bg-linear-to-br from-[#034363] to-[#045a85] text-white p-6 shadow-lg">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-4 mb-4">
             <button
-              onClick={onBack}
+              onClick={handleBack}
               className="p-2 hover:bg-white/10 rounded-xl transition-colors"
             >
               <ArrowRight className="w-6 h-6" />
@@ -151,7 +155,7 @@ export function ActiveStudents({ onBack }: ActiveStudentsProps) {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4 flex-1">
-                  <div className="w-14 h-14 bg-gradient-to-br from-[#034363] to-[#045a85] rounded-2xl flex items-center justify-center text-white text-xl font-bold">
+                  <div className="w-14 h-14 bg-linear-to-br from-[#034363] to-[#045a85] rounded-2xl flex items-center justify-center text-white text-xl font-bold">
                     {student.name.charAt(0)}
                   </div>
                   <div className="flex-1">
@@ -210,113 +214,11 @@ export function ActiveStudents({ onBack }: ActiveStudentsProps) {
 
       {/* Student Details Modal */}
       {selectedStudent && (
-        <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={() => setSelectedStudent(null)}
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
-          >
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              معلومات الطالب
-            </h2>
-
-            <div className="space-y-4 mb-6">
-              <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-[#034363] to-[#045a85] rounded-xl text-white">
-                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-xl font-bold">
-                  {selectedStudent.name.charAt(0)}
-                </div>
-                <div>
-                  <p className="text-sm opacity-80">اسم الطالب</p>
-                  <p className="text-lg font-bold">{selectedStudent.name}</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-gray-50 rounded-xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <User className="w-4 h-4 text-gray-400" />
-                    <p className="text-sm text-gray-600">رقم الطالب</p>
-                  </div>
-                  <p className="font-semibold text-gray-900">
-                    {selectedStudent.studentId}
-                  </p>
-                </div>
-
-                <div className="p-4 bg-gray-50 rounded-xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <MapPin className="w-4 h-4 text-gray-400" />
-                    <p className="text-sm text-gray-600">الطاولة</p>
-                  </div>
-                  <p className="font-semibold text-gray-900">
-                    {selectedStudent.table}
-                  </p>
-                </div>
-
-                <div className="p-4 bg-gray-50 rounded-xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Clock className="w-4 h-4 text-gray-400" />
-                    <p className="text-sm text-gray-600">وقت الدخول</p>
-                  </div>
-                  <p className="font-semibold text-gray-900">
-                    {selectedStudent.checkInTime}
-                  </p>
-                </div>
-
-                <div className="p-4 bg-gray-50 rounded-xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Clock className="w-4 h-4 text-gray-400" />
-                    <p className="text-sm text-gray-600">المدة</p>
-                  </div>
-                  <p className="font-semibold text-gray-900">
-                    {selectedStudent.duration}
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-4 bg-gray-50 rounded-xl">
-                <div className="flex items-center gap-2 mb-2">
-                  <Phone className="w-4 h-4 text-gray-400" />
-                  <p className="text-sm text-gray-600">رقم الجوال</p>
-                </div>
-                <p className="font-semibold text-gray-900" dir="ltr">
-                  {selectedStudent.phone}
-                </p>
-              </div>
-
-              <div className="p-4 bg-gray-50 rounded-xl">
-                <div className="flex items-center gap-2 mb-2">
-                  <Mail className="w-4 h-4 text-gray-400" />
-                  <p className="text-sm text-gray-600">البريد الإلكتروني</p>
-                </div>
-                <p className="font-semibold text-gray-900" dir="ltr">
-                  {selectedStudent.email}
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <Button
-                onClick={() => handleCheckOut(selectedStudent)}
-                variant="primary"
-                className="w-full"
-              >
-                <LogOut className="w-5 h-5 ml-2" />
-                تسجيل خروج الطالب
-              </Button>
-              <Button
-                onClick={() => setSelectedStudent(null)}
-                variant="outline"
-                className="w-full"
-              >
-                إغلاق
-              </Button>
-            </div>
-          </motion.div>
-        </div>
+        <StudentsDetailsModel
+          setSelectedStudent={setSelectedStudent}
+          selectedStudent={selectedStudent}
+          handleCheckOut={handleCheckOut}
+        />
       )}
     </div>
   );

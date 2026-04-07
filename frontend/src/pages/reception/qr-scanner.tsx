@@ -13,10 +13,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { Button } from "../../components/Button";
-
-interface QRScannerProps {
-  onBack: () => void;
-}
+import { useNavigate } from "react-router-dom";
 
 type ScanMode = "checkin" | "checkout";
 
@@ -29,10 +26,15 @@ interface ScanResult {
   message: string;
 }
 
-export function QRScanner({ onBack }: QRScannerProps) {
+export function QRScanner() {
+  const navigate = useNavigate();
   const [scanMode, setScanMode] = useState<ScanMode>("checkin");
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
+
+  const handleBack = () => {
+    navigate(-1);
+  };
 
   const handleScan = () => {
     setIsScanning(true);
@@ -70,13 +72,13 @@ export function QRScanner({ onBack }: QRScannerProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-50">
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#034363] to-[#045a85] text-white p-6 shadow-lg">
+      <div className="bg-linear-to-br from-[#034363] to-[#045a85] text-white p-6 shadow-lg">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-4 mb-4">
             <button
-              onClick={onBack}
+              onClick={handleBack}
               className="p-2 hover:bg-white/10 rounded-xl transition-colors"
             >
               <ArrowRight className="w-6 h-6" />
@@ -180,7 +182,7 @@ export function QRScanner({ onBack }: QRScannerProps) {
                       scanMode === "checkin"
                         ? "border-[#ffbf1f]"
                         : "border-[#034363]"
-                    } flex items-center justify-center relative overflow-hidden bg-gradient-to-br ${
+                    } flex items-center justify-center relative overflow-hidden bg-linear-to-br ${
                       scanMode === "checkin"
                         ? "from-[#ffbf1f]/5 to-[#e6ac1c]/5"
                         : "from-[#034363]/5 to-[#045a85]/5"
@@ -366,7 +368,7 @@ export function QRScanner({ onBack }: QRScannerProps) {
                     مسح آخر
                   </Button>
                   <Button
-                    onClick={onBack}
+                    onClick={handleBack}
                     variant="outline"
                     size="lg"
                     className="w-full max-w-xs"

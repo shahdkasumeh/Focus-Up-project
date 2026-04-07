@@ -11,16 +11,11 @@ import {
   User,
   Settings,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-interface ReceptionistDashboardProps {
-  onNavigate: (page: string) => void;
-  onLogout: () => void;
-}
+export function ReceptionistDashboard() {
+  const navigate = useNavigate();
 
-export function ReceptionistDashboard({
-  onNavigate,
-  onLogout,
-}: ReceptionistDashboardProps) {
   const [stats] = useState({
     activeStudents: 45,
     availableTables: 12,
@@ -38,7 +33,7 @@ export function ReceptionistDashboard({
       icon: QrCode,
       color: "from-[#ffbf1f] to-[#e6ac1c]",
       textColor: "text-[#034363]",
-      action: () => onNavigate("qr-scanner"),
+      onClick: () => navigate("/reception/qr-scanner"),
     },
     {
       id: "tables",
@@ -47,7 +42,7 @@ export function ReceptionistDashboard({
       icon: Table,
       color: "from-[#034363] to-[#045a85]",
       textColor: "text-white",
-      action: () => onNavigate("tables"),
+      onClick: () => navigate("/reception/tables"),
     },
     {
       id: "students",
@@ -56,7 +51,7 @@ export function ReceptionistDashboard({
       icon: Users,
       color: "from-[#10B981] to-[#059669]",
       textColor: "text-white",
-      action: () => onNavigate("active-students"),
+      onClick: () => navigate("/reception/active-students"),
     },
     {
       id: "profile",
@@ -65,14 +60,14 @@ export function ReceptionistDashboard({
       icon: User,
       color: "from-[#f0f8fc] to-[#e0f2fe]",
       textColor: "text-[#034363]",
-      action: () => onNavigate("profile"),
+      onClick: () => navigate("/reception/profile"),
     },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-50">
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#034363] to-[#045a85] text-white p-6 shadow-lg">
+      <div className="bg-linear-to-br from-[#034363] to-[#045a85] text-white p-6 shadow-lg">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -81,7 +76,7 @@ export function ReceptionistDashboard({
             </div>
             <div className="flex items-center gap-3">
               <button
-                onClick={onLogout}
+                onClick={() => navigate("/login")}
                 className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors"
               >
                 تسجيل الخروج
@@ -171,11 +166,10 @@ export function ReceptionistDashboard({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              onClick={action.action}
               className="group"
             >
               <div
-                className={`bg-gradient-to-br ${action.color} rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105`}
+                className={`bg-linear-to-br ${action.color} rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105`}
               >
                 <div className="flex flex-col items-center text-center">
                   <div

@@ -1,10 +1,9 @@
 // layouts/AdminLayout.tsx
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/GlobalState";
 import { Sidebar } from "../pages/admin/Sidebar";
 
 export function AdminLayout() {
-  const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -17,11 +16,7 @@ export function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
-      <Sidebar
-        activePage={activePage}
-        onNavigate={handleNavigate}
-        onLogout={logout}
-      />
+      <Sidebar activePage={activePage} onNavigate={handleNavigate} />
       <div className="mr-64 min-h-screen">
         <div className="p-6">
           <Outlet />

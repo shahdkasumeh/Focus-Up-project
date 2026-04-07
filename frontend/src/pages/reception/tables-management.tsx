@@ -191,9 +191,9 @@ export function TablesManagement({ onBack }: TablesManagementProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-50">
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#034363] to-[#045a85] text-white p-6 shadow-lg">
+      <div className="bg-linear-to-br from-[#034363] to-[#045a85] text-white p-6 shadow-lg">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-4 mb-6">
             <button
@@ -261,7 +261,7 @@ export function TablesManagement({ onBack }: TablesManagementProps) {
                 onChange={(e) =>
                   setFilterStatus(e.target.value as TableStatus | "all")
                 }
-                className="pr-12 pl-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#ffbf1f] appearance-none bg-white min-w-[200px]"
+                className="pr-12 pl-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#ffbf1f] appearance-none bg-white min-w-50"
               >
                 <option value="all">جميع الحالات</option>
                 <option value="available">متاحة</option>

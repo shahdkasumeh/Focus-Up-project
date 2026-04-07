@@ -14,23 +14,22 @@ export interface AuthState {
   error: string | null;
 }
 
-// تعريف شكل الـ Action
 export interface AuthAction {
   type: ActionTypes;
   payload?: any;
   user?: User | null;
 }
 
-// الحالة الأولية
 // eslint-disable-next-line react-refresh/only-export-components
+const storedUser = localStorage.getItem("user");
+const initialUser = storedUser ? JSON.parse(storedUser) : null;
 export const initialState: AuthState = {
-  user: null,
-  isAuthenticated: false,
+  user: initialUser,
+  isAuthenticated: !!initialUser,
   loading: false,
   error: null,
 };
 
-// أنواع الإجراءات (Actions)
 // eslint-disable-next-line react-refresh/only-export-components
 export enum ActionTypes {
   LOGIN_START = "LOGIN_START",
@@ -53,6 +52,7 @@ const AppReducer = (
       };
 
     case ActionTypes.LOGIN_SUCCESS:
+      localStorage.setItem("user", JSON.stringify(action.payload));
       return {
         ...state,
         user: action.payload,

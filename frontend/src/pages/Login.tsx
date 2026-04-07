@@ -7,11 +7,7 @@ import { useAuth } from "../context/GlobalState";
 import logo from "../assets/logo.svg";
 import { useNavigate } from "react-router-dom";
 
-interface LoginProps {
-  setLogin: (value: boolean) => void;
-}
-
-export function Login({ setLogin }: LoginProps) {
+export function Login() {
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
@@ -27,7 +23,6 @@ export function Login({ setLogin }: LoginProps) {
   };
 
   const handleLogin = () => {
-    setLogin(true);
     navigate("/");
     // أو
     // navigate('/dashboard');

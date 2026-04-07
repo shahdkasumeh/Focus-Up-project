@@ -16,12 +16,11 @@ import {
 } from "lucide-react";
 import { Button } from "../../components/Button";
 import { Input } from "../../components/Input";
+import { useNavigate } from "react-router-dom";
 
-interface ReceptionistProfileProps {
-  onBack: () => void;
-}
+export function ReceptionistProfile() {
+  const navigate = useNavigate();
 
-export function ReceptionistProfile({ onBack }: ReceptionistProfileProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState<
@@ -51,6 +50,10 @@ export function ReceptionistProfile({ onBack }: ReceptionistProfileProps) {
     maintenance: false,
     emailNotifications: true,
   });
+
+  const handleBack = () => {
+    navigate(-1);
+  };
 
   const handleSaveProfile = () => {
     setIsEditing(false);
@@ -94,13 +97,13 @@ export function ReceptionistProfile({ onBack }: ReceptionistProfileProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-50">
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#034363] to-[#045a85] text-white p-6 shadow-lg">
+      <div className="bg-linear-to-br from-[#034363] to-[#045a85] text-white p-6 shadow-lg">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center gap-4 mb-6">
             <button
-              onClick={onBack}
+              onClick={handleBack}
               className="p-2 hover:bg-white/10 rounded-xl transition-colors"
             >
               <ArrowRight className="w-6 h-6" />
@@ -114,7 +117,7 @@ export function ReceptionistProfile({ onBack }: ReceptionistProfileProps) {
           {/* Profile Card */}
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6">
             <div className="flex items-center gap-6">
-              <div className="w-24 h-24 bg-gradient-to-br from-[#ffbf1f] to-[#e6ac1c] rounded-2xl flex items-center justify-center text-white text-3xl font-bold shadow-lg">
+              <div className="w-24 h-24 bg-linear-to-br from-[#ffbf1f] to-[#e6ac1c] rounded-2xl flex items-center justify-center text-white text-3xl font-bold shadow-lg">
                 {profileData.name.charAt(0)}
               </div>
               <div className="flex-1">
@@ -147,7 +150,7 @@ export function ReceptionistProfile({ onBack }: ReceptionistProfileProps) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className={`bg-gradient-to-br ${stat.color} rounded-2xl p-6 shadow-lg`}
+                className={`bg-linear-to-br ${stat.color} rounded-2xl p-6 shadow-lg`}
               >
                 <div className="flex items-center justify-between mb-3">
                   <Icon
@@ -313,7 +316,7 @@ export function ReceptionistProfile({ onBack }: ReceptionistProfileProps) {
                     />
                     <button
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute left-3 top-[42px] text-gray-400 hover:text-gray-600"
+                      className="absolute left-3 top-10.5 text-gray-400 hover:text-gray-600"
                     >
                       {showPassword ? (
                         <EyeOff className="w-5 h-5" />

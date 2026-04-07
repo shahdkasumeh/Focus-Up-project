@@ -15,7 +15,7 @@ import {
 interface SidebarProps {
   activePage: string;
   onNavigate: (page: string) => void;
-  onLogout: () => void;
+  onLogout?: () => void;
 }
 
 const menuItems = [

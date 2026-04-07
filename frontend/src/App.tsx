@@ -1,7 +1,6 @@
 // App.tsx
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 //import { AuthProvider } from "./context/AuthContext";
-//import { ProtectedRoute } from "./components/ProtectedRoute";
 
 // Layouts
 import { AdminLayout } from "./layouts/AdminLayout";
@@ -18,34 +17,50 @@ import { Reports } from "./pages/admin/reports";
 
 // Pages - Public
 import { Login } from "./pages/Login";
+import { useAuth } from "./context/GlobalState";
+import { QRScanner } from "./pages/reception/qr-scanner";
+import { ReceptionistDashboard } from "./pages/reception/receptionist-dashboard";
+import { ReceptionistProfile } from "./pages/reception/receptionist-profile";
+import { ActiveStudents } from "./pages/reception/active-students";
 
 function App() {
+  const { state } = useAuth();
+  const { user, isAuthenticated } = state;
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <Routes>
-          {/* صفحة الدخول - بدون Sidebar */}
-          <Route path="/login" element={<Login />} />
+    <Routes>
+      <Route path="/login" element={<Login />} />
 
-          {/* مسارات المدير - محمية */}
-          <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
-            <Route element={<AdminLayout />}>
-              <Route path="/admin/dashboard" element={<Dashboard />} />
-              <Route path="/admin/rooms" element={<RoomsManagement />} />
-              <Route path="/admin/tables" element={<TablesManagement />} />
-              <Route path="/admin/bookings" element={<BookingsManagement />} />
-              <Route path="/admin/events" element={<EventsManagement />} />
-              <Route path="/admin/packages" element={<PackagesManagement />} />
-              <Route path="/admin/users" element={<UsersManagement />} />
-              <Route path="/admin/reports" element={<Reports />} />
-            </Route>
-          </Route>
+      {isAuthenticated && user?.role === "admin" && (
+        <Route path="/admin/*" element={<AdminLayout />}>
+          <Route path="/admin/dashboard" element={<Dashboard />} />
+          <Route path="/admin/rooms" element={<RoomsManagement />} />
+          <Route path="/admin/tables" element={<TablesManagement />} />
+          <Route path="/admin/bookings" element={<BookingsManagement />} />
+          <Route path="/admin/events" element={<EventsManagement />} />
+          <Route path="/admin/packages" element={<PackagesManagement />} />
+          <Route path="/admin/users" element={<UsersManagement />} />
+          <Route path="/admin/reports" element={<Reports />} />
+        </Route>
+      )}
 
-          {/* الصفحة الافتراضية */}
-          <Route path="/" element={<Navigate to="/login" />} />
-        </Routes>
-      </AuthProvider>
-    </BrowserRouter>
+      {isAuthenticated && user?.role === "reception" && (
+        <Route path="/reception" element={<ReceptionistDashboard />}>
+          <Route path="/reception/QRScanner" element={<QRScanner />} />
+          <Route
+            path="/reception/ActiveStudents"
+            element={<ActiveStudents />}
+          />
+          <Route
+            path="/reception/ReceptionistProfile"
+            element={<ReceptionistProfile />}
+          />
+          <Route
+            path="/reception/TablesManagement"
+            element={<TablesManagement />}
+          />
+        </Route>
+      )}
+    </Routes>
   );
 }
 
