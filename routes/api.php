@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\CrowdingController;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\TableController;
@@ -22,7 +23,9 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::post('/bookings/check_out', [BookingController::class, 'checkOut']);
 
     Route::post('/bookings/{booking}/cancel', [BookingController::class, 'cancel']);
-
+    Route::get('/crowding',[CrowdingController::class,'index']);
+    Route::get('/crowding/{room}', [CrowdingController::class, 'show']);
+    Route::post('/crowding/{room}/actual_start', [CrowdingController::class, 'actual_start']);
 
 
     Route::get('/rooms', [RoomController::class, 'index'])
@@ -31,7 +34,7 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::post('/rooms', [RoomController::class, 'store'])
         ->middleware('can:room.create');
 
-    Route::get('/rooms', [RoomController::class, 'show'])
+    Route::get('/rooms/{room}', [RoomController::class, 'show'])
         ->middleware('can:room.show');
 
     Route::put('/rooms', [RoomController::class, 'update'])

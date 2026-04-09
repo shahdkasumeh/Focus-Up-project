@@ -21,13 +21,13 @@ class BookingService
     {
         return DB::transaction(function () use ($userId, $tableId, $roomId, $scheduledStart) {
 
-            $scheduledStart = Carbon::parse($scheduledStart,config('app.timezone'));
+            $scheduledStart = Carbon::parse($scheduledStart, config('app.timezone'));
 
             if ($scheduledStart->isPast()) {
                 throw new \Exception('لا يمكن الحجز في وقت ماضٍ.');
             }
 
-            // التحقق من أن الطالب ليس لديه حجز نشط أو pending في نفس الوقت
+            // منع المستخدم من امتلاك أكثر من حجز
             $conflict = Booking::where('user_id', $userId)
                 ->whereIn('status', ['pending', 'active'])
                 ->lockForUpdate()
@@ -37,41 +37,64 @@ class BookingService
                 throw new \Exception('لديك حجز قائم بالفعل. أنهِ حجزك الحالي أولاً.');
             }
 
-            // التحقق من الطاولة أو الغرفة وقفلها
+            // =========================
+            // TABLE BOOKING
+            // =========================
             if ($tableId) {
-                $place = Table::lockForUpdate()->findOrFail($tableId);
-                if (!$place->is_active) throw new \Exception('الطاولة غير متاحة.');
 
-                // التحقق من عدم وجود حجز آخر على نفس الطاولة في نفس الوقت
+                $place = Table::lockForUpdate()->findOrFail($tableId);
+
+                if (!$place->is_active) {
+                    throw new \Exception('الطاولة غير متاحة.');
+                }
+
+                // منع أي حجز نشط أو معلق على نفس الطاولة بغض النظر عن الوقت
                 $placeConflict = Booking::where('table_id', $tableId)
                     ->whereIn('status', ['pending', 'active'])
-                    ->where('scheduled_start', $scheduledStart)
                     ->lockForUpdate()
                     ->exists();
 
-                if ($placeConflict) throw new \Exception('الطاولة محجوزة في هذا الوقت.');
-            } else {
-                $place = Room::lockForUpdate()->findOrFail($roomId);
-                if (!$place->is_active) throw new \Exception('الغرفة غير متاحة.');
-
-                $placeConflict = Booking::where('room_id', $roomId)
-                    ->whereIn('status', ['pending', 'active'])
-                    ->where('scheduled_start', $scheduledStart)
-                    ->lockForUpdate()
-                    ->exists();
-
-                if ($placeConflict) throw new \Exception('الغرفة محجوزة في هذا الوقت.');
+                if ($placeConflict) {
+                    throw new \Exception('الطاولة محجوزة حالياً.');
+                }
             }
 
-            // FIX: lockForUpdate على WheelSpin يمنع استخدام نفس الخصم في حجزين متزامنين
+            // =========================
+            // ROOM BOOKING
+            // =========================
+            elseif ($roomId) {
+
+                $place = Room::lockForUpdate()->findOrFail($roomId);
+
+                if (!$place->is_active) {
+                    throw new \Exception('الغرفة غير متاحة.');
+                }
+
+                // منع أي حجز نشط أو معلق على نفس الغرفة بغض النظر عن الوقت
+                $placeConflict = Booking::where('room_id', $roomId)
+                    ->whereIn('status', ['pending', 'active'])
+                    ->lockForUpdate()
+                    ->exists();
+
+                if ($placeConflict) {
+                    throw new \Exception('الغرفة محجوزة حالياً.');
+                }
+            }
+
+            // =========================
+            // Discount (Lucky Wheel)
+            // =========================
             $wheelSpin = LuckyWheel::where('user_id', $userId)
                 ->where('prize_type', 'discount')
                 ->where('is_used', false)
                 ->lockForUpdate()
                 ->first();
+
             $discountPercent = $wheelSpin?->discount_percent ?? 0;
 
-            // إنشاء الحجز بحالة pending — الطاولة لا تزال متاحة
+            // =========================
+            // Create Booking
+            // =========================
             $booking = Booking::create([
                 'user_id'          => $userId,
                 'table_id'         => $tableId,
@@ -81,12 +104,10 @@ class BookingService
                 'status'           => 'pending',
             ]);
 
-            // الطاولة/الغرفة تبقى متاحة (is_occupied = false)
-            // الـ Scheduler هو من سيغيّرها عند حلول الوقت
-
             return $booking;
         });
     }
+
 
     // =========================================================
     // 2. مسح QR الدخول → تسجيل actual_start
@@ -96,32 +117,25 @@ class BookingService
     {
         return DB::transaction(function () use ($userId) {
 
-            // الطالب يمسح QR: يجب أن يكون الحجز active (حان وقته) ولم يبدأ بعد
             $booking = Booking::where('user_id', $userId)
-                ->where('status', 'active')
+                ->whereIn('status', ['pending', 'active'])
                 ->whereNull('actual_start')
                 ->lockForUpdate()
                 ->first();
 
-                if (!$booking) {
-                // ربما الـ Scheduler لم يشتغل بعد — نتحقق من حجز pending حان وقته
-                $pendingBooking = Booking::where('user_id', $userId)
-                    ->where('status', 'pending')
-                    ->where('scheduled_start', '<=', now())
-                    ->lockForUpdate()
-                    ->first();
+            if (!$booking) {
+                throw new \Exception('لا يوجد حجز. قم بإنشاء حجز أولاً.');
+            }
 
-                if ($pendingBooking) {
-                    // نفعّله يدوياً (graceful fallback)
-                    $pendingBooking->update(['status' => 'active']);
-                    if ($pendingBooking->table_id) {
-                        Table::where('id', $pendingBooking->table_id)->update(['is_occupied' => true]);
-                    } else {
-                        Room::where('id', $pendingBooking->room_id)->update(['is_occupied' => true]);
-                    }
-                    $booking = $pendingBooking;
+            // // إذا كان pending تحقق أن وقته حان
+            if ($booking->status === 'pending') {
+
+                // تحويل تلقائي عند المسح
+                $booking->update(['status' => 'active']);
+                    if ($booking->table_id) {
+                    Table::where('id', $booking->table_id)->update(['is_occupied' => true]);
                 } else {
-                    throw new \Exception('لا يوجد حجز نشط. تأكد أن وقت حجزك قد حان.');
+                    Room::where('id', $booking->room_id)->update(['is_occupied' => true]);
                 }
             }
 

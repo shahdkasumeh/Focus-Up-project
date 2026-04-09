@@ -34,6 +34,7 @@ class RegisteredUserController extends Controller
         'password' => Hash::make($request->password),
         'phone'=>$request->phone
     ]);
+
     $user->assignRole('client');
 
     $token = $user->createToken('auth_token')->plainTextToken;

@@ -19,7 +19,6 @@ return new class extends Migration
             $table->string('password');
             $table->string('phone',20);
             $table->enum('status',['active','inactive'])->default('inactive');
-            $table->enum('role_type',['admin','receptionist','buffet_owner','user']);
             $table->rememberToken();
             $table->timestamps();
         });

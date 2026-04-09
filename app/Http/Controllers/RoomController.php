@@ -14,7 +14,7 @@ class RoomController extends Controller
     {
         return $this->success(
             RoomResource::collection(
-                RoomService::query()->where('status','active')->get()
+                RoomService::query()->available()->get()
             )
         );
     }

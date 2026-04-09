@@ -25,8 +25,8 @@ class RoleAndPermissionSeeder extends Seeder
             'name'=> 'receptionist'
         ]);
 
-        $this->applyCRUDS('table');
-        $this->applyCRUDS('room');
+        $this->applyCRUDs('table');
+        $this->applyCRUDs('room');
         $this->applyAdminPermissions($admin);
     }
         private function applyCRUDs(string $name){

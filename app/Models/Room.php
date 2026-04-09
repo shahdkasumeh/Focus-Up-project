@@ -1,8 +1,9 @@
 <?php
 
 namespace App\Models;
-
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class Room extends Model
 {
@@ -24,4 +25,16 @@ class Room extends Model
         {
             return $this->hasMany(Booking::class);
         }
+
+        public function scopeAvailable($query)
+        {
+
+    /** @var User $user */
+    $user = Auth::user();
+
+    if ($user->hasRole('admin')) {
+        return $query;
+    }
+    return $query->where('status', 'active');
+}
 }

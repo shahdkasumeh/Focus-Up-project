@@ -29,8 +29,8 @@ class CrowdingService
     {
         return $room->bookings()
             ->where('status', 'active')
-            ->whereNotNull('start_time')
-            ->whereNull('end_time')
+            ->whereNotNull('actual_start')
+            ->whereNull('actual_end')
             ->count();
     }
 
@@ -129,14 +129,14 @@ class CrowdingService
         $booking = $room->bookings()
             ->where('id', $bookingId)
 
-            ->whereNull('start_time')
+            ->whereNull('actual_start')
             ->first();
 if (!$booking) {
             return ['error' => 'Booking not found or already checked in'];
         }
 
         $booking->update([
-            'start_time' => now(),
+            'actual_start' => now(),
             'status' => 'active'
         ]);
 
@@ -151,8 +151,8 @@ if (!$booking) {
         $booking = $room->bookings()
             ->where('id', $bookingId)
             ->where('status', 'active')
-            ->whereNotNull('start_time')
-            ->whereNull('end_time')
+            ->whereNotNull('actual_start')
+            ->whereNull('actual_end')
             ->first();
 
         if (!$booking) {
@@ -160,8 +160,8 @@ if (!$booking) {
         }
 
         $booking->update([
-            'end_time' => now(),
-            'status' => 'inactive'
+            'actual_end' => now(),
+            'status' => 'completed'
         ]);
 
         return $this->getCrowdingStatus($room);
