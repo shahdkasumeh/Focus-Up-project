@@ -3,8 +3,8 @@ import React from "react";
 export interface User {
   id: string;
   email: string;
-  name?: string;
-  role?: string;
+  full_name?: string;
+  role_type?: string;
 }
 
 export interface AuthState {
@@ -51,12 +51,19 @@ const AppReducer = (
         error: null,
       };
 
-    case ActionTypes.LOGIN_SUCCESS:
-      localStorage.setItem("user", JSON.stringify(action.payload));
+    case ActionTypes.SET_USER:
+      localStorage.setItem("user", JSON.stringify(action.user));
       return {
         ...state,
-        user: action.payload,
-        isAuthenticated: true,
+        user: action.user || null,
+        isAuthenticated: !!action.user,
+        loading: false,
+        error: null,
+      };
+
+    case ActionTypes.LOGIN_SUCCESS:
+      return {
+        ...state,
         loading: false,
         error: null,
       };
@@ -76,13 +83,6 @@ const AppReducer = (
         isAuthenticated: false,
         loading: false,
         error: null,
-      };
-
-    case ActionTypes.SET_USER:
-      return {
-        ...state,
-        user: action.user || null,
-        isAuthenticated: !!action.user,
       };
 
     default:

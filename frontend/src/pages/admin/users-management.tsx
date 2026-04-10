@@ -96,23 +96,23 @@ export function UsersManagement() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-[#2563EB] to-[#1d4ed8] text-white rounded-xl shadow-md p-5">
+        <div className="bg-gradient-to-br from-[#035177] to-[#035177] text-white rounded-xl shadow-md p-5">
           <p className="text-sm opacity-90 mb-1">إجمالي المستخدمين</p>
           <p className="text-3xl">{users.length}</p>
         </div>
-        <div className="bg-gradient-to-br from-[#10B981] to-[#059669] text-white rounded-xl shadow-md p-5">
+        <div className="bg-gradient-to-br from-[#ffb703] to-[#ffb703] text-white rounded-xl shadow-md p-5">
           <p className="text-sm opacity-90 mb-1">نشطين</p>
           <p className="text-3xl">
             {users.filter((u) => u.status === "active").length}
           </p>
         </div>
-        <div className="bg-gradient-to-br from-[#F59E0B] to-[#d97706] text-white rounded-xl shadow-md p-5">
+        <div className="bg-gradient-to-br from-[#8ecae6] to-[#8ecae6] text-white rounded-xl shadow-md p-5">
           <p className="text-sm opacity-90 mb-1">إجمالي الحجوزات</p>
           <p className="text-3xl">
             {users.reduce((acc, u) => acc + u.totalBookings, 0)}
           </p>
         </div>
-        <div className="bg-gradient-to-br from-purple-600 to-purple-700 text-white rounded-xl shadow-md p-5">
+        <div className="bg-gradient-to-br from-[#219ebc] to-[#219ebc] text-white rounded-xl shadow-md p-5">
           <p className="text-sm opacity-90 mb-1">إجمالي الإيرادات</p>
           <p className="text-3xl">
             {users.reduce((acc, u) => acc + u.totalSpent, 0)} ر.س

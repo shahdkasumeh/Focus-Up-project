@@ -28,36 +28,29 @@ function App() {
   const { user, isAuthenticated } = state;
   return (
     <Routes>
+      <Route path="/" element={<Navigate to="/login" replace />} />
+
       <Route path="/login" element={<Login />} />
 
-      {isAuthenticated && user?.role === "admin" && (
+      {isAuthenticated && user?.role_type === "admin" && (
         <Route path="/admin/*" element={<AdminLayout />}>
-          <Route path="/admin/dashboard" element={<Dashboard />} />
-          <Route path="/admin/rooms" element={<RoomsManagement />} />
-          <Route path="/admin/tables" element={<TablesManagement />} />
-          <Route path="/admin/bookings" element={<BookingsManagement />} />
-          <Route path="/admin/events" element={<EventsManagement />} />
-          <Route path="/admin/packages" element={<PackagesManagement />} />
-          <Route path="/admin/users" element={<UsersManagement />} />
-          <Route path="/admin/reports" element={<Reports />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="rooms" element={<RoomsManagement />} />
+          <Route path="tables" element={<TablesManagement />} />
+          <Route path="bookings" element={<BookingsManagement />} />
+          <Route path="events" element={<EventsManagement />} />
+          <Route path="packages" element={<PackagesManagement />} />
+          <Route path="users" element={<UsersManagement />} />
+          <Route path="reports" element={<Reports />} />
         </Route>
       )}
 
-      {isAuthenticated && user?.role === "reception" && (
+      {isAuthenticated && user?.role_type === "reception" && (
         <Route path="/reception" element={<ReceptionistDashboard />}>
-          <Route path="/reception/QRScanner" element={<QRScanner />} />
-          <Route
-            path="/reception/ActiveStudents"
-            element={<ActiveStudents />}
-          />
-          <Route
-            path="/reception/ReceptionistProfile"
-            element={<ReceptionistProfile />}
-          />
-          <Route
-            path="/reception/TablesManagement"
-            element={<TablesManagement />}
-          />
+          <Route path="QRScanner" element={<QRScanner />} />
+          <Route path="ActiveStudents" element={<ActiveStudents />} />
+          <Route path="ReceptionistProfile" element={<ReceptionistProfile />} />
+          <Route path="TablesManagement" element={<TablesManagement />} />
         </Route>
       )}
     </Routes>

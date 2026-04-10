@@ -33,7 +33,7 @@ const stats = [
     change: "+12.5%",
     trend: "up",
     icon: Calendar,
-    color: "from-[#2563EB] to-[#1d4ed8]",
+    color: "from-[#035177] to-[#035177]",
   },
   {
     label: "المستخدمين النشطين",
@@ -41,7 +41,7 @@ const stats = [
     change: "+8.2%",
     trend: "up",
     icon: Users,
-    color: "from-[#10B981] to-[#059669]",
+    color: "from-[#ffb703] to-[#ffb703]",
   },
   {
     label: "الإيرادات الشهرية",
@@ -49,7 +49,7 @@ const stats = [
     change: "+15.3%",
     trend: "up",
     icon: DollarSign,
-    color: "from-[#F59E0B] to-[#d97706]",
+    color: "from-[#219ebc] to-[#219ebc]",
   },
   {
     label: "معدل الإشغال",
@@ -57,7 +57,7 @@ const stats = [
     change: "+5.1%",
     trend: "up",
     icon: TrendingUp,
-    color: "from-purple-600 to-purple-700",
+    color: "from-[#fb8500] to-[#fb8500]",
   },
 ];
 
@@ -71,11 +71,11 @@ const revenueData = [
 ];
 
 const roomsData = [
-  { name: "قاعة النجاح", bookings: 145, fill: "#2563EB" },
-  { name: "قاعة الإبداع", bookings: 98, fill: "#10B981" },
-  { name: "قاعة الهدوء", bookings: 167, fill: "#F59E0B" },
-  { name: "قاعة التفوق", bookings: 112, fill: "#8B5CF6" },
-  { name: "قاعة المعرفة", bookings: 201, fill: "#EC4899" },
+  { name: "قاعة النجاح", bookings: 145, fill: "#8ecae6" },
+  { name: "قاعة الإبداع", bookings: 98, fill: "#219ebc" },
+  { name: "قاعة الهدوء", bookings: 167, fill: "#ffb703" },
+  { name: "قاعة التفوق", bookings: 112, fill: "#023047" },
+  { name: "قاعة المعرفة", bookings: 201, fill: "#fb8500" },
 ];
 
 const recentBookings = [

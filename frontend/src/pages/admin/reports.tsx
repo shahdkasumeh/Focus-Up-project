@@ -89,7 +89,7 @@ export function Reports() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-br from-[#2563EB] to-[#1d4ed8] text-white rounded-2xl shadow-lg p-6"
+          className="bg-gradient-to-br from-[#035177] to-[#035177] text-white rounded-2xl shadow-lg p-6"
         >
           <div className="flex items-start justify-between mb-4">
             <DollarSign className="w-10 h-10 opacity-80" />
@@ -104,7 +104,7 @@ export function Reports() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-gradient-to-br from-[#10B981] to-[#059669] text-white rounded-2xl shadow-lg p-6"
+          className="bg-gradient-to-br from-[#219ebc] to-[#219ebc] text-white rounded-2xl shadow-lg p-6"
         >
           <div className="flex items-start justify-between mb-4">
             <Calendar className="w-10 h-10 opacity-80" />
@@ -119,7 +119,7 @@ export function Reports() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-gradient-to-br from-[#F59E0B] to-[#d97706] text-white rounded-2xl shadow-lg p-6"
+          className="bg-gradient-to-br from-[#ffb703] to-[#ffb703] text-white rounded-2xl shadow-lg p-6"
         >
           <div className="flex items-start justify-between mb-4">
             <Users className="w-10 h-10 opacity-80" />
@@ -134,7 +134,7 @@ export function Reports() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-gradient-to-br from-purple-600 to-purple-700 text-white rounded-2xl shadow-lg p-6"
+          className="bg-gradient-to-br from-[#8ecae6] to-[#8ecae6] text-white rounded-2xl shadow-lg p-6"
         >
           <div className="flex items-start justify-between mb-4">
             <Building2 className="w-10 h-10 opacity-80" />

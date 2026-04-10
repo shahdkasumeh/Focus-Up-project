@@ -6,8 +6,10 @@ import { Input } from "../components/Input";
 import { useAuth } from "../context/GlobalState";
 import logo from "../assets/logo.svg";
 import { useNavigate } from "react-router-dom";
+import { ActionTypes } from "../context/AppReducer";
 
 export function Login() {
+  const { state, dispatch } = useAuth();
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
@@ -18,18 +20,55 @@ export function Login() {
   //handle send form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("محاولة تسجيل الدخول:", { email, password, rememberMe });
-    // TODO: إضافة منطق تسجيل الدخول لاحقاً
-  };
+    console.log("جاري تسجيل الدخول...");
+    //dispatch "LOGIN_START"
 
-  const handleLogin = () => {
-    navigate("/");
-    // أو
-    // navigate('/dashboard');
+    try {
+      const response = await fetch("http://localhost:8000/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log("تم الدخول بنجاح:", data);
+        // dispatch "SET_USER"
+        dispatch({
+          type: ActionTypes.SET_USER,
+          user: data.user,
+        });
+
+        //  dispatch "LOGIN_SUCCESS"
+        dispatch({
+          type: ActionTypes.LOGIN_SUCCESS,
+        });
+        navigate("/admin/dashboard");
+      } else {
+        console.log("فشل الدخول:", data);
+        //dispatch "LOGIN_FAILURE"
+        dispatch({
+          type: ActionTypes.LOGIN_FAILURE,
+          payload: data.message || "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+        });
+      }
+    } catch (error) {
+      dispatch({
+        type: ActionTypes.LOGIN_FAILURE,
+        payload: "خطأ في الاتصال بالسيرفر. تأكد أن السيرفر شغال. ",
+      });
+      console.log(error);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-linear-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -131,7 +170,7 @@ export function Login() {
                 variant="primary"
                 size="lg"
                 className="w-full max-w-md mx-auto"
-                onClick={handleLogin}
+                onClick={handleSubmit}
               >
                 تسجيل الدخول
               </Button>

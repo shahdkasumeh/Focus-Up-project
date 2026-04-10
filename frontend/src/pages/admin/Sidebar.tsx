@@ -11,11 +11,13 @@ import {
   CalendarDays,
   Package,
 } from "lucide-react";
+import { useAuth } from "../../context/GlobalState";
+import { ActionTypes } from "../../context/AppReducer";
+import { useNavigate } from "react-router-dom";
 
 interface SidebarProps {
   activePage: string;
   onNavigate: (page: string) => void;
-  onLogout?: () => void;
 }
 
 const menuItems = [
@@ -27,16 +29,24 @@ const menuItems = [
   { id: "packages", label: "إدارة الباقات", icon: Package },
   { id: "users", label: "إدارة المستخدمين", icon: Users },
   { id: "reports", label: "التقارير", icon: FileText },
-  { id: "settings", label: "الإعدادات", icon: Settings },
 ];
 
-export function Sidebar({ activePage, onNavigate, onLogout }: SidebarProps) {
+export function Sidebar({ activePage, onNavigate }: SidebarProps) {
+  const { state, dispatch } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    dispatch({ type: ActionTypes.LOGOUT });
+    navigate("/login");
+  };
+
   return (
     <div className="fixed right-0 top-0 w-64 h-screen bg-gray-900 text-white flex flex-col shadow-2xl">
       {/* Header */}
       <div className="p-6 border-b border-gray-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-[#ffbf1f] to-[#e6ac1c] rounded-xl flex items-center justify-center">
+          <div className="w-10 h-10 bg-linear-to-br from-[#ffbf1f] to-[#e6ac1c] rounded-xl flex items-center justify-center">
             <LayoutDashboard className="w-5 h-5 text-[#034363]" />
           </div>
           <div>
@@ -58,7 +68,7 @@ export function Sidebar({ activePage, onNavigate, onLogout }: SidebarProps) {
                 onClick={() => onNavigate(item.id)}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-right ${
                   isActive
-                    ? "bg-gradient-to-r from-[#ffbf1f] to-[#e6ac1c] text-[#034363] shadow-lg"
+                    ? "bg-linear-to-r from-[#ffbf1f] to-[#e6ac1c] text-[#034363] shadow-lg"
                     : "text-gray-400 hover:bg-gray-800 hover:text-white"
                 }`}
               >
@@ -73,7 +83,7 @@ export function Sidebar({ activePage, onNavigate, onLogout }: SidebarProps) {
       {/* Logout */}
       <div className="p-4 border-t border-gray-800">
         <button
-          onClick={onLogout}
+          onClick={handleLogout}
           className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[#EF4444] hover:bg-[#EF4444]/10 transition-all text-right"
         >
           <LogOut className="w-5 h-5" />

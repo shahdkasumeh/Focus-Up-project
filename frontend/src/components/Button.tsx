@@ -13,6 +13,8 @@ interface ButtonProps {
   size?: "sm" | "md" | "lg";
   className?: string;
   disabled?: boolean;
+  type?: "button" | "submit" | "reset";
+
   onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
@@ -51,6 +53,7 @@ export function Button({
         ${variantClasses[variant as keyof typeof variantClasses]}
         ${sizeClasses[size]}
         ${className}
+         {...props} 
       `}
       {...props}
     >
