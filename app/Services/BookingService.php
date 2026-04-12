@@ -14,243 +14,395 @@ use Illuminate\Support\Facades\DB;
 class BookingService
 {
     // =========================================================
-    // 1. إنشاء الحجز (الطالب يختار طاولة أو غرفة)
+    // 1. CREATE BOOKING (Scheduled booking)
     // =========================================================
 
-    public static function createBooking(int $userId, ?int $tableId, ?int $roomId, string $scheduledStart): Booking
-    {
-        return DB::transaction(function () use ($userId, $tableId, $roomId, $scheduledStart) {
+    public static function createBooking(
+    int $userId,
+    ?int $tableId,
+    ?int $roomId,
+    string $scheduledStart,
+    string $scheduledEnd
+): Booking {
 
-            $scheduledStart = Carbon::parse($scheduledStart, config('app.timezone'));
+    return DB::transaction(function () use (
+        $userId, $tableId, $roomId, $scheduledStart, $scheduledEnd
+    ) {
 
-            if ($scheduledStart->isPast()) {
-                throw new \Exception('لا يمكن الحجز في وقت ماضٍ.');
+        // =========================
+        // Guard: اختيار واحد فقط
+        // =========================
+        if (!$tableId && !$roomId) {
+            throw new \Exception('يجب اختيار طاولة أو غرفة.');
+        }
+
+        if ($tableId && $roomId) {
+            throw new \Exception('لا يمكن اختيار طاولة وغرفة بنفس الوقت.');
+        }
+
+        // =========================
+        // Parse time
+        // =========================
+        $start = Carbon::parse($scheduledStart);
+        $end   = Carbon::parse($scheduledEnd);
+
+        if ($start->isPast()) {
+            throw new \Exception('لا يمكن الحجز في وقت ماضٍ.');
+        }
+
+        if ($end->lte($start)) {
+            throw new \Exception('وقت الانتهاء يجب أن يكون بعد البداية.');
+        }
+
+        // =========================
+        // User conflict (مهم جداً)
+        // =========================
+        $userConflict = Booking::where('user_id', $userId)
+            ->whereIn('status', ['pending', 'active'])
+            ->lockForUpdate()
+            ->exists();
+
+        if ($userConflict) {
+            throw new \Exception('لديك حجز قائم بالفعل.');
+        }
+
+        // =========================
+        // TABLE booking
+        // =========================
+        if ($tableId) {
+
+            // 🔒 Lock resource
+            $table = Table::where('id', $tableId)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if (!$table->is_active) {
+                throw new \Exception('الطاولة غير متاحة.');
             }
 
-            // منع المستخدم من امتلاك أكثر من حجز
-            $conflict = Booking::where('user_id', $userId)
+            // 🔥 منع التداخل الزمني
+            $tableConflict = Booking::where('table_id', $tableId)
                 ->whereIn('status', ['pending', 'active'])
+                ->where(function ($q) use ($start, $end) {
+                    $q->whereBetween('scheduled_start', [$start, $end])
+                      ->orWhereBetween('scheduled_end', [$start, $end])
+                      ->orWhere(function ($q) use ($start, $end) {
+                          $q->where('scheduled_start', '<=', $start)
+                            ->where('scheduled_end', '>=', $end);
+                      });
+                })
                 ->lockForUpdate()
                 ->exists();
 
-            if ($conflict) {
-                throw new \Exception('لديك حجز قائم بالفعل. أنهِ حجزك الحالي أولاً.');
+            if ($tableConflict) {
+                throw new \Exception('يوجد حجز متداخل على هذه الطاولة.');
             }
+        }
 
-            // =========================
-            // TABLE BOOKING
-            // =========================
-            if ($tableId) {
+        // =========================
+        // ROOM booking
+        // =========================
+        else {
 
-                $place = Table::lockForUpdate()->findOrFail($tableId);
-
-                if (!$place->is_active) {
-                    throw new \Exception('الطاولة غير متاحة.');
-                }
-
-                // منع أي حجز نشط أو معلق على نفس الطاولة بغض النظر عن الوقت
-                $placeConflict = Booking::where('table_id', $tableId)
-                    ->whereIn('status', ['pending', 'active'])
-                    ->lockForUpdate()
-                    ->exists();
-
-                if ($placeConflict) {
-                    throw new \Exception('الطاولة محجوزة حالياً.');
-                }
-            }
-
-            // =========================
-            // ROOM BOOKING
-            // =========================
-            elseif ($roomId) {
-
-                $place = Room::lockForUpdate()->findOrFail($roomId);
-
-                if (!$place->is_active) {
-                    throw new \Exception('الغرفة غير متاحة.');
-                }
-
-                // منع أي حجز نشط أو معلق على نفس الغرفة بغض النظر عن الوقت
-                $placeConflict = Booking::where('room_id', $roomId)
-                    ->whereIn('status', ['pending', 'active'])
-                    ->lockForUpdate()
-                    ->exists();
-
-                if ($placeConflict) {
-                    throw new \Exception('الغرفة محجوزة حالياً.');
-                }
-            }
-
-            // =========================
-            // Discount (Lucky Wheel)
-            // =========================
-            $wheelSpin = LuckyWheel::where('user_id', $userId)
-                ->where('prize_type', 'discount')
-                ->where('is_used', false)
+            $room = Room::where('id', $roomId)
                 ->lockForUpdate()
-                ->first();
+                ->firstOrFail();
 
-            $discountPercent = $wheelSpin?->discount_percent ?? 0;
+            if (!$room->is_active) {
+                throw new \Exception('الغرفة غير متاحة.');
+            }
 
-            // =========================
-            // Create Booking
-            // =========================
-            $booking = Booking::create([
-                'user_id'          => $userId,
-                'table_id'         => $tableId,
-                'room_id'          => $roomId,
-                'scheduled_start'  => $scheduledStart,
-                'discount_percent' => $discountPercent,
-                'status'           => 'pending',
-            ]);
+            if ($room->type !== 'booking') {
+                throw new \Exception('هذه الغرفة لا تقبل الحجز المسبق.');
+            }
 
-            return $booking;
-        });
-    }
+            // 🔥 منع التداخل الزمني
+            $roomConflict = Booking::where('room_id', $roomId)
+                ->whereIn('status', ['pending', 'active'])
+                ->where(function ($q) use ($start, $end) {
+                    $q->whereBetween('scheduled_start', [$start, $end])
+                      ->orWhereBetween('scheduled_end', [$start, $end])
+                      ->orWhere(function ($q) use ($start, $end) {
+                          $q->where('scheduled_start', '<=', $start)
+                            ->where('scheduled_end', '>=', $end);
+                      });
+                })
+                ->lockForUpdate()
+                ->exists();
 
+            if ($roomConflict) {
+                throw new \Exception('يوجد حجز متداخل في هذه الغرفة.');
+            }
+        }
+// =========================
+        // Discount (optional)
+        // =========================
+        $discount = LuckyWheel::where('user_id', $userId)
+            ->where('prize_type', 'discount')
+            ->where('is_used', false)
+            ->lockForUpdate()
+            ->value('discount_percent') ?? 0;
 
+        // =========================
+        // Create booking
+        // =========================
+        return Booking::create([
+            'user_id'          => $userId,
+            'table_id'         => $tableId,
+            'room_id'          => $roomId,
+            'scheduled_start'  => $start,
+            'scheduled_end'    => $end,
+            'discount_percent' => $discount,
+            'status'           => 'pending',
+        ]);
+    });
+}
     // =========================================================
-    // 2. مسح QR الدخول → تسجيل actual_start
+    // 2. WALK-IN (QR direct start)
     // =========================================================
+
+//     public static function walkIn(int $userId, ?int $tableId, ?int $roomId): Booking
+//     {
+//         return DB::transaction(function () use ($userId, $tableId, $roomId) {
+
+//             if (!$tableId && !$roomId) {
+//                 throw new \Exception('يجب اختيار طاولة أو غرفة.');
+//             }
+
+//             if ($tableId && $roomId) {
+//                 throw new \Exception('لا يمكن اختيار الاثنين.');
+//             }
+// $userConflict = Booking::where('user_id', $userId)
+//                 ->whereIn('status', ['pending', 'active'])
+//                 ->lockForUpdate()
+//                 ->exists();
+
+//             if ($userConflict) {
+//                 throw new \Exception('لديك حجز نشط.');
+//             }
+
+//             if ($tableId) {
+
+//                 $place = Table::lockForUpdate()->findOrFail($tableId);
+
+//                 if (!$place->is_active) {
+//                     throw new \Exception('الطاولة غير متاحة.');
+//                 }
+
+//                 $this->checkActivePlace($tableId, null);
+
+//                 Table::where('id', $tableId)->update(['is_occupied' => true]);
+
+//             } else {
+
+//                 $place = Room::lockForUpdate()->findOrFail($roomId);
+
+//                 if (!$place->is_active) {
+//                     throw new \Exception('الغرفة غير متاحة.');
+//                 }
+
+//                 if ($place->type !== 'walk_in') {
+//                     throw new \Exception('هذه الغرفة للحجز المسبق فقط.');
+//                 }
+
+//                 $this->checkActivePlace(null, $roomId);
+
+//                 Room::where('id', $roomId)->update(['is_occupied' => true]);
+//             }
+
+//             $discountPercent = LuckyWheel::where('user_id', $userId)
+//                 ->where('prize_type', 'discount')
+//                 ->where('is_used', false)
+//                 ->lockForUpdate()
+//                 ->value('discount_percent') ?? 0;
+
+//             return Booking::create([
+//                 'user_id'          => $userId,
+//                 'table_id'         => $tableId,
+//                 'room_id'          => $roomId,
+//                 'scheduled_start'  => null,
+//                 'scheduled_end'    => null,
+//                 'actual_start'     => now(),
+//                 'discount_percent' => $discountPercent,
+//                 'status'           => 'active',
+//             ]);
+//         });
+//     }
+
+//     // =========================================================
+//     // 3. CHECK IN (QR start for scheduled booking)
+//     // =========================================================
 
     public static function checkIn(int $userId): Booking
     {
         return DB::transaction(function () use ($userId) {
+// Guard رئيسي: منع الدخول المكرر بأي شكل
+            $alreadyActive = Booking::where('user_id', $userId)
+                ->where('status', 'active')
+                ->lockForUpdate()
+                ->exists();
 
+            if ($alreadyActive) {
+                throw new \Exception(  'الخروج انت مسجل الدخول حاليا QR امسح ');
+            }
+
+            // =========================
+            // (أ) حجز مسبق pending
+            // =========================
             $booking = Booking::where('user_id', $userId)
-                ->whereIn('status', ['pending', 'active'])
+                ->where('status', 'pending')
                 ->whereNull('actual_start')
                 ->lockForUpdate()
                 ->first();
 
-            if (!$booking) {
-                throw new \Exception('لا يوجد حجز. قم بإنشاء حجز أولاً.');
-            }
+            if ($booking) {
 
-            // // إذا كان pending تحقق أن وقته حان
-            if ($booking->status === 'pending') {
-
-                // تحويل تلقائي عند المسح
-                $booking->update(['status' => 'active']);
-                    if ($booking->table_id) {
-                    Table::where('id', $booking->table_id)->update(['is_occupied' => true]);
-                } else {
-                    Room::where('id', $booking->room_id)->update(['is_occupied' => true]);
+                if (now()->lt($booking->scheduled_start)) {
+                    $startsAt = Carbon::parse($booking->scheduled_start)->format('H:i');
+                    throw new \Exception("لم يحن وقت حجزك بعد. يبدأ الحجز الساعة {$startsAt}.");
                 }
-            }
 
-            $booking->update(['actual_start' => now()]);
+                // منع type mismatch لو تغير نوع الغرفة بعد الحجز
+                if ($booking->room_id) {
+                    $room = Room::lockForUpdate()->find($booking->room_id);
+                    if (!$room || $room->type !== 'booking') {
+                        throw new \Exception('تعذّر تسجيل الدخول: نوع الغرفة لا يطابق نوع الحجز.');
+                    }
+                }
 
-            return $booking->load(['table.room', 'room']);
-        });
-    }
-
-    // =========================================================
-    // 3. مسح QR الخروج → حساب الساعات والسعر + خصم من الباقة
-    // =========================================================
-
-    public static  function checkOut(int $userId): Booking
-    {
-        return DB::transaction(function () use ($userId) {
-
-            // قفل الحجز النشط
-            $booking = Booking::where('user_id', $userId)
-                ->where('status', 'active')
-                ->whereNotNull('actual_start')
-                ->lockForUpdate()
-                ->first();
-
-            if (!$booking) {
-                throw new \Exception('لا توجد جلسة نشطة لهذا الطالب.');
-            }
-
-            // =========================================================
-            // FIX 1: double-check بعد القفل مباشرة
-            // يحمي من الحالة التي ينتظر فيها طلب ثانٍ ثم يجد الحجز
-            // قد تغيّر بين لحظة الجلب ولحظة القفل
-            // =========================================================
-            if ($booking->status !== 'active' || $booking->actual_start === null) {
-                throw new \Exception('تمت معالجة الجلسة مسبقاً.');
-            }
-
-            $actualEnd   = now();
-            $actualStart = Carbon::parse($booking->actual_start);
-            $minutes     = $actualStart->diffInMinutes($actualEnd);
-
-            if ($minutes < 1) {
-                throw new \Exception('مدة الجلسة أقل من دقيقة.');
-            }
-
-            $hours = round($minutes / 60, 2);
-
-            // ---- حساب السعر ----
-            $pricePerHour    = self::getPricePerHour($userId);
-            $rawPrice        = round($pricePerHour * $hours, 2);
-            $discountPercent = $booking->discount_percent;
-            $discountAmount  = round($rawPrice * $discountPercent / 100, 2);
-            $totalPrice      = max(0, $rawPrice - $discountAmount);
-
-            // =========================================================
-            // FIX 2: Atomic update guard
-            // يضمن أن تغيير status يحدث مرة واحدة فقط بشكل ذري
-            // إذا كان طلب آخر سبقنا → $updated = 0 → نرمي exception
-            // =========================================================
-            $updated = Booking::where('id', $booking->id)
-                ->where('status', 'active')
-                ->update([
-                    'actual_end'      => $actualEnd,
-                    'hours'           => $hours,
-                    'total_price'     => $totalPrice,
-                    'discount_amount' => $discountAmount,
-                    'status'          => 'completed',
+                $booking->update([
+                    'status'       => 'active',
+                    'actual_start' => now(),
                 ]);
 
-            if (!$updated) {
-                throw new \Exception('تمت معالجة الجلسة مسبقاً.');
-            }
-            // =========================================================
-            // FIX 3: تحرير الطاولة/الغرفة بشكل مشروط
-            // نتحقق أن current_booking_id هو نفس حجزنا قبل التحرير
-            // يحمي من overwrite حالة مكان بدأ فيه حجز جديد
-            // =========================================================
-            if ($booking->table_id) {
-                Table::where('id', $booking->table_id)
-                    ->where('is_occupied', true)
-                    ->update(['is_occupied' => false]);
-            } else {
-                Room::where('id', $booking->room_id)
-                    ->where('is_occupied', true)
-                    ->update(['is_occupied' => false]);
-            }
-
-            // خصم من الباقة
-            self::deductFromSubscription($userId, $hours, $totalPrice);
-
-            // =========================================================
-            // FIX 4: WheelSpin مع lockForUpdate
-            // يمنع استخدام نفس الخصم في حجزين متزامنين
-            // =========================================================
-            if ($discountPercent > 0) {
-                $spin = LuckyWheel::where('user_id', $userId)
-                    ->where('prize_type', 'discount')
-                    ->where('is_used', false)
-                    ->lockForUpdate()
-                    ->first();
-
-                if ($spin) {
-                    $spin->update([
-                        'is_used'            => true,
-                        'used_in_booking_id' => $booking->id,
-                    ]);
+                if ($booking->table_id) {
+                    Table::where('id', $booking->table_id)->update(['is_occupied' => true]);
+                } elseif ($booking->room_id) {
+                    Room::where('id', $booking->room_id)->update(['is_occupied' => true]);
                 }
+
+                return $booking->load(['table', 'room']);
             }
 
-            return $booking->fresh()->load(['table.room', 'room']);
+            // =========================
+            // (ب) Walk-in فوري — بدون تحديد مكان
+            // =========================
+            $discount = LuckyWheel::where('user_id', $userId)
+                ->where('prize_type', 'discount')
+                ->where('is_used', false)
+                ->lockForUpdate()
+                ->value('discount_percent') ?? 0;
+
+            return Booking::create([
+                'user_id'          => $userId,
+                'table_id'         => null,
+                'room_id'          => null,
+                'scheduled_start'  => null,
+                'scheduled_end'    => null,
+                'actual_start'     => now(),
+                'discount_percent' => $discount,
+                'status'           => 'active',
+            ]);
         });
     }
 
     // =========================================================
-    // 4. إلغاء الحجز (قبل بدء الجلسة فقط)
+    // 4. CHECK OUT (QR end session)
+    // =========================================================
+
+    public static function checkOut(int $userId): Booking
+{
+    return DB::transaction(function () use ($userId) {
+
+        // =========================
+        // 1. جلب الجلسة النشطة
+        // =========================
+        $booking = Booking::where('user_id', $userId)
+            ->where('status', 'active')
+            ->whereNotNull('actual_start')
+            ->lockForUpdate()
+            ->first();
+
+        if (!$booking) {
+            throw new \Exception('لا توجد جلسة نشطة.');
+        }
+
+        // =========================
+        // 2. حماية إضافية (Idempotency guard)
+        // =========================
+        if ($booking->status !== 'active') {
+            throw new \Exception('الجلسة ليست نشطة.');
+        }
+
+        // =========================
+        // 3. حساب الوقت
+        // =========================
+        $start = Carbon::parse($booking->actual_start);
+        $end   = now();
+
+        $minutes = $start->diffInMinutes($end);
+
+        if ($minutes < 1) {
+            throw new \Exception('جلسة قصيرة جداً.');
+        }
+
+        $hours = round($minutes / 60, 2);
+
+        // =========================
+        // 4. حساب السعر
+        // =========================
+        $pricePerHour = self::getPricePerHour($userId);
+
+        $rawPrice = $pricePerHour * $hours;
+
+        $discountPercent = $booking->discount_percent ?? 0;
+
+        $discountAmount = ($rawPrice * $discountPercent) / 100;
+
+        $totalPrice = max(0, $rawPrice - $discountAmount);
+
+        // =========================
+        // 5. إغلاق الجلسة (Atomic update)
+        // =========================
+        $updated = Booking::where('id', $booking->id)
+            ->where('status', 'active')
+            ->update([
+                'actual_end'      => $end,
+                'hours'           => $hours,
+                'total_price'     => $totalPrice,
+                'discount_amount' => $discountAmount,
+                'status'          => 'completed',
+            ]);
+
+        if (!$updated) {
+            throw new \Exception('تمت معالجة الجلسة مسبقاً.');
+        }
+
+        // =========================
+        // 6. تحرير المكان (إن وجد)
+        // =========================
+        if ($booking->table_id) {
+            Table::where('id', $booking->table_id)
+                ->where('is_occupied', true)
+                ->update(['is_occupied' => false]);
+        }
+
+        if ($booking->room_id) {
+            Room::where('id', $booking->room_id)
+                ->where('is_occupied', true)
+                ->update(['is_occupied' => false]);
+        }
+
+        // =========================
+        // 7. خصم من الباقة (إن وجد)
+        // =========================
+        self::deductFromSubscription($userId, $hours, $totalPrice);
+
+        return $booking->fresh()->load(['table', 'room']);
+    });
+}
+    // =========================================================
+    // 5. CANCEL BOOKING
     // =========================================================
 
     public static function cancelBooking(int $bookingId, int $userId): Booking
@@ -261,22 +413,13 @@ class BookingService
                 ->lockForUpdate()
                 ->findOrFail($bookingId);
 
-            if ($booking->status !== 'active' && $booking->status !=='pending') {
-                throw new \Exception('لا يمكن إلغاء حجز منتهٍ أو مُلغى.');
-            }
-
-            if ($booking->actual_start !== null) {
-                throw new \Exception('لا يمكن إلغاء جلسة بدأت بالفعل.');
+            if ($booking->status !== 'pending') {
+                throw new \Exception('لا يمكن الإلغاء.');
             }
 
             $booking->update(['status' => 'cancelled']);
 
-            // تحرير المكان
-            if ($booking->table_id) {
-                $booking->table->update(['is_occupied' => false]);
-            } else {
-                $booking->room->update(['is_occupied' => false]);
-            }
+            self::releasePlace($booking);
 
             return $booking;
         });
@@ -286,50 +429,75 @@ class BookingService
     // HELPERS
     // =========================================================
 
-    /**
-     * سعر الساعة:
-     * - مشترك بباقة → من الباقة
-     * - غير مشترك   → من إعدادات النظام (settings)
-     */
+    private static function checkOverlap($tableId, $roomId, $start, $end)
+    {
+        Booking::where(function ($q) use ($tableId, $roomId) {
+                if ($tableId) {
+                    $q->where('table_id', $tableId);
+                } else {
+                    $q->where('room_id', $roomId);
+                }
+            })
+            ->whereIn('status', ['pending', 'active'])
+            ->where(function ($q) use ($start, $end) {
+                $q->whereBetween('scheduled_start', [$start, $end])
+                    ->orWhereBetween('scheduled_end', [$start, $end])
+                    ->orWhere(function ($q2) use ($start, $end) {
+                    $q2->where('scheduled_start', '<=', $start)
+                    ->where('scheduled_end', '>=', $end);
+    });
+            })
+            ->lockForUpdate()
+            ->exists();
+    }
+
+    private static function checkActivePlace($tableId, $roomId)
+    {
+        $query = Booking::whereIn('status', ['pending', 'active']);
+
+        if ($tableId) {
+            if ($query->where('table_id', $tableId)->lockForUpdate()->exists()) {
+                throw new \Exception('المكان مشغول.');
+            }
+        } else {
+            if ($query->where('room_id', $roomId)->lockForUpdate()->exists()) {
+                throw new \Exception('المكان مشغول.');
+            }
+        }
+    }
+
+    private static function releasePlace($booking)
+    {
+        if ($booking->table_id) {
+            Table::where('id', $booking->table_id)->update(['is_occupied' => false]);
+        }
+
+        if ($booking->room_id) {
+            Room::where('id', $booking->room_id)->update(['is_occupied' => false]);
+        }
+    }
+
     public static function getPricePerHour(int $userId): float
     {
-        $subscription = ConsumptionPackage::where('user_id', $userId)
-            ->active()
-            ->lockForUpdate()
-            ->first();
+        $sub = ConsumptionPackage::where('user_id', $userId)->active()->first();
 
-        if ($subscription) {
-            return (float) $subscription->price_per_hour;
+        if ($sub) {
+            return (float) $sub->price_per_hour;
         }
 
-        // سعر ثابت من إعدادات النظام
-        $setting = Setting::where('key', 'default_price_per_hour')->first();
-
-        if (!$setting) {
-            throw new \Exception('لم يتم تعيين سعر الساعة الافتراضي. تواصل مع المدير.');
-        }
-
-        return (float) $setting->value;
+        return (float) Setting::where('key', 'default_price_per_hour')->value('value');
     }
 
-    /**
-     * خصم الساعات والمبلغ من الباقة (فقط إذا كان الطالب مشتركاً)
-     */
     public static function deductFromSubscription(int $userId, float $hours, float $price): void
     {
-        $subscription = ConsumptionPackage::where('user_id', $userId)
-            ->active()
-            ->lockForUpdate()
-            ->first();
+        $sub = ConsumptionPackage::where('user_id', $userId)->active()->first();
 
-        if (!$subscription) return; // غير مشترك → لا خصم من باقة
-        $newHours = max(0, $subscription->remaining_hours - $hours);
-        $newPrice = max(0, $subscription->remaining_price - $price);
+        if (!$sub) return;
 
-        $subscription->update([
-            'remaining_hours' => $newHours,
-            'remaining_price' => $newPrice,
-            'status'          => ($newHours <= 0 || $newPrice <= 0) ? 'exhausted' : 'active',
+        $sub->update([
+            'remaining_hours' => max(0, $sub->remaining_hours - $hours),
+            'remaining_price' => max(0, $sub->remaining_price - $price),
         ]);
     }
+
 }

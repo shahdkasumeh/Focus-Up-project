@@ -20,7 +20,8 @@ class DatabaseSeeder extends Seeder
             TableSeeder::class,
             SettingSeeder::class,
             RoleAndPermissionSeeder::class,
-            AdminSeeder::class
+            AdminSeeder::class,
+            ReceptionistSeeder::class
 
 
 

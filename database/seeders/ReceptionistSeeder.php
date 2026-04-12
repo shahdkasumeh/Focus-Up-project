@@ -7,22 +7,20 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
-class AdminSeeder extends Seeder
+class ReceptionistSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        $admin = User::create([
-            'full_name' => "Admin",
-            'email' => 'admin@system.com',
+        $receptionist = User::create([
+            'full_name' => "receptionist",
+            'email' => 'receptionist@system.com',
             'password' => Hash::make('12345678'),
             'phone'=>'0000000000'
         ]);
 
-        $admin->assignRole(['admin']);
+        $receptionist->assignRole(['receptionist']);
     }
-
-
 }

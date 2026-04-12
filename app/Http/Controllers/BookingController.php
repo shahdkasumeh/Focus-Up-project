@@ -2,16 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Booking\createBookingRequest;
+use App\Http\Requests\Booking\CreateBookingRequest;
 use App\Http\Resources\BookingResource;
+use App\Http\Resources\ManagmentBookingResource;
 use App\Models\Booking;
 use App\Services\BookingService;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class BookingController extends Controller
 {
-    public function index()
+    // =========================================================
+    // 1. List user bookings
+    // =========================================================
+    public function indexUser()
     {
         $bookings = Booking::where('user_id', Auth::id())
             ->latest()
@@ -22,14 +25,30 @@ class BookingController extends Controller
         );
     }
 
-    // إنشاء حجز
-    public function store(createBookingRequest $request)
+    public function indexManagement()
+    {
+        $bookings=Booking::with(['user','table','room'])
+        ->latest()
+        ->get();
+        return $this->success(
+            ManagmentBookingResource::collection($bookings)
+        );
+
+    }
+
+
+
+    // =========================================================
+    // 2. Create scheduled booking
+    // =========================================================
+    public function store(CreateBookingRequest $request)
     {
         $booking = BookingService::createBooking(
             Auth::id(),
             $request->table_id,
             $request->room_id,
-            $request->scheduled_start
+            $request->scheduled_start,
+            $request->scheduled_end
         );
 
         return $this->success(
@@ -37,29 +56,35 @@ class BookingController extends Controller
         );
     }
 
-    // عرض حجز واحد
+    // =========================================================
+    // 3. Show single booking
+    // =========================================================
     public function show(Booking $booking)
     {
         $this->authorizeBooking($booking);
 
-        $booking->load(['table.room', 'room']);
+        $booking->load(['table', 'room']);
 
         return $this->success(
             BookingResource::make($booking)
         );
     }
 
-    // check-in (QR دخول)
+    // =========================================================
+    // 4. QR Check-in (scheduled booking)
+    // =========================================================
     public function checkIn()
     {
-        $booking =BookingService::checkIn(Auth::id());
+        $booking = BookingService::checkIn(Auth::id());
 
         return $this->success(
             BookingResource::make($booking)
         );
     }
 
-    // check-out (QR خروج)
+    // =========================================================
+    // 5. QR Check-out (end session)
+    // =========================================================
     public function checkOut()
     {
         $booking = BookingService::checkOut(Auth::id());
@@ -69,12 +94,14 @@ class BookingController extends Controller
         );
     }
 
-    // إلغاء الحجز
+    // =========================================================
+    // 6. Cancel booking
+    // =========================================================
     public function cancel(Booking $booking)
     {
         $this->authorizeBooking($booking);
 
-        $booking =BookingService::cancelBooking(
+        $booking = BookingService::cancelBooking(
             $booking->id,
             Auth::id()
         );
@@ -84,7 +111,26 @@ class BookingController extends Controller
         );
     }
 
-    // حماية الوصول (user فقط)
+    // =========================================================
+    // 7. Walk-in (QR direct entry)
+    // =========================================================
+    // public function walkIn()
+    // {
+    //     // إذا QR واحد فقط → المستخدم يختار من الفرونت أو من QR payload
+    //     $booking = BookingService::walkIn(
+    //         Auth::id(),
+    //         request('table_id'),
+    //         request('room_id')
+    //     );
+
+    //     return $this->success(
+    //         BookingResource::make($booking)
+    //     );
+    // }
+
+    // =========================================================
+    // Authorization helper
+    // =========================================================
     private function authorizeBooking(Booking $booking): void
     {
         if ($booking->user_id !== Auth::id()) {

@@ -24,12 +24,12 @@ class User extends Authenticatable implements MustVerifyEmail,AuthCanResetPasswo
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'full_name',
         'email',
         'password',
         'phone',
         'status',
-        'role_type'
+        
     ];
 
     /**

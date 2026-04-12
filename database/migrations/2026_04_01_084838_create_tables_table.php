@@ -16,7 +16,7 @@ return new class extends Migration
             $table->integer('table_num');
             $table->boolean('is_active')->default(true);
             $table->boolean('is_occupied')->default(false);
-            $table->foreignId('room_id')->constrained('rooms');
+            $table->foreignId('room_id')->constrained('rooms')->cascadeOnDelete();
             $table->timestamps();
         });
     }

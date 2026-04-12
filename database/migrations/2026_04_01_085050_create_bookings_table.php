@@ -17,7 +17,9 @@ return new class extends Migration
             $table->foreignId('table_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('room_id')->nullable()->constrained()->nullOnDelete();
             // وقت البدء المحدد من الطالب عند الحجز
-            $table->timestamp('scheduled_start');
+            $table->timestamp('scheduled_start')->nullable();
+            $table->timestamp('scheduled_end')->nullable();
+
             // أوقات الجلسة الفعلية (تُعبأ عند مسح QR)
             $table->timestamp('actual_start')->nullable();
             $table->timestamp('actual_end')->nullable();
