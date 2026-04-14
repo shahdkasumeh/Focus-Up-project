@@ -1,14 +1,18 @@
 import React from "react";
+import { Room } from "../APIMethod/rooms";
+
 //typescript
 export interface User {
   id: string;
   email: string;
   full_name?: string;
-  role_type?: string;
+  role?: string;
 }
 
 export interface AuthState {
   user: User | null;
+  rooms: Room[];
+
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
@@ -25,6 +29,7 @@ const storedUser = localStorage.getItem("user");
 const initialUser = storedUser ? JSON.parse(storedUser) : null;
 export const initialState: AuthState = {
   user: initialUser,
+  rooms: [],
   isAuthenticated: !!initialUser,
   loading: false,
   error: null,
@@ -37,6 +42,8 @@ export enum ActionTypes {
   LOGIN_FAILURE = "LOGIN_FAILURE",
   LOGOUT = "LOGOUT",
   SET_USER = "SET_USER",
+  SET_ROOMS = "SET_ROOMS",
+  ADD_ROOM = "ADD_ROOM",
 }
 
 const AppReducer = (
@@ -83,6 +90,17 @@ const AppReducer = (
         isAuthenticated: false,
         loading: false,
         error: null,
+      };
+    case ActionTypes.SET_ROOMS:
+      return {
+        ...state,
+        rooms: action.payload,
+      };
+
+    case ActionTypes.ADD_ROOM:
+      return {
+        ...state,
+        rooms: [action.payload, ...state.rooms],
       };
 
     default:

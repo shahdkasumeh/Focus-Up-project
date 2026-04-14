@@ -7,6 +7,8 @@ import { useAuth } from "../context/GlobalState";
 import logo from "../assets/logo.svg";
 import { useNavigate } from "react-router-dom";
 import { ActionTypes } from "../context/AppReducer";
+import toast from "react-hot-toast";
+import { authApi } from "../APIMethod";
 
 export function Login() {
   const { state, dispatch } = useAuth();
@@ -21,49 +23,47 @@ export function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("جاري تسجيل الدخول...");
-    //dispatch "LOGIN_START"
+
+    dispatch({ type: ActionTypes.LOGIN_START });
 
     try {
-      const response = await fetch("http://localhost:8000/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: email,
-          password: password,
-        }),
+      const data = await authApi.login({ email, password });
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        console.log("✅ Token saved:", data.token);
+      }
+
+      console.log("تم الدخول بنجاح:", data);
+
+      dispatch({
+        type: ActionTypes.SET_USER,
+        user: data.user,
       });
 
-      const data = await response.json();
+      dispatch({
+        type: ActionTypes.LOGIN_SUCCESS,
+      });
 
-      if (response.ok) {
-        console.log("تم الدخول بنجاح:", data);
-        // dispatch "SET_USER"
-        dispatch({
-          type: ActionTypes.SET_USER,
-          user: data.user,
-        });
+      toast.success("Successfully login");
 
-        //  dispatch "LOGIN_SUCCESS"
-        dispatch({
-          type: ActionTypes.LOGIN_SUCCESS,
-        });
-        navigate("/admin/dashboard");
-      } else {
-        console.log("فشل الدخول:", data);
-        //dispatch "LOGIN_FAILURE"
-        dispatch({
-          type: ActionTypes.LOGIN_FAILURE,
-          payload: data.message || "البريد الإلكتروني أو كلمة المرور غير صحيحة",
-        });
-      }
-    } catch (error) {
+      setTimeout(() => {
+        if (data.user.role === "admin") {
+          navigate("/admin/dashboard");
+        } else if (data.user.role === "receptionist") {
+          navigate("/reception");
+        } else {
+          navigate("/login");
+        }
+      }, 1000);
+    } catch (error: any) {
+      console.log("فشل الدخول:", error);
+
       dispatch({
         type: ActionTypes.LOGIN_FAILURE,
-        payload: "خطأ في الاتصال بالسيرفر. تأكد أن السيرفر شغال. ",
+        payload: error.message || "البريد الإلكتروني أو كلمة المرور غير صحيحة",
       });
-      console.log(error);
+
+      toast.error("Wrong Email or Password");
     }
   };
 

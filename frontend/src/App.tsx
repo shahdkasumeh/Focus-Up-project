@@ -32,8 +32,8 @@ function App() {
 
       <Route path="/login" element={<Login />} />
 
-      {isAuthenticated && user?.role_type === "admin" && (
-        <Route path="/admin/*" element={<AdminLayout />}>
+      {isAuthenticated && user?.role === "admin" && (
+        <Route path="/admin" element={<AdminLayout />}>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="rooms" element={<RoomsManagement />} />
           <Route path="tables" element={<TablesManagement />} />
@@ -45,13 +45,23 @@ function App() {
         </Route>
       )}
 
-      {isAuthenticated && user?.role_type === "reception" && (
-        <Route path="/reception" element={<ReceptionistDashboard />}>
-          <Route path="QRScanner" element={<QRScanner />} />
-          <Route path="ActiveStudents" element={<ActiveStudents />} />
-          <Route path="ReceptionistProfile" element={<ReceptionistProfile />} />
-          <Route path="TablesManagement" element={<TablesManagement />} />
-        </Route>
+      {isAuthenticated && user?.role === "receptionist" && (
+        <>
+          <Route path="/reception" element={<ReceptionistDashboard />} />
+          <Route path="/reception/QRScanner" element={<QRScanner />} />
+          <Route
+            path="/reception/ActiveStudents"
+            element={<ActiveStudents />}
+          />
+          <Route
+            path="/reception/ReceptionistProfile"
+            element={<ReceptionistProfile />}
+          />
+          <Route
+            path="/reception/TablesManagement"
+            element={<TablesManagement />}
+          />
+        </>
       )}
     </Routes>
   );
