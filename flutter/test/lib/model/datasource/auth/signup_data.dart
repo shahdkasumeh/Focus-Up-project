@@ -20,6 +20,7 @@
 //     return response.fold((l) => l, (r) => r);
 //   }
 // }
+import 'package:dartz/dartz.dart';
 import 'package:test/core/class/crud.dart';
 import 'package:test/linkapi.dart';
 import 'package:test/model/static/signup_model.dart';
@@ -29,9 +30,9 @@ class SignupData {
 
   SignupData(this.crud);
 
-  Future<dynamic> postData(SignupModel model) async {
-    var response = await crud.postData(AppLink.SignUP, model.toJson());
-
-    return response.fold((l) => l, (r) => r);
+  Future<Either<Failure, Map<String, dynamic>>> postData(
+    SignupModel model,
+  ) async {
+    return await crud.postData(AppLink.SignUP, model.toJson());
   }
 }

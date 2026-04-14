@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:test/core/class/constant/appcolor.dart';
 
 import 'package:test/core/class/constant/routes.dart';
 import 'package:test/core/class/constant/storagehandler.dart';
@@ -9,6 +8,7 @@ import 'package:test/core/class/statusrequest.dart';
 import 'package:test/model/datasource/auth/signup_data.dart';
 import 'package:test/model/static/auth_model.dart';
 import 'package:test/model/static/signup_model.dart';
+import 'package:uuid/uuid.dart';
 
 abstract class SignUpController extends GetxController {
   void signUP();
@@ -81,50 +81,52 @@ class SignUpControllerImp extends SignUpController {
     statusRequest = StatusRequest.loading;
     update();
 
-    try {
-      var response = await signupData.postData(model);
-
-      print("🔵 RAW RESPONSE => $response");
-
-      if (response != null && response["token"] != null) {
-        print("✅ SUCCESS BLOCK ENTERED");
-
-        /// 🔥 هون أهم سطر (استخدام المودل)
-        final auth = AuthModel.fromJson(response);
-
-        statusRequest = StatusRequest.success;
-        update();
-
-        /// 💾 حفظ التوكن
-        StorageHandler().setToken(auth.token);
-
-        /// 🔥 مثال استخدام user
-        print(auth.user.fullName);
-        print(auth.user.email);
-
-        Get.offAllNamed(AppRoutes.successsignup);
-      } else {
-        print("❌ FAILED CONDITION");
-
+    var response = await signupData.postData(model);
+    response.fold(
+      (failure) {
         statusRequest = StatusRequest.failure;
         update();
 
-        Get.defaultDialog(
-          backgroundColor: Appcolor.grey,
-          title: "Error",
-          middleTextStyle: const TextStyle(color: Colors.white),
-          titleStyle: const TextStyle(color: Colors.white),
-          middleText: response?["message"] ?? "Signup failed",
-        );
-      }
-    } catch (e) {
-      print("❌ EXCEPTION => $e");
+        Get.defaultDialog(title: "Error", middleText: failure.message);
+      },
+      (success) {
+        statusRequest = StatusRequest.success;
+        update();
 
-      statusRequest = StatusRequest.failure;
-      update();
+        final auth = AuthModel.fromJson(success);
 
-      Get.defaultDialog(title: "Error", middleText: "Server error occurred");
-    }
+        // 🔥 هون حط الطباعة
+        print("USER => ${auth.user}");
+        print("ID => ${auth.user.id}");
+
+        StorageHandler().setToken(auth.token);
+        StorageHandler().setQr(auth.user.id.toString());
+
+        Get.offAllNamed(AppRoutes.successsignup);
+      },
+    );
+    response.fold(
+      (failure) {
+        statusRequest = StatusRequest.failure;
+        update();
+
+        Get.defaultDialog(title: "Error", middleText: failure.message);
+      },
+      (success) {
+        statusRequest = StatusRequest.success;
+        update();
+
+        final auth = AuthModel.fromJson(success);
+
+        StorageHandler().setToken(auth.token);
+        StorageHandler().setQr(auth.user.id.toString());
+
+        // 🔥 هون حط الطباعة
+        print("QR AFTER SIGNUP => ${StorageHandler().qrCode}");
+
+        Get.offAllNamed(AppRoutes.successsignup);
+      },
+    );
 
     statusRequest = StatusRequest.none;
     update();

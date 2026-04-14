@@ -53,7 +53,7 @@ class DiscoveringTheCongestionScreen
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: HallCongestionCard(
-                      name: room.name,
+                      name: room.roomName,
                       percent: room.percentage,
                       occupied: room.currentOccupancy,
                       total: room.capacity,

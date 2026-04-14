@@ -22,6 +22,7 @@ import 'package:test/view/screen/reservation/hall_quiet_screen.dart';
 import 'package:test/view/screen/reservation/hall_smoke_free_screen.dart';
 import 'package:test/view/screen/reservation/hall_social_for_smoker_screen.dart';
 import 'package:test/view/screen/reservation/hall_table_screen.dart';
+import 'package:test/view/screen/reservation/room_details_screen.dart';
 import 'package:test/view/screen/reservation/typebooking_screen.dart';
 import 'package:test/view/screen/reservation/table_reservation_screen.dart';
 
@@ -89,6 +90,7 @@ class MyApp extends StatelessWidget {
           page: () => StudyCompanionScreen(),
         ),
         GetPage(name: "/halltablescreen", page: () => HallTableScreen()),
+        GetPage(name: "/roomdetailsscreen", page: () => RoomDetailsScreen()),
       ],
     );
   }

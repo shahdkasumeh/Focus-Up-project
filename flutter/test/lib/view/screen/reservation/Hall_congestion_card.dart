@@ -57,7 +57,7 @@ class HallCongestionCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              '$occupied / $total مستخدم',
+              '$occupied / $total الطاولات المشغولة',
               style: const TextStyle(
                 fontSize: 15,
                 color: Colors.white,

@@ -1,3 +1,4 @@
+import 'package:dartz/dartz.dart';
 import 'package:test/core/class/crud.dart';
 import 'package:test/linkapi.dart';
 
@@ -6,17 +7,7 @@ class RoomsData {
 
   RoomsData(this.crud);
 
-  Future<Map<String, dynamic>?> getRooms() async {
-    var response = await crud.getData(AppLink.crowding);
-
-    return response.fold(
-      (failure) {
-        print("ROOMS ERROR => $failure");
-        return null;
-      },
-      (success) {
-        return success;
-      },
-    );
+  Future<Either<Failure, Map<String, dynamic>>> getRooms() async {
+    return await crud.getData(AppLink.crowding);
   }
 }

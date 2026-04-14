@@ -1,17 +1,17 @@
-class RoomModel {
+class CrowdRoomModel {
   final int id;
-  final String name;
-  final String type;
+  final String roomName;
+  final String roomType;
   final int capacity;
   final int currentOccupancy;
   final double percentage;
   final String color;
   final String status;
 
-  RoomModel({
+  CrowdRoomModel({
     required this.id,
-    required this.name,
-    required this.type,
+    required this.roomName,
+    required this.roomType,
     required this.capacity,
     required this.currentOccupancy,
     required this.percentage,
@@ -19,11 +19,11 @@ class RoomModel {
     required this.status,
   });
 
-  factory RoomModel.fromJson(Map<String, dynamic> json) {
-    return RoomModel(
+  factory CrowdRoomModel.fromJson(Map<String, dynamic> json) {
+    return CrowdRoomModel(
       id: json['room_id'],
-      name: json['room_name'],
-      type: json['room_type'],
+      roomName: json['room_name'],
+      roomType: json['room_type'],
       capacity: json['capacity'],
       currentOccupancy: json['current_occupancy'],
       percentage: (json['percentage'] as num).toDouble(),
