@@ -25,7 +25,8 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::post('/bookings/check_in', [BookingController::class, 'checkIn']);
     Route::post('/bookings/check_out', [BookingController::class, 'checkOut']);
     Route::post('/bookings/{booking}/cancel', [BookingController::class, 'cancel']);
-
+    Route::get('/admin/bookings/stats', [BookingController::class, 'stats']);
+    Route::get('/admin/bookings/last-week', [BookingController::class, 'lastWeekStats']);
 
 
     Route::get('/crowding',[CrowdingController::class,'index']);
@@ -63,6 +64,8 @@ Route::middleware('auth:sanctum')->group(function (){
 
     Route::delete('/tables/{table}', [TableController::class, 'destroy'])
         ->middleware('can:table.delete');
+
+
 });
 
 

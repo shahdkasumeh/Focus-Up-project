@@ -85,11 +85,11 @@ class BookingService
                 ->whereIn('status', ['pending', 'active'])
                 ->where(function ($q) use ($start, $end) {
                     $q->whereBetween('scheduled_start', [$start, $end])
-                      ->orWhereBetween('scheduled_end', [$start, $end])
-                      ->orWhere(function ($q) use ($start, $end) {
-                          $q->where('scheduled_start', '<=', $start)
+                    ->orWhereBetween('scheduled_end', [$start, $end])
+                    ->orWhere(function ($q) use ($start, $end) {
+                        $q->where('scheduled_start', '<=', $start)
                             ->where('scheduled_end', '>=', $end);
-                      });
+                    });
                 })
                 ->lockForUpdate()
                 ->exists();
@@ -121,11 +121,11 @@ class BookingService
                 ->whereIn('status', ['pending', 'active'])
                 ->where(function ($q) use ($start, $end) {
                     $q->whereBetween('scheduled_start', [$start, $end])
-                      ->orWhereBetween('scheduled_end', [$start, $end])
-                      ->orWhere(function ($q) use ($start, $end) {
-                          $q->where('scheduled_start', '<=', $start)
+                    ->orWhereBetween('scheduled_end', [$start, $end])
+                    ->orWhere(function ($q) use ($start, $end) {
+                        $q->where('scheduled_start', '<=', $start)
                             ->where('scheduled_end', '>=', $end);
-                      });
+                    });
                 })
                 ->lockForUpdate()
                 ->exists();
@@ -499,5 +499,40 @@ class BookingService
             'remaining_price' => max(0, $sub->remaining_price - $price),
         ]);
     }
+    public static function getFullBookingStats(): array
+{
+    $stats = Booking::selectRaw('status, COUNT(*) as count')
+        ->groupBy('status')
+        ->pluck('count', 'status');
+
+    $total = Booking::count();
+
+    return [
+        'total'     => $total,
+        'active'    => $stats['active'] ?? 0,
+        'completed' => $stats['completed'] ?? 0,
+        'cancelled' => $stats['cancelled'] ?? 0,
+        'pending'   => $stats['pending'] ?? 0,
+        'no_show'   => $stats['no_show'] ?? 0,
+    ];
+}
+
+public static function lastWeekBookingsCount(): int
+{
+    return Booking::whereBetween('created_at', [
+        Carbon::now()->subWeek()->startOfWeek(),
+        Carbon::now()->subWeek()->endOfWeek(),
+    ])->count();
+}
+
+public static function lastWeekRevenue(): float
+{
+    return (float) Booking::where('status', 'completed')
+        ->whereBetween('actual_end', [
+            Carbon::now()->subWeek()->startOfWeek(),
+            Carbon::now()->subWeek()->endOfWeek(),
+        ])
+        ->sum('total_price');
+}
 
 }

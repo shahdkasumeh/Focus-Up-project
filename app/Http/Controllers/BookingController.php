@@ -137,4 +137,20 @@ class BookingController extends Controller
             abort(403, 'Unauthorized');
         }
     }
+    public function stats()
+{
+    return $this->success(
+        BookingService::getFullBookingStats()
+    );
+}
+
+public function lastWeekStats()
+{
+    return $this->success([
+        'bookings' => BookingService::lastWeekBookingsCount(),
+        'revenue'  => BookingService::lastWeekRevenue(),
+    ]);
+}
+
+
 }
