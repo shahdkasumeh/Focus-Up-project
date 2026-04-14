@@ -16,15 +16,8 @@ import 'package:test/view/screen/home/homepage_screen.dart';
 import 'package:test/view/screen/home/luckywheel_screen.dart';
 import 'package:test/view/screen/home/qrcode_screen.dart';
 import 'package:test/view/screen/home/study_companion_screen.dart';
-import 'package:test/view/screen/reservation/discovering_the_congestion_screen.dart';
-import 'package:test/view/screen/reservation/hall_discussion_screen.dart';
-import 'package:test/view/screen/reservation/hall_quiet_screen.dart';
-import 'package:test/view/screen/reservation/hall_smoke_free_screen.dart';
-import 'package:test/view/screen/reservation/hall_social_for_smoker_screen.dart';
-import 'package:test/view/screen/reservation/hall_table_screen.dart';
 import 'package:test/view/screen/reservation/room_details_screen.dart';
 import 'package:test/view/screen/reservation/typebooking_screen.dart';
-import 'package:test/view/screen/reservation/table_reservation_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -64,32 +57,11 @@ class MyApp extends StatelessWidget {
         ),
         GetPage(name: "/typebookingscreen", page: () => TypebookingScreen()),
         GetPage(name: "/luckywheelscreen", page: () => LuckywheelScreen()),
-        GetPage(
-          name: "/tablereservationscreen",
-          page: () => TableReservationScreen(),
-        ),
-        GetPage(
-          name: "/discoveringthecongestionscreen",
-          page: () => DiscoveringTheCongestionScreen(),
-        ),
-        GetPage(name: "/hallquietscreen", page: () => HallQuietScreen()),
-        GetPage(
-          name: "/halldiscussionscreen",
-          page: () => HallDiscussionScreen(),
-        ),
-        GetPage(
-          name: "/hallsmokefreescreen",
-          page: () => HallSmokeFreeScreen(),
-        ),
-        GetPage(
-          name: "/hallsocialforsmokerscreen",
-          page: () => HallSocialForSmokerScreen(),
-        ),
+
         GetPage(
           name: "/studycompanionscreen",
           page: () => StudyCompanionScreen(),
         ),
-        GetPage(name: "/halltablescreen", page: () => HallTableScreen()),
         GetPage(name: "/roomdetailsscreen", page: () => RoomDetailsScreen()),
       ],
     );
