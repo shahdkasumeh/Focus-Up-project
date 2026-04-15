@@ -23,4 +23,27 @@ public static function delete(Table $table){
     return $table->delete();
 }
 
+    public static function stats(): array
+    {
+          return [
+            'total' => Table::count(),
+
+            // محجوبة (pending)
+            'pending' => Table::whereHas('bookings', function ($q) {
+                $q->where('status', 'pending');
+            })->count(),
+
+            // مشغولة (active)
+            'active' => Table::whereHas('bookings', function ($q) {
+                $q->where('status', 'active');
+            })->count(),
+
+            // متاحة (لا pending ولا active)
+            'available' => Table::whereDoesntHave('bookings', function ($q) {
+                $q->whereIn('status', ['pending', 'active']);
+            })->count(),
+        ];
+    }
 }
+
+

@@ -31,7 +31,7 @@ class TableController extends Controller
     public function show(Table $table)
     {
         return $this->success(
-            
+
             TableResource::make($table)
         );
     }
@@ -46,5 +46,15 @@ class TableController extends Controller
         TableService::delete($table);
             return $this->success('delete table successfuly');
     }
+    public function stats()
+    {
+        return $this->success(
+            TableService::stats()
+        );
+    }
+
+
+
+
     }
 

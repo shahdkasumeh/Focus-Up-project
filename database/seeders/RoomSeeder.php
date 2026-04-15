@@ -29,11 +29,19 @@ class RoomSeeder extends Seeder
                 'type' => 'social_no_smoking',
                 'capacity' => 10,
             ],
+
             [
                 'name' => 'Discussion Room',
                 'type' => 'discussion',
                 'capacity' => 10,
             ],
+
+            [
+                'name' => 'social Room',
+                'type' => 'social',
+                'capacity' => 50,
+            ],
+
         ];
 
         foreach ($rooms as $room) {

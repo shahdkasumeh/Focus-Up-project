@@ -14,12 +14,12 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 });
 
 Route::middleware('auth:sanctum')->group(function (){
+
     Route::apiResource('packages',PackageController::class);
 
-
+    //الحجز
     Route::get('/bookings', [BookingController::class, 'indexUser']);
     Route::get('/bookings/managment', [BookingController::class, 'indexManagement']);
-
     Route::post('/bookings', [BookingController::class, 'store']);
     Route::get('/bookings/{booking}', [BookingController::class, 'show']);
     Route::post('/bookings/check_in', [BookingController::class, 'checkIn']);
@@ -29,12 +29,11 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::get('/admin/bookings/last-week', [BookingController::class, 'lastWeekStats']);
 
 
+    //الازدحام
+    Route::get('/crowding/walkin', [CrowdingController::class, 'indexCrowding']);
     Route::get('/crowding',[CrowdingController::class,'index']);
-    Route::get('/crowding/{room}', [CrowdingController::class, 'show']);
-    Route::post('/crowding/{room}/actual_start', [CrowdingController::class, 'actual_start']);
-    Route::post('/crowding/{room}/actual_end', [CrowdingController::class, 'actual_end']);
 
-
+    //الغرف
     Route::get('/rooms', [RoomController::class, 'index'])
         ->middleware('can:room.index');
 
@@ -50,11 +49,14 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::delete('/rooms/{room}', [RoomController::class, 'destroy'])
         ->middleware('can:room.delete');
 
+
+        //الطاولات
+        Route::get('/tables/stats', [TableController::class, 'stats']);
     Route::get('/tables', [TableController::class, 'index'])
         ->middleware('can:table.index');
 
-    Route::post('/tables', [TableController::class, 'store'])
-        ->middleware('can:table.create');
+    Route::post('/tables', [TableController::class, 'store']);
+       // ->middleware('can:table.create');
 
     Route::get('/tables/{table}', [TableController::class, 'show'])
         ->middleware('can:table.show');
@@ -64,6 +66,10 @@ Route::middleware('auth:sanctum')->group(function (){
 
     Route::delete('/tables/{table}', [TableController::class, 'destroy'])
         ->middleware('can:table.delete');
+
+
+
+
 
 
 });
