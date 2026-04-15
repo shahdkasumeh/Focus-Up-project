@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import 'package:test/core/class/constant/routes.dart';
 import 'package:test/core/class/constant/storagehandler.dart';
 import 'package:test/core/class/crud.dart';
@@ -8,7 +7,7 @@ import 'package:test/core/class/statusrequest.dart';
 import 'package:test/model/datasource/auth/signup_data.dart';
 import 'package:test/model/static/auth_model.dart';
 import 'package:test/model/static/signup_model.dart';
-import 'package:uuid/uuid.dart';
+import 'dart:convert';
 
 abstract class SignUpController extends GetxController {
   void signUP();
@@ -17,6 +16,8 @@ abstract class SignUpController extends GetxController {
 
 class SignUpControllerImp extends SignUpController {
   final SignupData signupData = SignupData(Crud());
+
+  RxString qr = "".obs;
 
   GlobalKey<FormState> formstate = GlobalKey<FormState>();
 
@@ -38,7 +39,17 @@ class SignUpControllerImp extends SignUpController {
     email = TextEditingController();
     password = TextEditingController();
     passwordConfirmation = TextEditingController();
+
     super.onInit();
+    loadQr();
+  }
+
+  void loadQr() {
+    final storedQr = StorageHandler().qrCode;
+
+    print("QR FROM STORAGE => $storedQr");
+
+    qr.value = storedQr ?? "";
   }
 
   @override
@@ -82,6 +93,7 @@ class SignUpControllerImp extends SignUpController {
     update();
 
     var response = await signupData.postData(model);
+
     response.fold(
       (failure) {
         statusRequest = StatusRequest.failure;
@@ -89,42 +101,25 @@ class SignUpControllerImp extends SignUpController {
 
         Get.defaultDialog(title: "Error", middleText: failure.message);
       },
-      (success) {
+      (success) async {
         statusRequest = StatusRequest.success;
         update();
 
         final auth = AuthModel.fromJson(success);
 
-        // 🔥 هون حط الطباعة
         print("USER => ${auth.user}");
         print("ID => ${auth.user.id}");
 
-        StorageHandler().setToken(auth.token);
-        StorageHandler().setQr(auth.user.id.toString());
+        // 🔥 حفظ التوكن
+        await StorageHandler().setToken(auth.token);
 
-        Get.offAllNamed(AppRoutes.successsignup);
-      },
-    );
-    response.fold(
-      (failure) {
-        statusRequest = StatusRequest.failure;
-        update();
+        // 🔥 حفظ QR (نستخدم ID)
+        final qrData = {"user_id": auth.user.id};
+        await StorageHandler().setQrCode(jsonEncode(qrData));
 
-        Get.defaultDialog(title: "Error", middleText: failure.message);
-      },
-      (success) {
-        statusRequest = StatusRequest.success;
-        update();
+        print("QR SAVED => ${StorageHandler().qrCode}");
 
-        final auth = AuthModel.fromJson(success);
-
-        StorageHandler().setToken(auth.token);
-        StorageHandler().setQr(auth.user.id.toString());
-
-        // 🔥 هون حط الطباعة
-        print("QR AFTER SIGNUP => ${StorageHandler().qrCode}");
-
-        Get.offAllNamed(AppRoutes.successsignup);
+        Get.toNamed(AppRoutes.successsignup);
       },
     );
 

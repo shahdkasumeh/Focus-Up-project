@@ -16,6 +16,7 @@ import 'package:test/view/screen/home/homepage_screen.dart';
 import 'package:test/view/screen/home/luckywheel_screen.dart';
 import 'package:test/view/screen/home/qrcode_screen.dart';
 import 'package:test/view/screen/home/study_companion_screen.dart';
+import 'package:test/view/screen/reservation/discovering_the_congestion_screen.dart';
 import 'package:test/view/screen/reservation/room_details_screen.dart';
 import 'package:test/view/screen/reservation/typebooking_screen.dart';
 
@@ -63,6 +64,10 @@ class MyApp extends StatelessWidget {
           page: () => StudyCompanionScreen(),
         ),
         GetPage(name: "/roomdetailsscreen", page: () => RoomDetailsScreen()),
+        GetPage(
+          name: "/discoveringthecongestionscreen",
+          page: () => DiscoveringTheCongestionScreen(),
+        ),
       ],
     );
   }

@@ -31,7 +31,7 @@ class Buildaction extends StatelessWidget {
           childAspectRatio: 1.4,
           children: [
             ActionCard(
-              label: 'انواع الحجز',
+              label: ' الحجز',
               icon: Icons.event_seat_outlined,
               colors: const [Color(0xFF4E9BFF), Appcolor.scondary],
               onTap: () {

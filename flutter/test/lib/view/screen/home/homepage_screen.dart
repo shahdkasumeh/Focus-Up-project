@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_core/src/get_main.dart' show Get;
 import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:get/state_manager.dart';
 import 'package:test/controller/home/homepagecontroller.dart';
 import 'package:test/core/class/constant/appcolor.dart';
-import 'package:test/view/widget/home/build_package_section.dart';
 import 'package:test/view/widget/home/buildaction.dart';
 
 class HomepageScreen extends GetView<HomePageControllerImp> {
@@ -66,7 +64,6 @@ class HomepageScreen extends GetView<HomePageControllerImp> {
                   SizedBox(height: 20),
                   //   BuildHallsSection(),
                   SizedBox(height: 20),
-                  BuildPackageSection(),
                   SizedBox(height: 20),
                 ],
               ),

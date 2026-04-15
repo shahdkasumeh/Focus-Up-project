@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/src/extension_navigation.dart';
-import 'package:get/get_state_manager/src/simple/get_controllers.dart';
+import 'package:get/get.dart';
 import 'package:test/core/class/constant/routes.dart';
 import 'package:test/core/class/constant/storagehandler.dart';
 import 'package:test/core/class/crud.dart';
@@ -18,30 +16,19 @@ abstract class LoginController extends GetxController {
 
 class LoginControllerImp extends LoginController {
   final LoginData loginData = LoginData(Crud());
+
   GlobalKey<FormState> formstate = GlobalKey<FormState>();
+
   late TextEditingController email;
   late TextEditingController password;
+
   bool isPasswordHidden = true;
-  late StatusRequest statusRequest;
+
+  StatusRequest statusRequest = StatusRequest.none;
+
   void togglePassword() {
     isPasswordHidden = !isPasswordHidden;
     update();
-  }
-
-  @override
-  login() async {
-    if (formstate.currentState!.validate()) {
-      statusRequest = StatusRequest.loading;
-      update();
-      print("Valid");
-    } else {
-      print("Not Valid");
-    }
-  }
-
-  @override
-  goToSignup() {
-    Get.offNamed(AppRoutes.signUp);
   }
 
   @override
@@ -56,6 +43,14 @@ class LoginControllerImp extends LoginController {
     email.dispose();
     password.dispose();
     super.dispose();
+  }
+
+  @override
+  login() {}
+
+  @override
+  goToSignup() {
+    Get.offNamed(AppRoutes.signUp);
   }
 
   @override
@@ -79,20 +74,22 @@ class LoginControllerImp extends LoginController {
 
     response.fold(
       (failure) {
-        print("❌ ERROR => $failure");
-
         statusRequest = StatusRequest.failure;
         update();
 
         Get.defaultDialog(title: "Error", middleText: "Server error");
       },
-      (data) {
+      (data) async {
         print("📦 DATA => $data");
 
         if (data["token"] != null) {
           final auth = AuthModel.fromJson(data);
 
-          StorageHandler().setToken(auth.token);
+          // 🔥 حفظ التوكن
+          await StorageHandler().setToken(auth.token);
+
+          // 🔥 حفظ QR (اسم الطالب)
+          await StorageHandler().setQrCode(data['user']['name'].toString());
 
           statusRequest = StatusRequest.success;
           update();

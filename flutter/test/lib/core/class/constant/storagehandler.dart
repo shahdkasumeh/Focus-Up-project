@@ -11,19 +11,22 @@ class StorageHandler {
     _prefs = await SharedPreferences.getInstance();
   }
 
-  Future setToken(String token) async {
+  // 🔵 TOKEN
+  Future<void> setToken(String token) async {
     await _prefs.setString('token', token);
   }
 
   String? get token => _prefs.getString('token');
 
-  Future setQr(String qr) async {
+  // 🔵 QR CODE
+  Future<void> setQrCode(String qr) async {
     await _prefs.setString('qr_code', qr);
   }
 
   String? get qrCode => _prefs.getString('qr_code');
 
-  Future clear() async {
+  // 🔵 CLEAR ALL
+  Future<void> clear() async {
     await _prefs.clear();
   }
 }
