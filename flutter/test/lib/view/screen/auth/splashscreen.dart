@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:test/controller/auth/splashcontroller.dart';
 import 'package:test/core/class/constant/imageassets.dart';
 
 class Splashscreen extends StatelessWidget {
@@ -8,7 +6,6 @@ class Splashscreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Get.put(SplashController());
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(

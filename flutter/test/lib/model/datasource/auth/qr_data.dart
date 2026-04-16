@@ -6,11 +6,13 @@ class QrData {
   final Crud crud;
   QrData(this.crud);
 
-  Future<Either<Failure, Map<String, dynamic>>> checkIn(String userId) {
-    return crud.postData(AppLink.checkIn, {"id": userId});
+  // ================= CHECK IN =================
+  Future<Either<Failure, Map<String, dynamic>>> checkIn(int bookingId) {
+    return crud.postData(AppLink.checkIn, {"booking_id": bookingId});
   }
 
-  Future<Either<Failure, Map<String, dynamic>>> checkOut(String userId) {
-    return crud.postData(AppLink.checkOut, {"id": userId});
+  // ================= CHECK OUT =================
+  Future<Either<Failure, Map<String, dynamic>>> checkOut(int bookingId) {
+    return crud.postData(AppLink.checkOut, {"booking_id": bookingId});
   }
 }

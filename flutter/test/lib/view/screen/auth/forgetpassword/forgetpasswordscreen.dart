@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_instance/src/extension_instance.dart';
+import 'package:get/get_state_manager/src/simple/get_view.dart';
 import 'package:test/controller/auth/forgetpasswordcontroller.dart';
 import 'package:test/core/class/constant/appcolor.dart';
 import 'package:test/core/function/validinput.dart';
@@ -10,14 +9,11 @@ import 'package:test/view/widget/auth/custombuttonauth.dart';
 import 'package:test/view/widget/auth/customtextformauth.dart';
 import 'package:test/view/widget/auth/customtexttitleauth.dart';
 
-class Forgetpasswordscreen extends StatelessWidget {
+class Forgetpasswordscreen extends GetView<ForgetPasswordControllerImp> {
   const Forgetpasswordscreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    ForgetPasswordControllerImp controller = Get.put(
-      ForgetPasswordControllerImp(),
-    );
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -56,7 +52,7 @@ class Forgetpasswordscreen extends StatelessWidget {
 
               Custombuttonauth(
                 onPressed: () {
-                  controller.checkemail();
+                  controller.checkEmail();
                 },
                 text: "Check ",
               ),

@@ -15,7 +15,7 @@ class SignupModel {
 
   factory SignupModel.fromJson(Map<String, dynamic> json) {
     return SignupModel(
-      fullName: json['name'] ?? '',
+      fullName: json['full_name'] ?? '',
       email: json['email'] ?? '',
       password: json['password'] ?? '',
       password_confirmation: json['password_confirmation'] ?? '',
@@ -25,7 +25,7 @@ class SignupModel {
 
   Map<String, dynamic> toJson() {
     return {
-      "name": fullName,
+      "full_name": fullName,
       "email": email,
       "password": password,
       "password_confirmation": password_confirmation,

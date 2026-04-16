@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:get/get_state_manager/src/simple/get_view.dart';
@@ -14,11 +13,14 @@ class DiscoveringTheCongestionScreen
 
   @override
   Widget build(BuildContext context) {
-    Get.put(DiscoveringTheCongestionControllerImp());
     return Scaffold(
       body: Obx(() {
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
+        }
+
+        if (controller.rooms.isEmpty) {
+          return const Center(child: Text("لا توجد بيانات حالياً"));
         }
 
         return CustomScrollView(
@@ -50,20 +52,22 @@ class DiscoveringTheCongestionScreen
                 delegate: SliverChildBuilderDelegate((context, index) {
                   final room = controller.rooms[index];
 
+                  final percent = (room.percentage ?? 0).toDouble();
+
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: HallCongestionCard(
-                      name: room.roomName,
-                      percent: room.percentage,
-                      occupied: room.currentOccupancy,
-                      total: room.capacity,
+                      name: room.roomName ?? "",
+                      percent: percent,
+                      occupied: room.occupiedTables ?? 0,
+                      total: room.capacity ?? 0,
                       colors: [
-                        controller.getColor(room.percentage),
-                        controller.getColor(room.percentage),
+                        controller.getColor(percent),
+                        controller.getColor(percent),
                       ],
-                      message: controller.getMessage(room.percentage),
+                      message: controller.getMessage(percent),
                       onTap: () {
-                        controller.goToRoom(room.id);
+                        controller.goToRoom(room.roomId ?? 0);
                       },
                     ),
                   );

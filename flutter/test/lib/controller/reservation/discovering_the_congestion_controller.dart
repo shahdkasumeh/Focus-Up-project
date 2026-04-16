@@ -24,28 +24,41 @@ class DiscoveringTheCongestionControllerImp
   }
 
   /// 📡 جلب الغرف من API
-  void fetchRooms() async {
-    isLoading.value = true;
+  Future<void> fetchRooms() async {
+    try {
+      isLoading.value = true;
 
-    var response = await roomsData.getRooms();
+      var response = await roomsData.getRooms();
 
-    response.fold(
-      (failure) {
-        Get.snackbar(
-          "خطأ",
-          failure.message,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
-      },
-      (success) {
-        final data = success["data"] as List;
+      response.fold(
+        (failure) {
+          Get.snackbar(
+            "خطأ",
+            failure.message,
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+        },
+        (success) {
+          final data = success["data"];
 
-        rooms.value = data.map((e) => CrowdRoomModel.fromJson(e)).toList();
-      },
-    );
-
-    isLoading.value = false;
+          if (data is List) {
+            rooms.value = data.map((e) => CrowdRoomModel.fromJson(e)).toList();
+          } else {
+            rooms.clear();
+          }
+        },
+      );
+    } catch (e) {
+      Get.snackbar(
+        "Exception",
+        e.toString(),
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   /// 🏢 الانتقال لشاشة الطاولات

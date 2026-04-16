@@ -5,11 +5,21 @@ import 'package:test/core/class/constant/routes.dart';
 
 abstract class TypeBookingController extends GetxController {
   goToDiscoveringTheCongestion();
+  goToThehallWithoutAReservation();
 }
 
 class TypeBookingControllerImp extends TypeBookingController {
+  get statusRequest => null;
+
+  List rooms = []; // كل الغرف
+  Map<String, dynamic>? room;
   @override
   goToDiscoveringTheCongestion() {
     Get.toNamed(AppRoutes.discoveringthecongestionscreen);
+  }
+
+  @override
+  goToThehallWithoutAReservation() {
+    Get.toNamed(AppRoutes.crowdedHallWithoutReservation);
   }
 }

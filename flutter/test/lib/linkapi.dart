@@ -5,6 +5,9 @@ class AppLink {
   static const String crowding = "$server/crowding";
   static const String checkIn = "$server/bookings/check_in";
   static const String checkOut = "$server/bookings/check_out";
-  static const String room = "$server/rooms";
+  static const String rooms = "$server/rooms";
   static const String bookings = "$server/bookings";
+  static const String emailVerificationNotification =
+      "$server/email/verification-notification";
+  static const String crowdingWalkIn = "$server/crowding/walkin";
 }

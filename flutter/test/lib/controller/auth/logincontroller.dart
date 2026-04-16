@@ -8,10 +8,9 @@ import 'package:test/model/datasource/auth/login_data.dart';
 import 'package:test/model/static/auth_model.dart';
 
 abstract class LoginController extends GetxController {
-  login();
-  goToSignup();
-  goTOForgetPassword();
   signIn();
+  goToSignup();
+  goToForgetPassword();
 }
 
 class LoginControllerImp extends LoginController {
@@ -23,7 +22,6 @@ class LoginControllerImp extends LoginController {
   late TextEditingController password;
 
   bool isPasswordHidden = true;
-
   StatusRequest statusRequest = StatusRequest.none;
 
   void togglePassword() {
@@ -45,19 +43,9 @@ class LoginControllerImp extends LoginController {
     super.dispose();
   }
 
-  @override
-  login() {}
-
-  @override
-  goToSignup() {
-    Get.offNamed(AppRoutes.signUp);
-  }
-
-  @override
-  goTOForgetPassword() {
-    Get.toNamed(AppRoutes.forgetpassword);
-  }
-
+  // =========================
+  // 🚀 LOGIN
+  // =========================
   @override
   signIn() async {
     if (!formstate.currentState!.validate()) return;
@@ -65,7 +53,7 @@ class LoginControllerImp extends LoginController {
     statusRequest = StatusRequest.loading;
     update();
 
-    var response = await loginData.postData({
+    final response = await loginData.postData({
       "email": email.text,
       "password": password.text,
     });
@@ -77,19 +65,23 @@ class LoginControllerImp extends LoginController {
         statusRequest = StatusRequest.failure;
         update();
 
-        Get.defaultDialog(title: "Error", middleText: "Server error");
+        Get.defaultDialog(title: "Error", middleText: failure.message);
       },
       (data) async {
         print("📦 DATA => $data");
 
+        // =========================
+        // ✅ CHECK TOKEN
+        // =========================
         if (data["token"] != null) {
           final auth = AuthModel.fromJson(data);
 
-          // 🔥 حفظ التوكن
+          // 🔥 حفظ التوكن بشكل صحيح
           await StorageHandler().setToken(auth.token);
+          print("🔥 TOKEN SAVED => ${StorageHandler().token}");
 
-          // 🔥 حفظ QR (اسم الطالب)
-          await StorageHandler().setQrCode(data['user']['name'].toString());
+          // 🔥 حفظ اسم المستخدم (QR)
+          await StorageHandler().setQrCode(auth.user.fullName);
 
           statusRequest = StatusRequest.success;
           update();
@@ -109,5 +101,15 @@ class LoginControllerImp extends LoginController {
 
     statusRequest = StatusRequest.none;
     update();
+  }
+
+  @override
+  goToSignup() {
+    Get.offNamed(AppRoutes.signUp);
+  }
+
+  @override
+  goToForgetPassword() {
+    Get.toNamed(AppRoutes.forgetpassword);
   }
 }

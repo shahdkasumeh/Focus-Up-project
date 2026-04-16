@@ -15,4 +15,7 @@ class AppRoutes {
       "/discoveringthecongestionscreen";
   static const String studycompanionscreen = "/studycompanionscreen";
   static const String roomDetails = "/roomdetailsscreen";
+  static const String crowdedHallWithoutReservation =
+      "/crowdedhallwithoutreservation";
+  static const String roomcreen = "/roomcreen";
 }

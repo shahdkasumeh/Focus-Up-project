@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:get/get_state_manager/src/simple/get_state.dart';
+import 'package:get/get_state_manager/src/simple/get_view.dart';
 import 'package:test/controller/auth/resetpasswordcontroller.dart';
 import 'package:test/core/class/constant/appcolor.dart';
 import 'package:test/core/function/validinput.dart';
@@ -11,14 +10,11 @@ import 'package:test/view/widget/auth/custombuttonauth.dart';
 import 'package:test/view/widget/auth/customtextformauth.dart';
 import 'package:test/view/widget/auth/customtexttitleauth.dart';
 
-class Resetpasswordscreen extends StatelessWidget {
+class Resetpasswordscreen extends GetView<ResetpasswordcontrollerImp> {
   const Resetpasswordscreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    ResetpasswordcontrollerImp controller = Get.put(
-      ResetpasswordcontrollerImp(),
-    );
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(

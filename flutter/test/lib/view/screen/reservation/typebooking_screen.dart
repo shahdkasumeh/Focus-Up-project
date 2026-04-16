@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:get/get_state_manager/src/simple/get_view.dart';
 import 'package:test/controller/reservation/type_booking_controller.dart';
 import 'package:test/core/class/constant/appcolor.dart';
@@ -11,7 +9,6 @@ class TypebookingScreen extends GetView<TypeBookingControllerImp> {
 
   @override
   Widget build(BuildContext context) {
-    Get.put(TypeBookingControllerImp());
     return Scaffold(
       backgroundColor: const Color(0xffF5F6FA),
       body: Directionality(
@@ -19,6 +16,8 @@ class TypebookingScreen extends GetView<TypeBookingControllerImp> {
         child: CustomScrollView(
           slivers: [
             SliverAppBar(
+              leading: BackButton(color: Colors.white),
+
               backgroundColor: Appcolor.scondary,
               elevation: 0,
               floating: false,
@@ -41,7 +40,9 @@ class TypebookingScreen extends GetView<TypeBookingControllerImp> {
                       text2: "مثالية للاجتماعات، ورش العمل،",
                       text3: "أختيار القاعة",
                       backgroundColor: Appcolor.scondary,
-                      onPressed: () {},
+                      onPressed: () {
+                        controller.goToThehallWithoutAReservation();
+                      },
                     ),
                     const SizedBox(height: 30),
                     Buildbookingcard(

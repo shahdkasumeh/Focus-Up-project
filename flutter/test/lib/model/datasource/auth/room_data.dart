@@ -1,4 +1,8 @@
-import 'package:dartz/dartz.dart';
+// import 'package:dartz/dartz.dart';
+// import 'package:test/core/class/crud.dart';
+// import 'package:test/linkapi.dart';
+
+import 'package:dartz/dartz.dart' show Either;
 import 'package:test/core/class/crud.dart';
 import 'package:test/linkapi.dart';
 

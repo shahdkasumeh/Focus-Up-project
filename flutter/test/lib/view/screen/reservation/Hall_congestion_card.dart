@@ -22,7 +22,7 @@ class HallCongestionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final progressValue = (percent / 100).clamp(0.0, 1.0);
+    final progressValue = ((percent).clamp(0.0, 100.0)) / 100;
 
     return InkWell(
       borderRadius: BorderRadius.circular(22),

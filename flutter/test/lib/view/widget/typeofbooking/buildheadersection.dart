@@ -19,15 +19,7 @@ class Buildheadersection extends StatelessWidget {
             ),
           ),
           SizedBox(height: 10),
-          // Text(
-          //   "أنواع الحجز",
-          //   style: TextStyle(
-          //     fontSize: 20,
-          //     fontWeight: FontWeight.bold,
-          //     color: Color(0xff0B2F5B),
-          //     height: 1.2,
-          //   ),
-          // ),
+
           SizedBox(height: 18),
           Text(
             "اختر نوع المساحة التي تناسب إنتاجيتك اليوم. نوفر بيئات\nمصممة خصيصًا للتفكير العميق والتعاون المشترك.",

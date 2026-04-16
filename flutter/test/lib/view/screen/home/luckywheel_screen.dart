@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
+import 'package:get/get_state_manager/src/simple/get_view.dart';
 import 'package:test/controller/home/luckywheel_controller.dart';
 import 'package:test/view/widget/luckywheel/wheelpainter.dart';
 
-class LuckywheelScreen extends StatelessWidget {
+class LuckywheelScreen extends GetView<LuckyWheelControllerImp> {
   const LuckywheelScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    LuckyWheelControllerImp controller = Get.put(LuckyWheelControllerImp());
     return Scaffold(
       backgroundColor: const Color(0xFF1A3A5C),
       appBar: AppBar(

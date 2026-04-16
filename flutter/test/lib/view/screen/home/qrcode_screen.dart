@@ -7,105 +7,6 @@ import 'package:test/controller/home/qrcodecontroller.dart';
 class QrcodeScreen extends GetView<QrcodecontrollerImp> {
   const QrcodeScreen({super.key});
 
-  //   @override
-  //   Widget build(BuildContext context) {
-  //     return Scaffold(
-  //       appBar: AppBar(),
-
-  //       body: Container(
-  //         width: double.infinity,
-  //         height: double.infinity,
-  //         decoration: const BoxDecoration(
-  //           gradient: LinearGradient(
-  //             colors: [Color(0xFF0F2A43), Color(0xFF1E4D6B)],
-  //             begin: Alignment.topCenter,
-  //             end: Alignment.bottomCenter,
-  //           ),
-  //         ),
-
-  //         child: SafeArea(
-  //           child: Obx(() {
-  //             final qr = controller.qr.value;
-
-  //             if (qr.isEmpty) {
-  //               return const Center(
-  //                 child: Text(
-  //                   "No QR Found",
-  //                   style: TextStyle(color: Colors.white, fontSize: 18),
-  //                 ),
-  //               );
-  //             }
-
-  //             return Column(
-  //               mainAxisAlignment: MainAxisAlignment.center,
-  //               children: [
-  //                 /// 🔹 Card
-  //                 Container(
-  //                   margin: const EdgeInsets.symmetric(horizontal: 20),
-  //                   padding: const EdgeInsets.all(20),
-  //                   decoration: BoxDecoration(
-  //                     color: Colors.white,
-  //                     borderRadius: BorderRadius.circular(25),
-  //                     boxShadow: [
-  //                       BoxShadow(
-  //                         color: Colors.black.withOpacity(0.2),
-  //                         blurRadius: 15,
-  //                         offset: const Offset(0, 10),
-  //                       ),
-  //                     ],
-  //                   ),
-
-  //                   child: Column(
-  //                     children: [
-  //                       const Text(
-  //                         "QR Code",
-  //                         style: TextStyle(
-  //                           fontSize: 18,
-  //                           fontWeight: FontWeight.bold,
-  //                         ),
-  //                       ),
-
-  //                       const SizedBox(height: 20),
-
-  //                       QrImageView(data: qr, size: 200),
-
-  //                       const SizedBox(height: 20),
-
-  //                       Text(
-  //                         qr,
-  //                         textAlign: TextAlign.center,
-  //                         style: const TextStyle(fontWeight: FontWeight.bold),
-  //                       ),
-
-  //                       const SizedBox(height: 20),
-
-  //                       /// 🔹 Status (Inside / Outside)
-  //                       Obx(
-  //                         () => Text(
-  //                           controller.isInside.value
-  //                               ? "Inside 🟢"
-  //                               : "Outside 🔴",
-  //                           style: TextStyle(
-  //                             fontSize: 18,
-  //                             fontWeight: FontWeight.bold,
-  //                             color: controller.isInside.value
-  //                                 ? Colors.green
-  //                                 : Colors.red,
-  //                           ),
-  //                         ),
-  //                       ),
-  //                     ],
-  //                   ),
-  //                 ),
-  //               ],
-  //             );
-  //           }),
-  //         ),
-  //       ),
-  //     );
-  //   }
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -214,13 +115,12 @@ class QrcodeScreen extends GetView<QrcodecontrollerImp> {
 
                       // =========================
                       // 🔴 / 🟢 STATUS
-                      // =========================
                       Text(
-                        controller.isInside.value ? "Inside 🟢" : "Outside 🔴",
+                        controller.isInside ? "Inside 🟢" : "Outside 🔴",
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: controller.isInside.value
+                          color: controller.isInside
                               ? Colors.green
                               : Colors.red,
                         ),

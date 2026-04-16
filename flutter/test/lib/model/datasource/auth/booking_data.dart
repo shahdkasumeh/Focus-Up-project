@@ -28,25 +28,4 @@ class BookingData {
   ) async {
     return await crud.postData("${AppLink.bookings}/$bookingId/cancel", {});
   }
-  // =========================
-  // 🟢 CHECK IN
-  // =========================
-  // Future<Either<StatusRequest, Map<String, dynamic>>> checkIn(
-  //   int tableId,
-  // ) async {
-  //   return await crud.postData("${AppLink.bookings}/check_in", {
-  //     "table_id": tableId,
-  //   });
-  // }
-
-  // // =========================
-  // // 🔴 CHECK OUT
-  // // =========================
-  // Future<Either<StatusRequest, Map<String, dynamic>>> checkOut(
-  //   int tableId,
-  // ) async {
-  //   return await crud.postData("${AppLink.bookings}/check_out", {
-  //     "table_id": tableId,
-  //   });
-  // }
 }

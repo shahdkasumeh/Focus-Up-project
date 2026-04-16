@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/get_navigation.dart';
-import 'package:get/get_state_manager/src/simple/get_controllers.dart';
+import 'package:get/get.dart';
 import 'package:test/core/class/constant/routes.dart';
+import 'package:test/model/datasource/auth/email_verification_data.dart';
 
 abstract class ForgetPasswordController extends GetxController {
-  checkemail();
+  checkEmail();
 }
 
 class ForgetPasswordControllerImp extends ForgetPasswordController {
   GlobalKey<FormState> formstate = GlobalKey<FormState>();
+
   late TextEditingController email;
+
+  EmailVerificationData emailverificationData = EmailVerificationData(
+    Get.find(),
+  );
+
   @override
   void onInit() {
     email = TextEditingController();
@@ -18,10 +23,32 @@ class ForgetPasswordControllerImp extends ForgetPasswordController {
   }
 
   @override
-  checkemail() async {
-    if (formstate.currentState!.validate()) {
-      update();
-      Get.offAllNamed(AppRoutes.resetpassword);
+  void dispose() {
+    email.dispose();
+    super.dispose();
+  }
+
+  @override
+  checkEmail() async {
+    if (!formstate.currentState!.validate()) {
+      return;
     }
+
+    final res = await emailverificationData.resendVerification();
+
+    res.fold(
+      (failure) {
+        Get.snackbar("Error", failure.message);
+      },
+      (response) {
+        Get.snackbar("Success", response["message"] ?? "Check your email");
+
+        // 🔥 الانتقال لصفحة reset password
+        Get.offAllNamed(
+          AppRoutes.resetpassword,
+          arguments: {"email": email.text},
+        );
+      },
+    );
   }
 }

@@ -65,7 +65,7 @@ class Loginscreen extends GetView<LoginControllerImp> {
                   // FORGET PASSWORD
                   InkWell(
                     onTap: () {
-                      controller.goTOForgetPassword();
+                      controller.goToForgetPassword();
                     },
                     child: Text(
                       "Forget Password ?",

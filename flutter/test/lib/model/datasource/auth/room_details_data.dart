@@ -8,6 +8,6 @@ class RoomDetailsData {
   RoomDetailsData(this.crud);
 
   Future<Either<Failure, Map<String, dynamic>>> getRoom(int id) async {
-    return await crud.getData("${AppLink.room}/$id");
+    return await crud.getData("${AppLink.rooms}/$id");
   }
 }

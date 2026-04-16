@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_instance/src/extension_instance.dart';
+import 'package:get/get_state_manager/src/simple/get_view.dart';
 import 'package:test/controller/auth/sucessresetpassword.dart';
 import 'package:test/core/class/constant/appcolor.dart';
 import 'package:test/view/widget/auth/custombuttonauth.dart';
 
-class Successresetpassword extends StatelessWidget {
+class Successresetpassword extends GetView<SucessResetPasswordControllerImp> {
   const Successresetpassword({super.key});
 
   @override
   Widget build(BuildContext context) {
-    SucessResetPasswordControllerImp controller = Get.put(
-      SucessResetPasswordControllerImp(),
-    );
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
