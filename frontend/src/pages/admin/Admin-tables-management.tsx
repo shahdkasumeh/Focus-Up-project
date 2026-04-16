@@ -1,161 +1,82 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { motion } from "motion/react";
-import {
-  Building2,
-  Grid3x3,
-  Search,
-  Filter,
-  Users,
-  Clock,
-  Calendar,
-  MapPin,
-  Plus,
-} from "lucide-react";
+import { ActionTypes } from "../../context/AppReducer";
+import { Building2, Grid3x3, Plus, Users } from "lucide-react";
+import { useAuth } from "../../context/GlobalState";
+import { Button } from "../../components/Button";
+import { AddTable } from "./components/AddTable";
+import toast from "react-hot-toast";
+import { Table, tablesApi } from "../../APIMethod/tables";
 
-interface Table {
-  id: string;
-  number: number;
-  isBooked: boolean;
-  studentName?: string;
-  bookingTime?: string;
-  endTime?: string;
-}
+export function AdminTablesManagement() {
+  const { state, dispatch } = useAuth();
+  const { tables } = state;
+  const [selectedRoom, setSelectedRoom] = useState<string>("");
+  const [showAddTableModal, setShowAddTableModal] = useState(false);
 
-interface Room {
-  id: string;
-  name: string;
-  capacity: number;
-  tables: Table[];
-}
+  useEffect(() => {
+    async function fetchTables() {
+      if (state.tables.length > 0) return;
+      try {
+        const response = await tablesApi.getAllTables();
+        dispatch({ type: ActionTypes.SET_TABLES, payload: response.data });
+      } catch (error) {
+        console.log("خطأ", error);
+      }
+    }
+    fetchTables();
+  }, []);
 
-export function TablesManagement() {
-  const [selectedRoom, setSelectedRoom] = useState("1");
-  const [searchTerm, setSearchTerm] = useState("");
+  // دمج القاعات والطاولات
+  const roomsWithTables = useMemo(() => {
+    if (!state.rooms || !state.tables) return [];
 
-  const [rooms, setRooms] = useState<Room[]>([
-    {
-      id: "1",
-      name: "قاعة A",
-      capacity: 30,
-      tables: [
-        {
-          id: "1",
-          number: 1,
-          isBooked: true,
-          studentName: "أحمد محمد",
-          bookingTime: "09:00",
-          endTime: "15:00",
-        },
-        { id: "2", number: 2, isBooked: false },
-        {
-          id: "3",
-          number: 3,
-          isBooked: true,
-          studentName: "فاطمة علي",
-          bookingTime: "10:00",
-          endTime: "16:00",
-        },
-        { id: "4", number: 4, isBooked: false },
-        {
-          id: "5",
-          number: 5,
-          isBooked: true,
-          studentName: "محمد سعيد",
-          bookingTime: "08:00",
-          endTime: "14:00",
-        },
-        { id: "6", number: 6, isBooked: false },
-        { id: "7", number: 7, isBooked: false },
-        {
-          id: "8",
-          number: 8,
-          isBooked: true,
-          studentName: "سارة حسن",
-          bookingTime: "11:00",
-          endTime: "17:00",
-        },
-        { id: "9", number: 9, isBooked: false },
-        { id: "10", number: 10, isBooked: false },
-        {
-          id: "11",
-          number: 11,
-          isBooked: true,
-          studentName: "عمر خالد",
-          bookingTime: "09:30",
-          endTime: "15:30",
-        },
-        { id: "12", number: 12, isBooked: false },
-      ],
-    },
-    {
-      id: "2",
-      name: "قاعة B",
-      capacity: 25,
-      tables: [
-        { id: "13", number: 1, isBooked: false },
-        {
-          id: "14",
-          number: 2,
-          isBooked: true,
-          studentName: "نورا أحمد",
-          bookingTime: "10:00",
-          endTime: "16:00",
-        },
-        { id: "15", number: 3, isBooked: false },
-        { id: "16", number: 4, isBooked: false },
-        {
-          id: "17",
-          number: 5,
-          isBooked: true,
-          studentName: "يوسف عبدالله",
-          bookingTime: "08:30",
-          endTime: "14:30",
-        },
-        { id: "18", number: 6, isBooked: false },
-        {
-          id: "19",
-          number: 7,
-          isBooked: true,
-          studentName: "ريم محمد",
-          bookingTime: "09:00",
-          endTime: "15:00",
-        },
-        { id: "20", number: 8, isBooked: false },
-      ],
-    },
-    {
-      id: "3",
-      name: "قاعة C",
-      capacity: 20,
-      tables: [
-        {
-          id: "21",
-          number: 1,
-          isBooked: true,
-          studentName: "خالد عمر",
-          bookingTime: "08:00",
-          endTime: "14:00",
-        },
-        { id: "22", number: 2, isBooked: false },
-        { id: "23", number: 3, isBooked: false },
-        {
-          id: "24",
-          number: 4,
-          isBooked: true,
-          studentName: "مريم سالم",
-          bookingTime: "10:30",
-          endTime: "16:30",
-        },
-        { id: "25", number: 5, isBooked: false },
-        { id: "26", number: 6, isBooked: false },
-      ],
-    },
-  ]);
+    return state.rooms.map((room) => ({
+      id: room.id.toString(),
+      name: room.name,
+      capacity: room.capacity,
+      tables: state.tables
+        .filter((table) => table.room_id === room.id)
+        .map((table) => ({
+          id: table.id.toString(),
+          number: table.table_num,
+          isBooked: table.is_occupied === 1,
+          is_active: table.is_active,
+          is_occupied: table.is_occupied,
+        })),
+    }));
+  }, [state.rooms, state.tables]);
 
-  const currentRoom = rooms.find((room) => room.id === selectedRoom);
+  // تحديد أول قاعة
+  useEffect(() => {
+    if (roomsWithTables.length > 0 && !selectedRoom) {
+      setSelectedRoom(roomsWithTables[0].id);
+    }
+  }, [roomsWithTables, selectedRoom]);
+
+  // فحص عدم وجود قاعات
+  if (roomsWithTables.length === 0) {
+    return (
+      <div className="p-6">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-12 text-center">
+          <Building2 className="w-16 h-16 text-yellow-600 mx-auto mb-4" />
+          <h3 className="text-xl text-gray-900 mb-2">لا توجد قاعات</h3>
+          <p className="text-gray-600">لم يتم إضافة أي قاعات بعد</p>
+        </div>
+      </div>
+    );
+  }
+
+  const currentRoom = roomsWithTables.find((room) => room.id === selectedRoom);
   const bookedTables =
     currentRoom?.tables.filter((t) => t.isBooked).length || 0;
   const availableTables = (currentRoom?.tables.length || 0) - bookedTables;
+
+  const handleTableAdded = (newTable: Table) => {
+    dispatch({ type: ActionTypes.ADD_TABLE, payload: newTable });
+    setShowAddTableModal(false);
+    toast.success("تمت إضافة الطاولة بنجاح");
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -167,40 +88,40 @@ export function TablesManagement() {
             عرض وإدارة حالة الطاولات في جميع القاعات
           </p>
         </div>
+        <Button variant="primary" onClick={() => setShowAddTableModal(true)}>
+          <Plus className="w-5 h-5 ml-2" />
+          إضافة طاولة جديدة
+        </Button>
       </div>
 
-      {/* Stats */}
+      {/* Stats - استخدم roomsWithTables */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white rounded-2xl shadow-md p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-              <Building2 className="w-6 h-6 text-blue-600" />
-            </div>
+          <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
+            <Building2 className="w-6 h-6 text-blue-600" />
           </div>
-          <h3 className="text-2xl text-gray-900 mb-1">{rooms.length}</h3>
+          <h3 className="text-2xl text-gray-900 mb-1">
+            {roomsWithTables.length}
+          </h3>
           <p className="text-gray-600 text-sm">إجمالي القاعات</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-md p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-              <Grid3x3 className="w-6 h-6 text-purple-600" />
-            </div>
+          <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+            <Grid3x3 className="w-6 h-6 text-purple-600" />
           </div>
           <h3 className="text-2xl text-gray-900 mb-1">
-            {rooms.reduce((sum, room) => sum + room.tables.length, 0)}
+            {roomsWithTables.reduce((sum, room) => sum + room.tables.length, 0)}
           </h3>
           <p className="text-gray-600 text-sm">إجمالي الطاولات</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-md p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
-              <Users className="w-6 h-6 text-red-600" />
-            </div>
+          <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center mb-4">
+            <Users className="w-6 h-6 text-red-600" />
           </div>
           <h3 className="text-2xl text-gray-900 mb-1">
-            {rooms.reduce(
+            {roomsWithTables.reduce(
               (sum, room) => sum + room.tables.filter((t) => t.isBooked).length,
               0,
             )}
@@ -209,13 +130,11 @@ export function TablesManagement() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-md p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-              <Grid3x3 className="w-6 h-6 text-green-600" />
-            </div>
+          <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4">
+            <Grid3x3 className="w-6 h-6 text-green-600" />
           </div>
           <h3 className="text-2xl text-gray-900 mb-1">
-            {rooms.reduce(
+            {roomsWithTables.reduce(
               (sum, room) =>
                 sum + room.tables.filter((t) => !t.isBooked).length,
               0,
@@ -225,17 +144,20 @@ export function TablesManagement() {
         </div>
       </div>
 
-      {/* Room Selector */}
+      {/* Room Selector - بطاقات القاعات */}
       <div className="bg-white rounded-2xl shadow-md p-6">
         <div className="flex items-center gap-4 mb-6">
           <Building2 className="w-6 h-6 text-[#ffbf1f]" />
           <h2 className="text-xl text-gray-900">اختر القاعة</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {rooms.map((room) => {
+          {roomsWithTables.map((room) => {
             const roomBooked = room.tables.filter((t) => t.isBooked).length;
             const roomAvailable = room.tables.length - roomBooked;
-            const occupancyPercentage = (roomBooked / room.tables.length) * 100;
+            const occupancyPercentage =
+              room.tables.length === 0
+                ? 0
+                : (roomBooked / room.tables.length) * 100;
 
             return (
               <button
@@ -275,7 +197,7 @@ export function TablesManagement() {
         </div>
       </div>
 
-      {/* Tables Grid */}
+      {/* Tables Grid - طاولات القاعة المختارة */}
       {currentRoom && (
         <div className="bg-white rounded-2xl shadow-md p-6">
           <div className="flex items-center justify-between mb-6">
@@ -305,7 +227,7 @@ export function TablesManagement() {
               >
                 <div
                   className={`aspect-square rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer transition-all ${
-                    table.isBooked
+                    table.is_active === 1 && table.is_occupied === 1
                       ? "bg-gradient-to-br from-red-500 to-red-600 hover:shadow-xl"
                       : "bg-gray-300 hover:bg-gray-400 hover:shadow-lg"
                   }`}
@@ -332,19 +254,6 @@ export function TablesManagement() {
                     </p>
                   </div>
                 </div>
-
-                {/* Tooltip */}
-                {table.isBooked && table.studentName && (
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10">
-                    <div className="bg-gray-900 text-white px-4 py-3 rounded-xl shadow-xl whitespace-nowrap text-sm">
-                      <p className="mb-1">👤 {table.studentName}</p>
-                      <p className="text-gray-300">
-                        ⏰ {table.bookingTime} - {table.endTime}
-                      </p>
-                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900"></div>
-                    </div>
-                  </div>
-                )}
               </motion.div>
             ))}
           </div>
@@ -373,6 +282,12 @@ export function TablesManagement() {
           </div>
         </div>
       </div>
+      {showAddTableModal && (
+        <AddTable
+          onClose={() => setShowAddTableModal(false)}
+          onSuccess={handleTableAdded}
+        />
+      )}
     </div>
   );
 }

@@ -1,6 +1,5 @@
 import axios from "axios";
 
-// إنشاء نسخة من Axios مع الإعدادات الأساسية
 const apiClient = axios.create({
   baseURL: "http://localhost:8000/api",
   headers: {
@@ -9,7 +8,6 @@ const apiClient = axios.create({
   },
 });
 
-// ✅ Interceptor 1: يضيف التوكن تلقائياً قبل كل طلب
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -26,30 +24,26 @@ apiClient.interceptors.request.use(
   },
 );
 
-// ✅ Interceptor 2: يعالج الأخطاء تلقائياً (مثل انتهاء التوكن)
 apiClient.interceptors.response.use(
   (response) => {
-    // الطلب ناجح
     return response;
   },
   (error) => {
     if (error.response?.status === 401) {
-      // التوكن منتهي أو غير صالح
-      console.error("❌ Unauthorized! Logging out...");
+      console.error(" Unauthorized! Logging out...");
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       window.location.href = "/login";
     } else if (error.response?.status === 405) {
-      console.error("❌ Method not allowed:", error.config?.url);
+      console.error(" Method not allowed:", error.config?.url);
     } else if (error.response?.status === 422) {
-      console.error("❌ Validation error:", error.response?.data);
+      console.error(" Validation error:", error.response?.data);
     }
 
     return Promise.reject(error);
   },
 );
 
-// دالة مساعدة لتحويل استجابة Axios إلى الشكل الذي اعتدت عليه
 async function request<T>(
   endpoint: string,
   method: string = "GET",
@@ -62,15 +56,13 @@ async function request<T>(
       data,
     });
 
-    // Axios يضع البيانات في response.data
     return response.data as T;
   } catch (error) {
-    console.error(`❌ Request failed: ${method} ${endpoint}`, error);
+    console.error(` Request failed: ${method} ${endpoint}`, error);
     throw error;
   }
 }
 
-// نفس الـ API الذي كنت تستخدمه - لا تحتاج لتغيير أي شيء في باقي الملفات!
 export const api = {
   get: <T>(endpoint: string) => request<T>(endpoint, "GET"),
   post: <T>(endpoint: string, data: any) => request<T>(endpoint, "POST", data),
@@ -78,5 +70,4 @@ export const api = {
   delete: <T>(endpoint: string) => request<T>(endpoint, "DELETE"),
 };
 
-// تصدير apiClient أيضاً للاستخدام المباشر إذا احتجته
 export { apiClient };

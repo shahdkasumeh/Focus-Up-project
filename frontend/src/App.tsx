@@ -8,11 +8,10 @@ import { AdminLayout } from "./layouts/AdminLayout";
 // Pages - Admin
 import { Dashboard } from "./pages/admin/Dashboard";
 import { RoomsManagement } from "./pages/admin/rooms-management";
-import { TablesManagement } from "./pages/admin/tables-management";
+import { AdminTablesManagement } from "./pages/admin/Admin-tables-management";
 import { BookingsManagement } from "./pages/admin/bookings-management";
 import { EventsManagement } from "./pages/admin/Events-management";
 import { PackagesManagement } from "./pages/admin/packages-management";
-import { UsersManagement } from "./pages/admin/users-management";
 import { Reports } from "./pages/admin/reports";
 
 // Pages - Public
@@ -22,6 +21,7 @@ import { QRScanner } from "./pages/reception/qr-scanner";
 import { ReceptionistDashboard } from "./pages/reception/receptionist-dashboard";
 import { ReceptionistProfile } from "./pages/reception/receptionist-profile";
 import { ActiveStudents } from "./pages/reception/active-students";
+import { ReceptionTablesManagement } from "./pages/reception/Reception-tables-management";
 
 function App() {
   const { state } = useAuth();
@@ -36,11 +36,10 @@ function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="rooms" element={<RoomsManagement />} />
-          <Route path="tables" element={<TablesManagement />} />
+          <Route path="tables" element={<AdminTablesManagement />} />
           <Route path="bookings" element={<BookingsManagement />} />
           <Route path="events" element={<EventsManagement />} />
           <Route path="packages" element={<PackagesManagement />} />
-          <Route path="users" element={<UsersManagement />} />
           <Route path="reports" element={<Reports />} />
         </Route>
       )}
@@ -59,7 +58,7 @@ function App() {
           />
           <Route
             path="/reception/TablesManagement"
-            element={<TablesManagement />}
+            element={<ReceptionTablesManagement />}
           />
         </>
       )}

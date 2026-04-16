@@ -1,21 +1,22 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { Button } from "../../components/Button";
-import { Input } from "../../components/Input";
 import { Plus, Search, Edit2, Trash2, MapPin, Users } from "lucide-react";
 import { AddNewRoom } from "./components/AddNewRoom";
 import { roomsApi, Room } from "../../APIMethod/rooms";
 import { useAuth } from "../../context/GlobalState";
 import { ActionTypes } from "../../context/AppReducer";
 import toast from "react-hot-toast";
+import { UpdateRoom } from "./components/UpdateRoom";
 
 export function RoomsManagement() {
   const { state, dispatch } = useAuth();
   const { rooms } = state;
   const [searchQuery, setSearchQuery] = useState("");
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [showAddRoomModal, setShowAddRoomModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("all");
+  const [EditRoom, setEditRoom] = useState(false);
 
   useEffect(() => {
     fetchRooms();
@@ -37,8 +38,30 @@ export function RoomsManagement() {
 
   const handleRoomAdded = (newRoom: Room) => {
     dispatch({ type: ActionTypes.ADD_ROOM, payload: newRoom });
-    setShowAddModal(false);
+    setShowAddRoomModal(false);
     toast.success("تمت إضافة القاعة بنجاح");
+  };
+
+  const handleRoomUpdate = (newRoom: Room) => {
+    dispatch({ type: ActionTypes.UPDATE_ROOM, payload: newRoom });
+    setShowAddRoomModal(false);
+    toast.success("تمت تعديل القاعة بنجاح");
+  };
+
+  const handleRoomDelete = async (roomId: number) => {
+    try {
+      await roomsApi.deleteRoom(roomId);
+
+      dispatch({
+        type: ActionTypes.DELETE_ROOM,
+        payload: roomId,
+      });
+
+      toast.success("تم حذف القاعة بنجاح");
+    } catch (error) {
+      console.error("فشل في حذف القاعة:", error);
+      toast.error("فشل في حذف القاعة");
+    }
   };
 
   const filteredRooms = rooms.filter((room) => {
@@ -47,8 +70,12 @@ export function RoomsManagement() {
       .includes(searchQuery.toLowerCase());
     const matchesStatus =
       filterStatus === "all" ||
-      (filterStatus === "active" && room.is_active === 1) ||
-      (filterStatus === "inactive" && room.is_active === 0);
+      (filterStatus === "active" &&
+        room.is_active === 1 &&
+        room.is_occupied === 1) ||
+      (filterStatus === "inactive" &&
+        room.is_active === 0 &&
+        room.is_occupied === 1);
     return matchesSearch && matchesStatus;
   });
 
@@ -60,7 +87,7 @@ export function RoomsManagement() {
           <h1 className="text-3xl text-gray-900 mb-2">إدارة القاعات</h1>
           <p className="text-gray-600">إضافة وتعديل وحذف القاعات الدراسية</p>
         </div>
-        <Button variant="primary" onClick={() => setShowAddModal(true)}>
+        <Button variant="primary" onClick={() => setShowAddRoomModal(true)}>
           <Plus className="w-5 h-5 ml-2" />
           إضافة قاعة جديدة
         </Button>
@@ -111,7 +138,7 @@ export function RoomsManagement() {
               className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
             >
               {/* Image */}
-              <div className="h-40 bg-gradient-to-br from-blue-100 to-indigo-100 relative flex items-center justify-center">
+              <div className="h-40 bg-linear-to-br from-blue-100 to-indigo-100 relative flex items-center justify-center">
                 <MapPin className="w-16 h-16 text-[#2563EB] opacity-30" />
               </div>
 
@@ -124,12 +151,14 @@ export function RoomsManagement() {
                   </div>
                   <div
                     className={`px-2 py-0.5 rounded-full text-xs ${
-                      room.is_active === 1
+                      room.is_active === 1 && room.is_occupied === 1
                         ? "bg-[#10B981] text-white"
                         : "bg-gray-400 text-white"
                     }`}
                   >
-                    {room.is_active === 1 ? "نشط" : "غير نشط"}
+                    {room.is_active === 1 && room.is_occupied === 1
+                      ? "نشط"
+                      : "غير نشط"}
                   </div>
                 </div>
 
@@ -141,11 +170,21 @@ export function RoomsManagement() {
                 </div>
 
                 <div className="flex gap-2 pt-4 border-t border-gray-100">
-                  <Button variant="outline" size="sm" className="flex-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => setEditRoom(true)}
+                  >
                     <Edit2 className="w-4 h-4 ml-1" />
                     تعديل
                   </Button>
-                  <Button variant="danger" size="sm" className="flex-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 text-red-600 border-red-600 hover:bg-red-500 hover:text-white"
+                    onClick={() => handleRoomDelete(room.id)}
+                  >
                     <Trash2 className="w-4 h-4 ml-1" />
                     حذف
                   </Button>
@@ -156,10 +195,17 @@ export function RoomsManagement() {
         </div>
       )}
 
+      {/* Update Room Modal */}
+      {EditRoom && (
+        <UpdateRoom
+          onClose={() => setEditRoom(false)}
+          onSuccess={handleRoomUpdate}
+        />
+      )}
       {/* Add Room Modal */}
-      {showAddModal && (
+      {showAddRoomModal && (
         <AddNewRoom
-          onClose={() => setShowAddModal(false)}
+          onClose={() => setShowAddRoomModal(false)}
           onSuccess={handleRoomAdded}
         />
       )}

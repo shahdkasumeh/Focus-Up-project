@@ -25,9 +25,7 @@ const menuItems = [
   { id: "rooms", label: "إدارة القاعات", icon: Building2 },
   { id: "tables", label: "إدارة الطاولات", icon: Table },
   { id: "bookings", label: "إدارة الحجوزات", icon: Calendar },
-  { id: "events", label: "إدارة الفعاليات", icon: CalendarDays },
   { id: "packages", label: "إدارة الباقات", icon: Package },
-  { id: "users", label: "إدارة المستخدمين", icon: Users },
   { id: "reports", label: "التقارير", icon: FileText },
 ];
 

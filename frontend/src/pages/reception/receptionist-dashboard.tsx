@@ -33,7 +33,7 @@ export function ReceptionistDashboard() {
       icon: QrCode,
       color: "from-[#ffbf1f] to-[#e6ac1c]",
       textColor: "text-[#034363]",
-      onClick: () => navigate("/reception/qr-scanner"),
+      onClick: () => navigate("/reception/QRScanner"),
     },
     {
       id: "tables",
@@ -42,7 +42,7 @@ export function ReceptionistDashboard() {
       icon: Table,
       color: "from-[#034363] to-[#045a85]",
       textColor: "text-white",
-      onClick: () => navigate("/reception/tables"),
+      onClick: () => navigate("/reception/TablesManagement"),
     },
     {
       id: "students",
@@ -51,7 +51,7 @@ export function ReceptionistDashboard() {
       icon: Users,
       color: "from-[#10B981] to-[#059669]",
       textColor: "text-white",
-      onClick: () => navigate("/reception/active-students"),
+      onClick: () => navigate("/reception/ActiveStudents"),
     },
     {
       id: "profile",
@@ -60,7 +60,7 @@ export function ReceptionistDashboard() {
       icon: User,
       color: "from-[#f0f8fc] to-[#e0f2fe]",
       textColor: "text-[#034363]",
-      onClick: () => navigate("/reception/profile"),
+      onClick: () => navigate("/reception/ReceptionistProfile"),
     },
   ];
 
@@ -167,6 +167,7 @@ export function ReceptionistDashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
               className="group"
+              onClick={action.onClick}
             >
               <div
                 className={`bg-linear-to-br ${action.color} rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105`}

@@ -21,6 +21,20 @@ export interface AddRoomResponse {
   message: string;
 }
 
+export interface UpdateRoomData {
+  id: number;
+  status: string;
+}
+
+export interface UpdateRoomResponse {
+  data: Room;
+}
+
+export interface DeleteRoomResponse {
+  data: string;
+  message: string;
+}
+
 export const roomsApi = {
   addRoom: async (roomData: CreateRoomData): Promise<AddRoomResponse> => {
     return api.post<AddRoomResponse>("/rooms", roomData);
@@ -28,5 +42,17 @@ export const roomsApi = {
 
   getRooms: async (): Promise<{ data: Room[] }> => {
     return api.get<{ data: Room[] }>("/rooms");
+  },
+
+  deleteRoom: async (id: number): Promise<DeleteRoomResponse> => {
+    return api.delete<DeleteRoomResponse>(`/rooms/${id}`);
+  },
+
+  updateRooms: async (
+    roomData: UpdateRoomData,
+  ): Promise<UpdateRoomResponse> => {
+    const { id, ...data } = roomData;
+
+    return api.put<UpdateRoomResponse>(`/rooms/${id}`, data);
   },
 };

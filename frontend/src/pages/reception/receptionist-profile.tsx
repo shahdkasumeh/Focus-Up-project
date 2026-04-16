@@ -57,11 +57,9 @@ export function ReceptionistProfile() {
 
   const handleSaveProfile = () => {
     setIsEditing(false);
-    // حفظ التغييرات
   };
 
   const handleChangePassword = () => {
-    // تغيير كلمة المرور
     setPasswordData({
       currentPassword: "",
       newPassword: "",

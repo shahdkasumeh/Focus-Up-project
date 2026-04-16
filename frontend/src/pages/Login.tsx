@@ -22,7 +22,7 @@ export function Login() {
   //handle send form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("جاري تسجيل الدخول...");
+    console.log("جاري تسجيل الدخول");
 
     dispatch({ type: ActionTypes.LOGIN_START });
 
@@ -30,7 +30,7 @@ export function Login() {
       const data = await authApi.login({ email, password });
       if (data.token) {
         localStorage.setItem("token", data.token);
-        console.log("✅ Token saved:", data.token);
+        console.log("Token saved:", data.token);
       }
 
       console.log("تم الدخول بنجاح:", data);

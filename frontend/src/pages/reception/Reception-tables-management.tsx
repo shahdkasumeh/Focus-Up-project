@@ -13,6 +13,7 @@ import {
   Filter,
 } from "lucide-react";
 import { Button } from "../../components/Button";
+import { useNavigate } from "react-router-dom";
 
 interface TablesManagementProps {
   onBack: () => void;
@@ -31,7 +32,9 @@ interface TableData {
   reservedUntil?: string;
 }
 
-export function TablesManagement({ onBack }: TablesManagementProps) {
+export function ReceptionTablesManagement() {
+  const navigate = useNavigate();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<TableStatus | "all">("all");
   const [selectedTable, setSelectedTable] = useState<TableData | null>(null);
@@ -133,6 +136,10 @@ export function TablesManagement({ onBack }: TablesManagementProps) {
     },
   ]);
 
+  const handleBack = () => {
+    navigate(-1);
+  };
+
   const getStatusConfig = (status: TableStatus) => {
     const configs = {
       available: {
@@ -197,7 +204,7 @@ export function TablesManagement({ onBack }: TablesManagementProps) {
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-4 mb-6">
             <button
-              onClick={onBack}
+              onClick={handleBack}
               className="p-2 hover:bg-white/10 rounded-xl transition-colors"
             >
               <ArrowRight className="w-6 h-6" />

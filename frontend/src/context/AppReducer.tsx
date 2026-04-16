@@ -1,5 +1,6 @@
 import React from "react";
 import { Room } from "../APIMethod/rooms";
+import { Table } from "../APIMethod/tables";
 
 //typescript
 export interface User {
@@ -12,7 +13,7 @@ export interface User {
 export interface AuthState {
   user: User | null;
   rooms: Room[];
-
+  tables: Table[];
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
@@ -30,6 +31,7 @@ const initialUser = storedUser ? JSON.parse(storedUser) : null;
 export const initialState: AuthState = {
   user: initialUser,
   rooms: [],
+  tables: [],
   isAuthenticated: !!initialUser,
   loading: false,
   error: null,
@@ -44,6 +46,12 @@ export enum ActionTypes {
   SET_USER = "SET_USER",
   SET_ROOMS = "SET_ROOMS",
   ADD_ROOM = "ADD_ROOM",
+  UPDATE_ROOM = "UPDATE_ROOM",
+  DELETE_ROOM = "DELETE_ROOM",
+  SET_TABLES = "SET_TABLES",
+  DELETE_TABLES = "DELETE_TABLES",
+  ADD_TABLE = "ADD_TABLE",
+  UPDATE_TABLE = "UPDATE_TABLE",
 }
 
 const AppReducer = (
@@ -101,6 +109,45 @@ const AppReducer = (
       return {
         ...state,
         rooms: [action.payload, ...state.rooms],
+      };
+
+    case ActionTypes.UPDATE_ROOM:
+      return {
+        ...state,
+        rooms: state.rooms.map((room) =>
+          room.id === action.payload.id ? action.payload : room,
+        ),
+      };
+
+    case ActionTypes.DELETE_ROOM:
+      return {
+        ...state,
+        rooms: state.rooms.filter((room) => room.id !== action.payload),
+      };
+
+    case ActionTypes.SET_TABLES:
+      return {
+        ...state,
+        tables: action.payload,
+      };
+
+    case ActionTypes.DELETE_TABLES:
+      return {
+        ...state,
+        tables: state.tables.filter((table) => table.id !== action.payload),
+      };
+    case ActionTypes.ADD_TABLE:
+      return {
+        ...state,
+        tables: [action.payload, ...state.tables],
+      };
+
+    case ActionTypes.UPDATE_TABLE:
+      return {
+        ...state,
+        tables: state.tables.map((table) =>
+          table.id === action.payload.id ? action.payload : table,
+        ),
       };
 
     default:
