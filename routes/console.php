@@ -8,5 +8,5 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 
-Schedule::job(new \App\Jobs\ActivateDueBookingsJob)->everyMinute();
+//Schedule::job(new \App\Jobs\ActivateDueBookingsJob)->everyMinute();
 Schedule::job(new \App\Jobs\MarkNoShowBookingsJob)->everyMinute();

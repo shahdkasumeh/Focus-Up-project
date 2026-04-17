@@ -30,8 +30,10 @@ Route::middleware('auth:sanctum')->group(function (){
 
 
     //الازدحام
+    Route::get('/crowding/first-four', [CrowdingController::class, 'firstFourBookingCrowding']);
     Route::get('/crowding/walkin', [CrowdingController::class, 'indexCrowding']);
     Route::get('/crowding',[CrowdingController::class,'index']);
+    Route::get('/crowding/{rooms}',[CrowdingController::class,'show']);
 
     //الغرف
     Route::get('/rooms', [RoomController::class, 'index'])
@@ -46,8 +48,8 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::put('/rooms/{room}', [RoomController::class, 'update'])
         ->middleware('can:room.update');
 
-    Route::delete('/rooms/{room}', [RoomController::class, 'destroy'])
-        ->middleware('can:room.delete');
+    Route::delete('/rooms/{room}', [RoomController::class, 'destroy']);
+        //->middleware('can:room.delete');
 
 
         //الطاولات
@@ -55,22 +57,17 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::get('/tables', [TableController::class, 'index'])
         ->middleware('can:table.index');
 
-    Route::post('/tables', [TableController::class, 'store']);
-       // ->middleware('can:table.create');
+    Route::post('/tables', [TableController::class, 'store'])
+        ->middleware('can:table.create');
 
     Route::get('/tables/{table}', [TableController::class, 'show'])
         ->middleware('can:table.show');
 
-    Route::put('/tables/{table}', [TableController::class, 'update'])
-        ->middleware('can:table.update');
+    Route::put('/tables/{table}', [TableController::class, 'update']);
+       // ->middleware('can:table.update');
 
     Route::delete('/tables/{table}', [TableController::class, 'destroy'])
         ->middleware('can:table.delete');
-
-
-
-
-
 
 });
 

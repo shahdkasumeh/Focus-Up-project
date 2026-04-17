@@ -13,18 +13,6 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-/**
- * يعمل كل دقيقة.
- *
- * الإصلاح: يستهدف فقط الحجوزات التي:
- *   1. status = 'active'          ← تم تفعيلها بالفعل من ActivateDueBookingsJob
- *   2. actual_start IS NULL       ← لم يمسح الطالب QR بعد
- *   3. scheduled_start <= now() - 60 دقيقة  ← مضت ساعة كاملة على وقت الحجز
- *
- * هذا يضمن أن الحجز الجديد الذي حان وقته للتو لن يُلغى،
- * لأنه يحتاج أن يصبح active أولاً (عبر ActivateDueBookingsJob)
- * ثم تمر عليه ساعة بدون مسح QR.
- */
 class MarkNoShowBookingsJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -36,7 +24,7 @@ class MarkNoShowBookingsJob implements ShouldQueue
     public function handle(): void
     {
         // الحجوزات التي مضت عليها ساعة بعد scheduled_start بدون مسح QR
-        $noShows = Booking::where('status', 'active')
+        $noShows = Booking::where('status', 'pending')
             ->whereNull('actual_start')
             ->where('scheduled_start', '<=', now()->subMinutes(self::GRACE_MINUTES))
             ->get();
@@ -49,14 +37,14 @@ class MarkNoShowBookingsJob implements ShouldQueue
 
                     // double-check بعد القفل
                     if (!$booking
-                        || $booking->status !== 'active'
+                        || $booking->status !== 'pending'
                         || $booking->actual_start !== null) {
                         return;
                     }
 
                     // atomic update guard
                     $updated = Booking::where('id', $booking->id)
-                        ->where('status', 'active')
+                        ->where('status', 'pending')
                         ->whereNull('actual_start')
                         ->update(['status' => 'no_show']);
 
