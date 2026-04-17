@@ -5,7 +5,7 @@ class CrowdRoomModel {
   final int capacity;
   final int totalTables;
   final int occupiedTables;
-  final int percentage;
+  final double percentage;
   final String color;
   final String status;
   final String message;
@@ -31,7 +31,7 @@ class CrowdRoomModel {
       capacity: json['capacity'] ?? 0,
       totalTables: json['total_tables'] ?? 0,
       occupiedTables: json['occupied_tables'] ?? 0,
-      percentage: json['percentage'] ?? 0,
+      percentage: (json['percentage'] as num?)?.toDouble() ?? 0.0,
       color: json['color'] ?? '',
       status: json['status'] ?? '',
       message: json['message'] ?? '',

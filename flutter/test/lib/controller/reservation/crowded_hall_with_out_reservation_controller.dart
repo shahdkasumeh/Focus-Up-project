@@ -1,6 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:test/core/class/crud.dart';
 import 'package:test/model/datasource/auth/walk_in_data.dart';
+import 'package:test/model/static/walk_in_crowding_model.dart';
 
 abstract class CrowdedHallWithOutReservationController extends GetxController {}
 
@@ -8,55 +10,63 @@ class CrowdedHallWithOutReservationControllerImp
     extends CrowdedHallWithOutReservationController {
   final WalkInData walkInData = WalkInData(Crud());
 
-  //   StatusRequest statusRequest = StatusRequest.none;
+  var rooms = <WalkInCrowdingModel>[].obs;
+  var isLoading = false.obs;
 
-  //   Map<String, dynamic>? crowding;
+  /// 👇 Object واحد
+  Rxn<WalkInCrowdingModel> room = Rxn<WalkInCrowdingModel>();
 
-  //   @override
-  //   void onInit() {
-  //     super.onInit();
-  //     getCrowding();
-  //   }
+  @override
+  void onInit() {
+    super.onInit();
+    fetchRoom();
+  }
 
-  //   // =========================
-  //   // 📥 GET CROWDING
-  //   // =========================
-  //   Future<void> getCrowding() async {
-  //     statusRequest = StatusRequest.loading;
-  //     update();
+  Future<void> fetchRoom() async {
+    try {
+      isLoading.value = true;
 
-  //     try {
-  //       final response = await walkInData.getCrowding();
+      final response = await walkInData.getCrowding();
 
-  //       response.fold(
-  //         (failure) {
-  //           print("❌ API ERROR => ${failure.message}");
-  //           statusRequest = StatusRequest.failure;
-  //         },
-  //         (data) {
-  //           print("📥 RESPONSE => $data");
+      response.fold(
+        (failure) {
+          Get.snackbar("خطأ", failure.message);
+        },
+        (success) {
+          final data = success["data"];
 
-  //           crowding = data["data"];
+          print("DATA => $data");
 
-  //           statusRequest = StatusRequest.success;
-  //         },
-  //       );
-  //     } catch (e) {
-  //       print("🔥 EXCEPTION => $e");
-  //       statusRequest = StatusRequest.failure;
-  //     }
+          if (data != null && data is Map<String, dynamic>) {
+            room.value = WalkInCrowdingModel.fromJson(data);
+          } else {
+            room.value = null;
+            Get.snackbar("تنبيه", "البيانات غير صالحة من السيرفر");
+          }
+        },
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
 
-  //     update();
-  //   }
-  // }
-  final List<Map<String, dynamic>> rooms = [
-    {
-      "name": "Social Hall",
-      "capacity": 50,
-      "inside": 1,
-      "crowding": 2,
-      "message": "القاعة هادئة",
-      "status": "low",
-    },
-  ];
+  /// 🎨 لون حسب النسبة
+  Color getColor(double percent) {
+    if (percent < 50) return const Color(0xFF52AF74);
+    if (percent < 80) return const Color(0xFFF59E0B);
+    return const Color(0xFFEF4444);
+  }
+
+  Color getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case "low":
+        return Colors.green;
+      case "medium":
+        return Colors.orange;
+      case "high":
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
 }

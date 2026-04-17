@@ -22,7 +22,10 @@ class WalkInCrowdingModel {
       roomName: json['room_name'] ?? '',
       capacity: json['capacity'] ?? 0,
       currentInside: json['current_inside'] ?? 0,
-      percentage: (json['percentage'] ?? 0).toDouble(),
+
+      // 🔥 مهم التعديل هون
+      percentage: (json['crowding_percentage'] as num?)?.toDouble() ?? 0.0,
+
       color: json['color'] ?? 'grey',
       status: json['status'] ?? '',
       message: json['message'] ?? '',
@@ -34,7 +37,7 @@ class WalkInCrowdingModel {
       'room_name': roomName,
       'capacity': capacity,
       'current_inside': currentInside,
-      'percentage': percentage,
+      'crowding_percentage': percentage,
       'color': color,
       'status': status,
       'message': message,

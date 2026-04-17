@@ -11,46 +11,22 @@ import 'dart:convert';
 
 abstract class SignUpController extends GetxController {
   void signUP();
+
   void goToSignIn();
 }
 
 class SignUpControllerImp extends SignUpController {
-  final SignupData signupData = SignupData(Crud());
-
-  RxString qr = "".obs;
-
-  GlobalKey<FormState> formstate = GlobalKey<FormState>();
-
-  late TextEditingController fullname;
-  late TextEditingController phone;
   late TextEditingController email;
+  GlobalKey<FormState> formstate = GlobalKey<FormState>();
+  late TextEditingController fullname;
+  bool isConfirmHidden = true;
+  bool isPasswordHidden = true;
   late TextEditingController password;
   late TextEditingController passwordConfirmation;
-
+  late TextEditingController phone;
+  RxString qr = "".obs;
+  final SignupData signupData = SignupData(Crud());
   StatusRequest statusRequest = StatusRequest.none;
-
-  bool isPasswordHidden = true;
-  bool isConfirmHidden = true;
-
-  @override
-  void onInit() {
-    fullname = TextEditingController();
-    phone = TextEditingController();
-    email = TextEditingController();
-    password = TextEditingController();
-    passwordConfirmation = TextEditingController();
-
-    super.onInit();
-    loadQr();
-  }
-
-  void loadQr() {
-    final storedQr = StorageHandler().qrCode;
-
-    print("QR FROM STORAGE => $storedQr");
-
-    qr.value = storedQr ?? "";
-  }
 
   @override
   void dispose() {
@@ -62,14 +38,21 @@ class SignUpControllerImp extends SignUpController {
     super.dispose();
   }
 
-  void togglePassword() {
-    isPasswordHidden = !isPasswordHidden;
-    update();
+  @override
+  void goToSignIn() {
+    Get.offNamed(AppRoutes.login);
   }
 
-  void toggleConfirmPassword() {
-    isConfirmHidden = !isConfirmHidden;
-    update();
+  @override
+  void onInit() {
+    fullname = TextEditingController();
+    phone = TextEditingController();
+    email = TextEditingController();
+    password = TextEditingController();
+    passwordConfirmation = TextEditingController();
+
+    super.onInit();
+    loadQr();
   }
 
   @override
@@ -102,22 +85,40 @@ class SignUpControllerImp extends SignUpController {
         Get.defaultDialog(title: "Error", middleText: failure.message);
       },
       (success) async {
-        statusRequest = StatusRequest.success;
-        update();
+        print("📦 FULL RESPONSE => $success");
 
+        // ✅ تأكد من وجود التوكن
+        final token = success["token"];
+
+        if (token == null) {
+          Get.defaultDialog(
+            title: "Error",
+            middleText: "Token not found in response",
+          );
+          return;
+        }
+
+        print("✅ TOKEN DIRECT => $token");
+
+        // 🔥 حفظ التوكن الصحيح
+        await StorageHandler().setToken(token);
+
+        print("🔥 TOKEN SAVED => ${StorageHandler().token}");
+
+        // 👇 استخدم الموديل فقط لليوزر
         final auth = AuthModel.fromJson(success);
 
         print("USER => ${auth.user}");
         print("ID => ${auth.user.id}");
 
-        // 🔥 حفظ التوكن
-        await StorageHandler().setToken(auth.token);
-
-        // 🔥 حفظ QR (نستخدم ID)
+        // 🔥 حفظ QR
         final qrData = {"user_id": auth.user.id};
         await StorageHandler().setQrCode(jsonEncode(qrData));
 
         print("QR SAVED => ${StorageHandler().qrCode}");
+
+        statusRequest = StatusRequest.success;
+        update();
 
         Get.toNamed(AppRoutes.successsignup);
       },
@@ -127,8 +128,21 @@ class SignUpControllerImp extends SignUpController {
     update();
   }
 
-  @override
-  void goToSignIn() {
-    Get.offNamed(AppRoutes.login);
+  void loadQr() {
+    final storedQr = StorageHandler().qrCode;
+
+    print("QR FROM STORAGE => $storedQr");
+
+    qr.value = storedQr ?? "";
+  }
+
+  void togglePassword() {
+    isPasswordHidden = !isPasswordHidden;
+    update();
+  }
+
+  void toggleConfirmPassword() {
+    isConfirmHidden = !isConfirmHidden;
+    update();
   }
 }

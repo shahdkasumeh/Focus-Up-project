@@ -13,17 +13,14 @@ abstract class DiscoveringTheCongestionController extends GetxController {}
 class DiscoveringTheCongestionControllerImp
     extends DiscoveringTheCongestionController {
   RoomsData roomsData = RoomsData(Get.find());
-
   var rooms = <CrowdRoomModel>[].obs;
   var isLoading = false.obs;
-
   @override
   void onInit() {
     super.onInit();
     fetchRooms();
   }
 
-  /// 📡 جلب الغرف من API
   Future<void> fetchRooms() async {
     try {
       isLoading.value = true;
@@ -61,22 +58,44 @@ class DiscoveringTheCongestionControllerImp
     }
   }
 
-  /// 🏢 الانتقال لشاشة الطاولات
   void goToRoom(int roomId) {
     Get.toNamed(AppRoutes.roomDetails, arguments: roomId);
   }
 
-  /// 🎨 لون حسب الازدحام
-  Color getColor(double percent) {
-    if (percent < 50) return const Color(0xFF52AF74);
-    if (percent < 80) return const Color(0xFFF59E0B);
-    return const Color(0xFFEF4444);
+  /// 🎨 تحويل لون الباك إلى Color
+  Color getColorFromString(String color) {
+    switch (color.toLowerCase()) {
+      case "green":
+        return const Color(0xFF52AF74);
+      case "orange":
+        return const Color(0xFFF59E0B);
+      case "red":
+        return const Color(0xFFEF4444);
+      default:
+        return Colors.grey;
+    }
   }
 
-  /// 💬 رسالة حسب الازدحام
-  String getMessage(double percent) {
-    if (percent < 50) return "هادئة ومناسبة للتركيز";
-    if (percent < 80) return "ازدحام متوسط، احجز مسبقاً";
-    return "ممتلئة تقريباً، انتظر قليلاً";
+  Color getCardColor(double percent) {
+    if (percent <= 50) {
+      return const Color(0xFF52AF74); // أخضر
+    } else if (percent <= 80) {
+      return const Color(0xFFF59E0B); // أصفر
+    } else {
+      return const Color(0xFFEF4444); // أحمر
+    }
+  }
+
+  Color getColorFromStatus(String status) {
+    switch (status) {
+      case "low":
+        return const Color(0xFF52AF74);
+      case "medium":
+        return const Color(0xFFF59E0B);
+      case "high":
+        return const Color(0xFFEF4444);
+      default:
+        return Colors.grey;
+    }
   }
 }

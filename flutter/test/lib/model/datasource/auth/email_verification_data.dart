@@ -13,7 +13,10 @@ class EmailVerificationData {
     return await crud.postData(
       AppLink.emailVerificationNotification,
       {},
-      headers: {"Authorization": "Bearer $token", "Accept": "application/json"},
+      headers: {
+        "Authorization": "Bearer ${token?.trim()}",
+        "Accept": "application/json",
+      },
     );
   }
 }

@@ -33,27 +33,28 @@ class TypebookingScreen extends GetView<TypeBookingControllerImp> {
                 child: Column(
                   children: [
                     const SizedBox(height: 30),
+
                     Buildbookingcard(
+                      icon: Icons.event_seat_outlined,
                       color: Appcolor.scondary,
-                      icon: Icons.meeting_room,
-                      text: "حجز قاعة",
-                      text2: "مثالية للاجتماعات، ورش العمل،",
-                      text3: "أختيار القاعة",
+                      text: "حجز طاولة",
+                      text2: ".بيئة هادئة مصممة لزيادة تركيز او الأنجاز الفردي",
+                      text3: "أختيار الطاولة",
                       backgroundColor: Appcolor.scondary,
                       onPressed: () {
-                        controller.goToThehallWithoutAReservation();
+                        controller.goToDiscoveringTheCongestion();
                       },
                     ),
                     const SizedBox(height: 30),
                     Buildbookingcard(
-                      icon: Icons.event_seat_outlined,
-                      color: Appcolor.gren,
-                      text: "حجز طاولة",
-                      text2: ".بيئة هادئة مصممة لزيادة تركيز او الأنجاز الفردي",
-                      text3: "أختيار الطاولة",
-                      backgroundColor: Appcolor.gren,
+                      color: Appcolor.secoundColor,
+                      icon: Icons.meeting_room,
+                      text: "قاعة من دون حجز ",
+                      text2: "هذه القاعة متاحة للدخول الفوري دون حجز مسبق",
+                      text3: "لمعرفة أزدحام القاعة",
+                      backgroundColor: Appcolor.secoundColor,
                       onPressed: () {
-                        controller.goToDiscoveringTheCongestion();
+                        controller.goToThehallWithoutAReservation();
                       },
                     ),
                     const SizedBox(height: 30),
