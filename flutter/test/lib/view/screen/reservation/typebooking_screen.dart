@@ -47,12 +47,12 @@ class TypebookingScreen extends GetView<TypeBookingControllerImp> {
                     ),
                     const SizedBox(height: 30),
                     Buildbookingcard(
-                      color: Appcolor.secoundColor,
+                      color: Appcolor.scondary,
                       icon: Icons.meeting_room,
                       text: "قاعة من دون حجز ",
                       text2: "هذه القاعة متاحة للدخول الفوري دون حجز مسبق",
                       text3: "لمعرفة أزدحام القاعة",
-                      backgroundColor: Appcolor.secoundColor,
+                      backgroundColor: Appcolor.scondary,
                       onPressed: () {
                         controller.goToThehallWithoutAReservation();
                       },
