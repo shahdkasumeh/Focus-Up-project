@@ -1,6 +1,7 @@
 <?php
+
 namespace App\Http\Controllers;
-use App\Http\Controllers\Controller;
+
 use App\Http\Requests\Room\CreateRoomRequest;
 use App\Http\Requests\Room\UpdateRoomRequest;
 use App\Http\Resources\RoomResource;
@@ -10,15 +11,25 @@ use App\Traits\ResponseTrait;
 
 class RoomController extends Controller
 {
-    use ResponseTrait;
+        use ResponseTrait;
+
     public function index()
     {
         return $this->success(
             RoomResource::collection(
-                RoomService::query()->where('status', 'active')->get()
+                RoomService::query()->available()->get()
             )
         );
     }
+
+    public function indexFour()
+{
+    return $this->success(
+        RoomResource::collection(
+            Room::with('tables')->take(4)->get()
+        )
+    );
+}
 
     public function store(CreateRoomRequest $request)
     {
@@ -31,16 +42,17 @@ class RoomController extends Controller
 
     public function show(Room $room)
     {
+        $room->load('tables');
         return $this->success(
             RoomResource::make($room)
         );
     }
 
-    public function update(UpdateRoomRequest $request, Room $room)
+    public function update( UpdateRoomRequest $request, Room $room)
     {
         return RoomResource::make(
-            RoomService::update($request->validated(), $room)
-        );
+        RoomService::update($request->validated(), $room)
+    );
     }
 
     public function destroy(Room $room)
@@ -48,4 +60,13 @@ class RoomController extends Controller
         RoomService::delete($room);
         return $this->success('delete room successfuly');
     }
+
+    public function socialRooms()
+{
+    $rooms = Room::where('type', 'social')
+        ->with('tables')
+        ->get();
+
+    return $this->success(RoomResource::collection($rooms));
+}
 }

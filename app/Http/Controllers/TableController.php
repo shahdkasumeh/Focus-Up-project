@@ -11,7 +11,8 @@ use App\Traits\ResponseTrait;
 
 class TableController extends Controller
 {
-    use ResponseTrait;
+        use ResponseTrait;
+
 
     public function index()
     {
@@ -21,7 +22,7 @@ class TableController extends Controller
             )
         );
     }
-    public function store(Table $request)
+    public function store(TableRequest $request)
     {
         return $this->success(
             TableResource::make(
@@ -48,4 +49,14 @@ class TableController extends Controller
         TableService::delete($table);
         return $this->success('delete table successfuly');
     }
+    public function stats()
+    {
+        return $this->success(
+            TableService::stats()
+        );
+    }
+
+
+
+
 }

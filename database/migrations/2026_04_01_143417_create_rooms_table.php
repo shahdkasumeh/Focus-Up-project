@@ -16,20 +16,15 @@ return new class extends Migration {
         Schema::create('rooms', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->enum('type', [
-                'quiet',
-                'social_smoking',
-                'social_no_smoking',
-                'discussion'
-            ]);
-            $table->integer('capacity');
-            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->enum('type', ['quiet', 'social_smoking', 'social_no_smoking', 'discussion', 'social']);
+            $table->unsignedInteger('capacity');
             $table->boolean('is_active')->default(true);
             $table->boolean('is_occupied')->default(false);
 
-
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
         });
+
     }
 
 

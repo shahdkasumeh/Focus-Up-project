@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Room;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class RoomsSeeder extends Seeder
@@ -13,17 +13,46 @@ class RoomsSeeder extends Seeder
      */
     public function run(): void
     {
-        // $rooms = [
-        //     ['name' => 'القاعة الهادئة A', 'type' => 'quiet', 'capacity' => 40, 'status' => 'active'],
-        //     ['name' => 'القاعة الهادئة B', 'type' => 'quiet', 'capacity' => 30, 'status' => 'active'],
-        //     ['name' => 'القاعة الاجتماعية (مدخنين)', 'type' => 'social_smoking', 'capacity' => 50, 'status' => 'active'],
-        //     ['name' => 'القاعة الاجتماعية (غير مدخنين)', 'type' => 'social_no_smoking', 'capacity' => 60, 'status' => 'active'],
-        //     ['name' => 'قاعة النقاش', 'type' => 'discussion', 'capacity' => 25, 'status' => 'active'],
-        // ];
+        $rooms = [
+            [
+                'name' => 'Quiet Room',
+                'type' => 'quiet',
+                'capacity' => 10,
+            ],
+            [
+                'name' => 'Smoking Social Room',
+                'type' => 'social_smoking',
+                'capacity' => 10,
+            ],
+            [
+                'name' => 'Non-Smoking Social Room',
+                'type' => 'social_no_smoking',
+                'capacity' => 10,
+            ],
 
-        // foreach ($rooms as $room) {
-        //     Room::create($room);
-        // }
+            [
+                'name' => 'Discussion Room',
+                'type' => 'discussion',
+                'capacity' => 10,
+            ],
+
+            [
+                'name' => 'social Room',
+                'type' => 'social',
+                'capacity' => 50,
+            ],
+
+        ];
+
+        foreach ($rooms as $room) {
+            Room::create([
+                'name' => $room['name'],
+                'type' => $room['type'],
+                'capacity' => $room['capacity'],
+                'is_active' => true,
+                'is_occupied' => false,
+                'status' => 'active',
+            ]);
+        }
     }
-
 }

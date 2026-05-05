@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Booking;
 use App\Models\Room;
 
 class CrowdingService
@@ -17,20 +18,25 @@ class CrowdingService
 
     public function getCrowdingPercentage(Room $room): float
     {
-        if ($room->capacity == 0)
+        $totalTables = $room->tables()->where('is_active', true)->count();
+
+        if ($totalTables == 0)
             return 0;
 
-        $currentOccupancy = $this->getCurrentOccupancy($room);
+        $occupiedTables = $room->tables()
+            ->where('is_active', true)
+            ->where('is_occupied', true)
+            ->count();
 
-        return round(($currentOccupancy / $room->capacity) * 100, 2);
+        return round(($occupiedTables / $totalTables) * 100, 2);
     }
 
     public function getCurrentOccupancy(Room $room): int
     {
-        return $room->bookings()
-            ->where('status', 'active')
-            ->whereNotNull('start_time')
-            ->whereNull('end_time')
+        return $room->tables()
+            ->where('is_active', true)
+            ->where('is_occupied', true)
+
             ->count();
     }
 
@@ -60,7 +66,7 @@ class CrowdingService
                 'yellow_msg' => 'حركة طبيعية، يُفضل الحجز قبل الحضور.',
                 'red_msg' => 'القاعة في وقت ذروة، يُنصح باختيار قاعة أخرى.',
             ],
-            'discussion' => [
+            'social' => [
                 'green' => 60,
                 'yellow' => 85,
                 'red' => 100,
@@ -80,10 +86,12 @@ class CrowdingService
 
 
     // جيب حالة الازدحام الكاملة للغرفة
+
     public function getCrowdingStatus(Room $room): array
     {
         $percentage = $this->getCrowdingPercentage($room);
-        $occupancy = $this->getCurrentOccupancy($room);
+        $totalTables = $room->tables()->where('is_active', true)->count();
+        $occupiedTables = $this->getCurrentOccupancy($room);
         $thresholds = $this->getThresholds($room->type);
 
         if ($percentage <= $thresholds['green']) {
@@ -105,7 +113,8 @@ class CrowdingService
             'room_name' => $room->name,
             'room_type' => $room->type,
             'capacity' => $room->capacity,
-            'current_occupancy' => $occupancy,
+            'total_tables' => $totalTables,
+            'occupied_tables' => $occupiedTables,
             'percentage' => $percentage,
             'color' => $color,
             'status' => $status,
@@ -124,47 +133,58 @@ class CrowdingService
     }
 
 
-    public function actual_start(Room $room, int $bookingId): array
+
+    public static function crowdingwalk(): array
     {
-        $booking = $room->bookings()
-            ->where('id', $bookingId)
+        $room = Room::Where('type', 'social')->first();
 
-            ->whereNull('start_time')
-            ->first();
-
-        if (!$booking) {
-            return ['error' => 'Booking not found or already checked in'];
+        if (!$room) {
+            return [
+                'error' => 'Room not found'
+            ];
         }
+        $capacity = $room->capacity;
+        $currentInside = Booking::where('status', 'active')
+            ->whereNull('scheduled_start')
+            ->whereNull('scheduled_end')
+            ->whereNull('actual_end')
+            ->count();
 
-        $booking->update([
-            'start_time' => now(),
-            'status' => 'active'
-        ]);
+        $percentage = $capacity > 0
+            ? round(($currentInside / $capacity) * 100, 2)
+            : 0;
 
+        $status = match (true) {
+            $percentage < 50 => 'low',
+            $percentage < 80 => 'medium',
+            default => 'high',
+        };
 
+        $color = match (true) {
+            $percentage < 50 => 'green',
+            $percentage < 80 => 'yellow',
+            default => 'red',
+        };
 
-        return $this->getCrowdingStatus($room);
+        $message = match ($status) {
+            'low' => 'القاعة هادئة',
+            'medium' => 'إشغال متوسط',
+            'high' => 'القاعة مزدحمة',
+        };
+
+        return [
+            'capacity' => $capacity,
+            'current_inside' => $currentInside,
+            'crowding_percentage' => $percentage,
+            'status' => $status,
+            'color' => $color,
+            'message' => $message
+        ];
     }
 
-    // تسجيل خروج عبر QR
-    public function actual_end(Room $room, int $bookingId): array
-    {
-        $booking = $room->bookings()
-            ->where('id', $bookingId)
-            ->where('status', 'active')
-            ->whereNotNull('start_time')
-            ->whereNull('end_time')
-            ->first();
 
-        if (!$booking) {
-            return ['error' => 'Booking not found or already checked out'];
-        }
 
-        $booking->update([
-            'end_time' => now(),
-            'status' => 'inactive'
-        ]);
 
-        return $this->getCrowdingStatus($room);
-    }
+
+
 }

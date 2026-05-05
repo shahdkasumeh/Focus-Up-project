@@ -1,10 +1,14 @@
 <?php
 
+
 namespace App\Http\Controllers;
 
 use App\Http\Resources\CrowdingResource;
+
 use App\Models\Room;
+
 use App\Services\CrowdingService;
+
 use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
 
@@ -12,7 +16,13 @@ class CrowdingController extends Controller
 {
     use ResponseTrait;
 
+
+
+    // -------------------------------------------
     protected CrowdingService $crowdingService;
+
+
+
 
     public function __construct(CrowdingService $crowdingService)
     {
@@ -29,6 +39,20 @@ class CrowdingController extends Controller
             'Crowding status fetched successfully'
         );
     }
+
+    public function indexCrowding()
+    {
+        return $this->success(
+            CrowdingService::crowdingwalk()
+        );
+    }
+
+
+
+
+
+
+
 
     // جيب حالة غرفة محددة
     public function show($id)
@@ -95,4 +119,68 @@ class CrowdingController extends Controller
             'Checked out successfully'
         );
     }
+
+
+
+    // Check-in بدون حجز (للقاعات الاجتماعية فقط)
+    public function checkIn(Request $request, $id)
+    {
+        $room = Room::find($id);
+        if (!$room) {
+            return $this->fail('Room not found');
+        }
+
+        // فقط للقاعات اللي نوعها social
+        if ($room->type !== 'social') {
+            return $this->fail('Check-in متاح فقط للقاعات الاجتماعية', 403);
+        }
+
+        $request->validate([
+            'table_id' => 'required|exists:tables,id'
+        ]);
+
+        $result = $this->crowdingService->checkIn($room, $request->table_id);
+
+        if (isset($result['error'])) {
+            return $this->fail($result['error'], 422);
+        }
+
+        return $this->success(
+            new CrowdingResource($result),
+            'Checked in successfully'
+        );
+    }
+    // Check-out بدون حجز (للقاعات الاجتماعية فقط)
+    public function checkOut(Request $request, $id)
+    {
+        $room = Room::find($id);
+        if (!$room) {
+            return $this->fail('Room not found');
+        }
+
+        // فقط للقاعات اللي نوعها social
+        if ($room->type !== 'social') {
+            return $this->fail('Check-out متاح فقط للقاعات الاجتماعية', 403);
+        }
+
+        $request->validate([
+            'table_id' => 'required|exists:tables,id'
+        ]);
+
+        $result = $this->crowdingService->checkOut($room, $request->table_id);
+
+        if (isset($result['error'])) {
+            return $this->fail($result['error'], 422);
+        }
+
+        return $this->success(
+            new CrowdingResource($result),
+            'Checked out successfully'
+        );
+    }
+
+
+
+
+
 }

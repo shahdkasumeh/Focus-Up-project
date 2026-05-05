@@ -11,6 +11,7 @@ class Booking extends Model
         'table_id',
         'room_id',
         'scheduled_start',
+        'scheduled_end',
         'actual_start',
         'actual_end',
         'hours',
@@ -24,6 +25,7 @@ class Booking extends Model
     {
         return [
             'scheduled_start' => 'datetime',
+            'scheduled_end' => 'datetime',
             'actual_start' => 'datetime',
             'actual_end' => 'datetime',
             'hours' => 'decimal:2',

@@ -4,9 +4,11 @@ namespace Database\Seeders;
 
 use App\Models\Booking;
 use App\Models\Room;
+use App\Models\Table;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use function Laravel\Prompts\table;
 
 class BookingSeeder extends Seeder
 {
@@ -15,27 +17,29 @@ class BookingSeeder extends Seeder
      */
     public function run(): void
     {
+        $user = User::first();  // جيب أول مستخدم
+        $room = Room::first();  // جيب أول غرفة
+        $table = Table::first();  //  أضيفي هذا
 
 
-        // إنشاء حجز للغرفة الأولى
-        $user = User::first();
-
-        // جيب أول غرفة موجودة
-        $room = Room::first();
-
-        // إذا في مستخدم وغرفة، أنشئ حجز
-        if ($user && $room) {
+        if ($user && $room&& $table) {
             Booking::create([
                 'user_id' => $user->id,
                 'room_id' => $room->id,
                 'booking_date' => now()->toDateString(),
-                'start_time' => '14:00:00',
-                'end_time' => '16:00:00',
+                'scheduled_start' => now(),
                 'duration' => '02:00:00',
-                'price' => 0,
-                'status' => 'confirmed',
+                'price' => 100,
+                'status' => 'inactive',
+                'actual_start' => null,
+                'actual_end' => null,
             ]);
+
+            $this->command->info('✅ Booking created successfully!');
+        } else {
+            $this->command->error('❌ No user or room found!');
         }
+
 
     }
 }

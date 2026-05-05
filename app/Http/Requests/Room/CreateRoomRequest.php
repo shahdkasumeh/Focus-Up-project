@@ -22,10 +22,10 @@ class CreateRoomRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
-            'type' => 'required|in:quiet,social,social_ns,discussion',
-            'capacity' => 'required|integer',
-            'is_active' => 'somtimes|boolean'
+            'name'=>'required|string|max:255',
+            'type'=>'required|in:quiet,social,social_ns,discussion',
+            'capacity'=>'required|integer',
+            'is_active'=>'somtimes|boolean'
         ];
     }
 }

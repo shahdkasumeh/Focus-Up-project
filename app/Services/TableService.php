@@ -3,29 +3,45 @@ namespace App\Services;
 
 use App\Models\Table;
 
-class TableService
-{
+class TableService{
 
-    public static function query()
+public static function query(){
+    return Table::query();
+}
+
+public static function create(array $data){
+    $table= Table::create($data);
+    return $table->fresh();
+}
+
+public static function update(array $data,Table $table){
+    $table->update($data);
+    return $table->fresh();
+}
+
+public static function delete(Table $table){
+    return $table->delete();
+}
+
+    public static function stats(): array
     {
-        return Table::query();
-    }
+          return [
+            'total' => Table::count(),
 
-    public static function create(array $data)
-    {
-        $table = Table::create($data);
-        return $table->fresh();
-    }
+            // محجوبة (pending)
+            'pending' => Table::whereHas('bookings', function ($q) {
+                $q->where('status', 'pending');
+            })->count(),
 
-    public static function update(array $data, Table $table)
-    {
-        $table->update($data);
-        return $table->fresh();
-    }
+            // مشغولة (active)
+            'active' => Table::whereHas('bookings', function ($q) {
+                $q->where('status', 'active');
+            })->count(),
 
-    public static function delete(Table $table)
-    {
-        return $table->delete();
+            // متاحة (لا pending ولا active)
+            'available' => Table::whereDoesntHave('bookings', function ($q) {
+                $q->whereIn('status', ['pending', 'active']);
+            })->count(),
+        ];
     }
-
 }

@@ -10,7 +10,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('lucky__wheels', function (Blueprint $table) {
+        Schema::create('lucky_wheels', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
 
@@ -24,7 +24,6 @@ return new class extends Migration {
                 ->nullable()
                 ->constrained('bookings')
                 ->nullOnDelete();
-            // $table->timestamps();
         });
     }
 
@@ -33,6 +32,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('lucky__wheels');
+        Schema::dropIfExists('lucky_wheels');
     }
 };

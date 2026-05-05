@@ -19,7 +19,11 @@ class CrowdingResource extends JsonResource
             'room_name' => $this['room_name'],
             'room_type' => $this['room_type'],
             'capacity' => $this['capacity'],
-            'current_occupancy' => $this['current_occupancy'],
+            'tables' => [
+                'total' => $this['total_tables'],
+                'occupied' => $this['occupied_tables'],
+                'available' => $this['total_tables'] - $this['occupied_tables'],
+            ],
             'crowding' => [
                 'percentage' => $this['percentage'],
                 'color' => $this['color'],
