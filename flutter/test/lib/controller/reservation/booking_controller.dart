@@ -11,15 +11,12 @@ class BookingController extends GetxController {
   var startTime = Rxn<TimeOfDay>();
   var endTime = Rxn<TimeOfDay>();
 
-  int? bookingId; // 🔥 مهم جداً للإلغاء
+  int? bookingId;
 
   void setDate(DateTime date) => selectedDate.value = date;
   void setStart(TimeOfDay time) => startTime.value = time;
   void setEnd(TimeOfDay time) => endTime.value = time;
 
-  // =========================
-  // 🔵 VALIDATION
-  // =========================
   bool _validate() {
     if (selectedDate.value == null ||
         startTime.value == null ||
@@ -54,9 +51,6 @@ class BookingController extends GetxController {
     return true;
   }
 
-  // =========================
-  // 🟢 CREATE BOOKING
-  // =========================
   Future<void> createBooking(int tableId) async {
     if (!_validate()) return;
 
@@ -103,7 +97,6 @@ class BookingController extends GetxController {
           colorText: Colors.white,
         );
 
-        // 🔥 نحفظ bookingId للإلغاء
         bookingId = success["data"]?["id"];
 
         print("BOOKING ID => $bookingId");
@@ -113,9 +106,6 @@ class BookingController extends GetxController {
     isLoading.value = false;
   }
 
-  // =========================
-  // 🔴 CANCEL BOOKING
-  // =========================
   Future<void> cancelBooking() async {
     if (bookingId == null) {
       Get.snackbar("خطأ", "لا يوجد حجز لإلغائه");
@@ -143,7 +133,6 @@ class BookingController extends GetxController {
           colorText: Colors.white,
         );
 
-        // 🔥 تنظيف الحالة
         bookingId = null;
         selectedDate.value = null;
         startTime.value = null;
