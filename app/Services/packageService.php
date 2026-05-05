@@ -7,7 +7,7 @@ use App\Models\Table;
 class PackageService{
 
 public static function query(){
-    return Table::query();
+    return Package::query();
 }
 
 public static function create(array $data){

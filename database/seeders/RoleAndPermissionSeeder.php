@@ -27,6 +27,7 @@ class RoleAndPermissionSeeder extends Seeder
 
         $this->applyCRUDs('table');
         $this->applyCRUDs('room');
+        $this->applyCRUDs('Package');
         $this->applyAdminPermissions($admin);
     }
         private function applyCRUDs(string $name){

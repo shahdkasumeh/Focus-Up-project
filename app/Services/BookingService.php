@@ -405,28 +405,59 @@ class BookingService
         }
     }
 
-    public static function getPricePerHour(int $userId): float
-    {
-        $sub = ConsumptionPackage::where('user_id', $userId)->active()->first();
+    private static function getPricePerHour(int $userId): float
+{
+    // أولاً: هل عنده باقة نشطة؟
+    $package = ConsumptionPackage::where('user_id', $userId)
+        ->where('status', 'active')
+        ->where(function ($q) {
+            $q->whereNull('expires_at')
+            ->orWhere('expires_at', '>', now());
+        })
+        ->where('remaining_hours', '>', 0)
+        ->lockForUpdate()
+        ->first();
 
-        if ($sub) {
-            return (float) $sub->price_per_hour;
-        }
-
-        return (float) Setting::where('key', 'default_price_per_hour')->value('value');
+    if ($package && $package->remaining_hours > 0) {
+        // سعر الساعة من الباقة = المبلغ المتبقي ÷ الساعات المتبقية
+        return round((float) $package->remaining_price / (float) $package->remaining_hours, 2);
     }
 
-    public static function deductFromSubscription(int $userId, float $hours, float $price): void
-    {
-        $sub = ConsumptionPackage::where('user_id', $userId)->active()->first();
+    // ثانياً: السعر العادي من الإعدادات
+    return (float) Setting::where('key', 'default_price_per_hour')->value('value') ?? 0;
+}
 
-        if (!$sub) return;
+private static function deductFromSubscription(
+    int $userId,
+    float $hours,
+    float $totalPrice
+): void {
 
-        $sub->update([
-            'remaining_hours' => max(0, $sub->remaining_hours - $hours),
-            'remaining_price' => max(0, $sub->remaining_price - $price),
-        ]);
+    $package = ConsumptionPackage::where('user_id', $userId)
+        ->where('status', 'active')
+        ->where(function ($q) {
+            $q->whereNull('expires_at')
+                ->orWhere('expires_at', '>', now());
+        })
+        ->where('remaining_hours', '>', 0)
+        ->lockForUpdate()
+        ->first();
+
+    if (!$package) {
+        return; // لا باقة → لا خصم
     }
+
+    $newHours  = max(0, round((float) $package->remaining_hours - $hours, 2));
+    $newAmount = max(0, round((float) $package->remaining_price - $totalPrice, 2));
+    $expired   = ($newHours <= 0);
+
+    $package->update([
+        'remaining_hours' => $newHours,
+        'remaining_price' => $newAmount,
+        'status'          => $expired ? 'expired' : 'active',
+    ]);
+}
+
     public static function getFullBookingStats(): array
 {
     $stats = Booking::selectRaw('status, COUNT(*) as count')

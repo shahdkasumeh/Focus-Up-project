@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\ConsumptionPackageController;
 use App\Http\Controllers\CrowdingController;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\TableController;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 require __DIR__.'/auth.php';
@@ -14,8 +16,6 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 });
 
 Route::middleware('auth:sanctum')->group(function (){
-
-    Route::apiResource('packages',PackageController::class);
 
     //الحجز
     Route::get('/bookings', [BookingController::class, 'indexUser']);
@@ -30,10 +30,10 @@ Route::middleware('auth:sanctum')->group(function (){
 
 
     //الازدحام
-    Route::get('/crowding/first-four', [CrowdingController::class, 'firstFourBookingCrowding']);
+
     Route::get('/crowding/walkin', [CrowdingController::class, 'indexCrowding']);
     Route::get('/crowding',[CrowdingController::class,'index']);
-    Route::get('/crowding/{rooms}',[CrowdingController::class,'show']);
+
 
     //الغرف
     Route::get('/rooms', [RoomController::class, 'index'])
@@ -54,7 +54,7 @@ Route::middleware('auth:sanctum')->group(function (){
 
         //الطاولات
         Route::get('/tables/stats', [TableController::class, 'stats']);
-    Route::get('/tables', [TableController::class, 'index'])
+        Route::get('/tables', [TableController::class, 'index'])
         ->middleware('can:table.index');
 
     Route::post('/tables', [TableController::class, 'store'])
@@ -69,6 +69,44 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::delete('/tables/{table}', [TableController::class, 'destroy'])
         ->middleware('can:table.delete');
 
+        //الباقات
+        Route::get('/packages', [PackageController::class, 'index']);
+        //->middleware('can:package.index');
+
+    Route::post('/packages', [PackageController::class, 'store']);
+       // ->middleware('can:package.create');
+
+    Route::get('/package/{package}', [PackageController::class, 'show']);
+          //->middleware('can:package.show');
+
+    Route::put('/packages/{package}', [PackageController::class, 'update']);
+       // ->middleware('can:package.update');
+
+    Route::delete('/packages/{package}', [PackageController::class, 'destroy']);
+        //->middleware('can:package.delete');
+
+
+
+
+        Route::get('/plans', [PackageController::class, 'index']);
+
+          // قائمة باقات المستخدم
+        Route::get('/myPackage', [ConsumptionPackageController::class, 'index']);
+
+        // إنشاء (شراء) باقة جديدة
+        Route::post('/buy', [ConsumptionPackageController::class, 'store']);
+
+        // الباقة النشطة الحالية
+        Route::get('/active', [ConsumptionPackageController::class, 'active']);
+
+        // عرض باقة محددة
+        Route::get('/{consumptionPackage}', [ConsumptionPackageController::class, 'show']);
+
+        // إلغاء باقة
+        Route::post('/{consumptionPackage}/cancel', [ConsumptionPackageController::class, 'cancel']);
+
+
 });
+
 
 

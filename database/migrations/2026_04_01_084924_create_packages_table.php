@@ -13,17 +13,33 @@ return new class extends Migration
     {
         Schema::create('packages', function (Blueprint $table) {
             $table->id();
-            $table->string('type');
-            $table->decimal('price',10,2);
-            $table->unsignedInteger('duration_hours');
-            $table->enum('status',['active','inactive'])->default('active');
+
+            // اسم الباقة (يظهر للمستخدم)
+            $table->string('name');
+
+            // عدد الساعات
+            $table->integer('hours');
+
+            // السعر
+            $table->decimal('price', 10, 3);
+
+            // مدة الصلاحية بالأيام
+            $table->integer('duration_days');
+
+            // نوع الباقة (حالياً hourly فقط لكن قابل للتوسعة)
+            $table->enum('type', ['hourly'])->default('hourly');
+
+            // هل الباقة مفعلة أو لا (المدير يتحكم)
+            $table->boolean('is_active')->default(true);
+
             $table->timestamps();
+
+            // Indexes
+            $table->index('is_active');
+            $table->index('type');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('packages');

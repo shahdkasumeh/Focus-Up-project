@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\ConsumptionPackage;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -28,6 +29,14 @@ class BookingResource extends JsonResource
     'total_price' => $this->total_price,
     'discount_percent' => $this->discount_percent,
     'discount_amount' => $this->discount_amount,
+    
+    'payment_label' => $this->status === 'completed'
+    ? (ConsumptionPackage::where('user_id', $this->user_id)
+        ->whereIn('status', ['active', 'expired'])
+        ->exists()
+            ? 'مشترك — تم الخصم من الباقة'
+            : ' غير مشترك — على الطالب الدفع نقداً')
+    : null,
 
     'action' => $this->status === 'active'
         ? 'check_in'
