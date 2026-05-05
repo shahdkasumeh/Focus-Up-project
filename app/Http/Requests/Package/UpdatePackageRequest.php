@@ -27,7 +27,7 @@ class UpdatePackageRequest extends FormRequest
             "price"=> "required|decimal:3,10",
             "duration_days"=>"required|integer",
 
-            'status'=>['sometimes','in:active,inactive']
+            'is_active'=>['sometimes','in:0,1']
         ];
     }
 }
