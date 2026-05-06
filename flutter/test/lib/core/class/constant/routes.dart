@@ -17,5 +17,5 @@ class AppRoutes {
   static const String roomDetails = "/roomdetailsscreen";
   static const String crowdedHallWithoutReservation =
       "/crowdedhallwithoutreservation";
-  static const String roomcreen = "/roomcreen";
+  static const String packagesscreen = "/packagesscreen";
 }

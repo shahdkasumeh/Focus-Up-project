@@ -87,7 +87,9 @@ class HomepageScreen extends GetView<HomePageControllerImp> {
                     subtitle: 'اختر الباقة المناسبة',
                     icon: Icons.workspace_premium_rounded,
                     color: const Color(0xFFEF4444),
-                    onTap: () {},
+                    onTap: () {
+                      controller.goToPackages();
+                    },
                   ),
 
                   ServicesTile(
