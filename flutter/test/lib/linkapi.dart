@@ -10,4 +10,8 @@ class AppLink {
   static const String emailVerificationNotification =
       "$server/email/verification-notification";
   static const String crowdingWalkIn = "$server/crowding/walkin";
+  static const String packages = "$server/packages";
+  static const String buyPackage = "$server/buy";
+  static const String myPackage = "$server/myPackage";
+  static const String activePackage = "$server/active";
 }
