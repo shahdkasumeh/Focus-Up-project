@@ -25,7 +25,7 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::post('/bookings/check_in', [BookingController::class, 'checkIn']);
     Route::post('/bookings/check_out', [BookingController::class, 'checkOut']);
     Route::post('/bookings/{booking}/cancel', [BookingController::class, 'cancel']);
-    Route::get('/admin/bookings/stats', [BookingController::class, 'stats']);
+    Route::get('/admin/bookings/status', [BookingController::class, 'status']);
     Route::get('/admin/bookings/last-week', [BookingController::class, 'lastWeekStats']);
 
 
@@ -69,7 +69,7 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::delete('/tables/{table}', [TableController::class, 'destroy'])
         ->middleware('can:table.delete');
 
-        //الباقات
+        //الباقات للمدير
         Route::get('/packages', [PackageController::class, 'index']);
         //->middleware('can:package.index');
 
@@ -84,27 +84,13 @@ Route::middleware('auth:sanctum')->group(function (){
 
     Route::delete('/packages/{package}', [PackageController::class, 'destroy']);
         //->middleware('can:package.delete');
+    Route::get('/stats', [PackageController::class, 'stats']);
 
 
-
-
-        Route::get('/plans', [PackageController::class, 'index']);
-
-          // قائمة باقات المستخدم
+        //الباقات لطالب
         Route::get('/myPackage', [ConsumptionPackageController::class, 'index']);
-
-        // إنشاء (شراء) باقة جديدة
         Route::post('/buy', [ConsumptionPackageController::class, 'store']);
-
-        // الباقة النشطة الحالية
         Route::get('/active', [ConsumptionPackageController::class, 'active']);
-
-        // عرض باقة محددة
-        Route::get('/{consumptionPackage}', [ConsumptionPackageController::class, 'show']);
-
-        // إلغاء باقة
-        Route::post('/{consumptionPackage}/cancel', [ConsumptionPackageController::class, 'cancel']);
-
 
 });
 

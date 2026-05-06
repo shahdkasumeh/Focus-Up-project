@@ -24,12 +24,14 @@ class BookingResource extends JsonResource
 
     'actual_start' => $this->actual_start?->setTimezone('Asia/Damascus')->toDateTimeString(),
     'actual_end'   => $this->actual_end?->setTimezone('Asia/Damascus')->toDateTimeString(),
+     
+
 
     'hours' => $this->hours,
     'total_price' => $this->total_price,
     'discount_percent' => $this->discount_percent,
     'discount_amount' => $this->discount_amount,
-    
+
     'payment_label' => $this->status === 'completed'
     ? (ConsumptionPackage::where('user_id', $this->user_id)
         ->whereIn('status', ['active', 'expired'])

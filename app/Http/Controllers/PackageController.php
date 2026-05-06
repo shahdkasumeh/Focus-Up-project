@@ -46,5 +46,12 @@ class PackageController extends Controller
         PackageService::delete($package);
             return $this->success('delete table successfuly');
     }
+    public function stats()
+    {
+        return $this->success(
+            PackageService::stats()
+        );
+    }
+
     }
 

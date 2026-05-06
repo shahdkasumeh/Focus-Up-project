@@ -458,9 +458,9 @@ private static function deductFromSubscription(
     ]);
 }
 
-    public static function getFullBookingStats(): array
+    public static function getFullBookingStatus(): array
 {
-    $stats = Booking::selectRaw('status, COUNT(*) as count')
+    $status = Booking::selectRaw('status, COUNT(*) as count')
         ->groupBy('status')
         ->pluck('count', 'status');
 
@@ -468,10 +468,10 @@ private static function deductFromSubscription(
 
     return [
         'total'     => $total,
-        'active'    => $stats['active'] ?? 0,
-        'completed' => $stats['completed'] ?? 0,
-        'cancelled' => $stats['cancelled'] ?? 0,
-        'pending'   => $stats['pending'] ?? 0,
+        'active'    => $status['active'] ?? 0,
+        'completed' => $status['completed'] ?? 0,
+        'cancelled' => $status['cancelled'] ?? 0,
+        'pending'   => $status['pending'] ?? 0,
         'no_show'   => $stats['no_show'] ?? 0,
     ];
 }

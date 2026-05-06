@@ -9,62 +9,6 @@ use Illuminate\Support\Facades\DB;
 
 class ConsumptionPackageService
 {
-    // =========================================================
-    // 1. شراء باقة جديدة
-    // =========================================================
-
-    /**
-     * @param  int        $userId
-     * @param  float      $totalHours   إجمالي ساعات الباقة
-     * @param  float      $totalPrice   سعر الباقة كاملاً
-     * @param  Carbon|string|null $expiresAt  تاريخ انتهاء الصلاحية (اختياري)
-     */
-    public static function purchase(
-        int $userId,
-        float $totalHours,
-        float $totalPrice,
-        $expiresAt = null
-    ): ConsumptionPackage {
-
-        return DB::transaction(function () use (
-            $userId, $totalHours, $totalPrice, $expiresAt
-        ) {
-            // منع امتلاك أكثر من باقة نشطة واحدة في نفس الوقت
-            $existing = ConsumptionPackage::where('user_id', $userId)
-                ->active()
-                ->lockForUpdate()
-                ->exists();
-
-            if ($existing) {
-                throw new \Exception('لديك باقة نشطة بالفعل. أنهِ الباقة الحالية أو انتظر حتى تنتهي.');
-            }
-
-            if ($totalHours <= 0) {
-                throw new \Exception('عدد الساعات يجب أن يكون أكبر من الصفر.');
-            }
-
-            if ($totalPrice < 0) {
-                throw new \Exception('سعر الباقة لا يمكن أن يكون سالباً.');
-            }
-
-            $expiry = $expiresAt ? Carbon::parse($expiresAt) : null;
-
-            if ($expiry && $expiry->isPast()) {
-                throw new \Exception('تاريخ انتهاء الصلاحية لا يمكن أن يكون في الماضي.');
-            }
-
-            return ConsumptionPackage::create([
-                'user_id'         => $userId,
-                'starts_at'       => now(),
-                'expires_at'      => $expiry,
-                'total_hours'     => $totalHours,
-                'remaining_hours' => $totalHours,
-                'total_price'     => $totalPrice,
-                'remaining_price' => $totalPrice,
-                'status'          => 'active',
-            ]);
-        });
-    }
 
     // =========================================================
     // 2. خصم من الباقة بعد checkOut
@@ -158,27 +102,6 @@ class ConsumptionPackageService
         });
     }
 
-    // =========================================================
-    // 3. إلغاء الباقة
-    // =========================================================
-
-    public static function cancel(int $packageId, int $userId): ConsumptionPackage
-    {
-        return DB::transaction(function () use ($packageId, $userId) {
-
-            $package = ConsumptionPackage::where('user_id', $userId)
-                ->lockForUpdate()
-                ->findOrFail($packageId);
-
-            if (!in_array($package->status, [ 'active'])) {
-                throw new \Exception('لا يمكن إلغاء هذه الباقة.');
-            }
-
-            $package->update(['status' => 'cancelled']);
-
-            return $package->fresh();
-        });
-    }
 
     // =========================================================
     // 4. انتهاء صلاحية الباقات (يُشغَّل عبر Scheduled Command)
@@ -212,22 +135,6 @@ class ConsumptionPackageService
             ->first();
     }
 
-    // =========================================================
-    // 6. إحصائيات (للإدارة)
-    // =========================================================
-
-    public static function stats(): array
-    {
-        return [
-            'total'     => ConsumptionPackage::count(),
-            'active'    => ConsumptionPackage::where('status', 'active')->count(),
-            'expired'   => ConsumptionPackage::where('status', 'expired')->count(),
-            'cancelled' => ConsumptionPackage::where('status', 'cancelled')->count(),
-            'revenue'   => ConsumptionPackage::where('status', '!=', 'cancelled')
-        ->sum('total_price'),
-        ];
-    }
-
     public static function purchaseFromPlan(int $userId, int $planId): ConsumptionPackage
 {
     return DB::transaction(function () use ($userId, $planId) {
@@ -239,10 +146,19 @@ class ConsumptionPackageService
 
         if ($existing) {
             throw new \Exception('لديك باقة نشطة بالفعل.');
+        }
 
+        $pending = ConsumptionPackage::where('user_id', $userId)
+            ->pending()
+            ->lockForUpdate()
+            ->exists();
+
+        if ($pending) {
+            throw new \Exception('  اذهب للدفع ليتم تفعيلها pendingلديك باقة بحالة  ');
         }
         $plan = Package::where('is_active', true)
             ->findOrFail($planId);
+
 
         return ConsumptionPackage::create([
             'user_id'         => $userId,

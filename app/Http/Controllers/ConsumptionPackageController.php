@@ -26,21 +26,6 @@ class ConsumptionPackageController extends Controller
     }
 
     // =========================================================
-    // 2. قائمة كل الباقات (للإدارة)
-    // =========================================================
-
-    public function indexManagement()
-    {
-        $packages = ConsumptionPackage::with('user')
-            ->latest()
-            ->get();
-
-        return $this->success(
-            ConsumptionPackageResource::collection($packages)
-        );
-    }
-
-    // =========================================================
     // 3. شراء باقة جديدة
     // =========================================================
 
@@ -57,39 +42,9 @@ class ConsumptionPackageController extends Controller
 
     return $this->success(
         ConsumptionPackageResource::make($package),
-        201
+        'message: اذهب للمركز وقم بالدفع ليتم تفعيلهاpending اصبح لديك باقة بحالة '
     );
 }
-    // =========================================================
-    // 4. عرض باقة بعينها
-    // =========================================================
-
-    public function show(ConsumptionPackage $consumptionPackage)
-    {
-        $this->authorizePackage($consumptionPackage);
-
-        return $this->success(
-            ConsumptionPackageResource::make($consumptionPackage)
-        );
-    }
-
-    // =========================================================
-    // 5. إلغاء باقة
-    // =========================================================
-
-    public function cancel(ConsumptionPackage $consumptionPackage)
-    {
-        $this->authorizePackage($consumptionPackage);
-
-        $package = ConsumptionPackageService::cancel(
-            $consumptionPackage->id,
-            Auth::id()
-        );
-
-        return $this->success(
-            ConsumptionPackageResource::make($package)
-        );
-    }
 
     // =========================================================
     // 6. الباقة النشطة حالياً للمستخدم
@@ -106,27 +61,5 @@ class ConsumptionPackageController extends Controller
         return $this->success(
             ConsumptionPackageResource::make($package)
         );
-    }
-
-    // =========================================================
-    // 7. إحصائيات (للإدارة فقط)
-    // =========================================================
-
-    public function stats()
-    {
-        return $this->success(
-            ConsumptionPackageService::stats()
-        );
-    }
-
-    // =========================================================
-    // Authorization helper
-    // =========================================================
-
-    private function authorizePackage(ConsumptionPackage $package): void
-    {
-        if ($package->user_id !== Auth::id()) {
-            abort(403, 'Unauthorized');
-        }
     }
 }

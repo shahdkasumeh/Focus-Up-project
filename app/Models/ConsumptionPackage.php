@@ -56,6 +56,11 @@ class ConsumptionPackage extends Model
             ->where('remaining_hours', '>', 0);
     }
 
+    public function scopePending($query)
+{
+    return $query->where('status', 'pending');
+}
+
     // =========================================================
     // Helpers
     // =========================================================

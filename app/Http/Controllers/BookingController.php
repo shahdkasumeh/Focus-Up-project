@@ -16,7 +16,7 @@ class BookingController extends Controller
     // =========================================================
     public function indexUser()
     {
-        $bookings = Booking::where('user_id', Auth::id())
+        $bookings = Booking::with('table')->where('user_id', Auth::id())
             ->latest()
             ->get();
 
@@ -27,7 +27,7 @@ class BookingController extends Controller
 
     public function indexManagement()
     {
-        $bookings=Booking::with(['user','table','room'])
+        $bookings=Booking::with(['user','table'])
         ->latest()
         ->get();
         return $this->success(
@@ -137,10 +137,10 @@ class BookingController extends Controller
             abort(403, 'Unauthorized');
         }
     }
-    public function stats()
+    public function status()
 {
     return $this->success(
-        BookingService::getFullBookingStats()
+        BookingService::getFullBookingStatus()
     );
 }
 
