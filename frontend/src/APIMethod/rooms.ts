@@ -16,7 +16,7 @@ export interface CreateRoomData {
   capacity: number;
 }
 
-export interface AddRoomResponse {
+export interface CreateRoomResponse {
   data: Room;
   message: string;
 }
@@ -36,8 +36,8 @@ export interface DeleteRoomResponse {
 }
 
 export const roomsApi = {
-  addRoom: async (roomData: CreateRoomData): Promise<AddRoomResponse> => {
-    return api.post<AddRoomResponse>("/rooms", roomData);
+  addRoom: async (roomData: CreateRoomData): Promise<CreateRoomResponse> => {
+    return api.post<CreateRoomResponse>("/rooms", roomData);
   },
 
   getRooms: async (): Promise<{ data: Room[] }> => {

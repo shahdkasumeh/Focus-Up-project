@@ -53,7 +53,6 @@ export function Button({
         ${variantClasses[variant as keyof typeof variantClasses]}
         ${sizeClasses[size]}
         ${className}
-         {...props} 
       `}
       {...props}
     >

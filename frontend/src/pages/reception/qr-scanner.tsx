@@ -38,7 +38,7 @@ export function QRScanner() {
 
   // معالجة نتيجة المسح
   const handleScanComplete = async (qrData: string) => {
-    console.log("📱 QR Data received in parent:", qrData);
+    console.log("QR Data received in parent:", qrData);
     await processQRData(qrData, scanMode);
     setShowCamera(false);
   };
@@ -337,7 +337,7 @@ export function QRScanner() {
                       {scanResult.totalPrice && (
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-[#10B981]/10 rounded-xl flex items-center justify-center">
-                            <span className="text-lg">💰</span>
+                            <span className="text-lg"></span>
                           </div>
                           <div className="flex-1">
                             <p className="text-sm text-gray-600">

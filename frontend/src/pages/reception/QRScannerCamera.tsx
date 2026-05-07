@@ -21,7 +21,6 @@ export const QRScannerCamera: React.FC<QRScannerCameraProps> = ({
   const scannerRef = useRef<Html5QrcodeScanner | null>(null);
   const containerId = "qr-reader-container";
 
-  // تنظيف عند إلغاء تحميل المكون
   useEffect(() => {
     return () => {
       if (scannerRef.current) {
@@ -50,7 +49,7 @@ export const QRScannerCamera: React.FC<QRScannerCameraProps> = ({
   const startScanner = () => {
     if (!cameraActive) return;
 
-    addDebugLog("🔍 بدء تشغيل الماسح...");
+    addDebugLog(" بدء تشغيل الماسح...");
 
     // حذف أي عنصر سابق
     const existingContainer = document.getElementById(containerId);
@@ -58,7 +57,7 @@ export const QRScannerCamera: React.FC<QRScannerCameraProps> = ({
       existingContainer.innerHTML = "";
     }
 
-    // ✅ إعدادات معدلة للعمل على اللابتوب
+    //  إعدادات معدلة للعمل على اللابتوب
     const scanner = new Html5QrcodeScanner(
       containerId,
       {
@@ -66,7 +65,7 @@ export const QRScannerCamera: React.FC<QRScannerCameraProps> = ({
         qrbox: { width: 300, height: 300 }, // زيادة حجم الصندوق
         aspectRatio: 1,
         disableFlip: false,
-        // ✅ التغيير الأهم: استخدام "user" بدلاً من "environment"
+        // التغيير الأهم: استخدام "user" بدلاً من "environment"
         videoConstraints: {
           facingMode: "user", // ← غيّرنا من "environment" إلى "user"
         },
@@ -76,17 +75,17 @@ export const QRScannerCamera: React.FC<QRScannerCameraProps> = ({
 
     scanner.render(onScanSuccess, onScanError);
     scannerRef.current = scanner;
-    addDebugLog("✅ الماسح يعمل، قرب QR Code من الكاميرا");
+    addDebugLog(" الماسح يعمل، قرب QR Code من الكاميرا");
   };
 
   const onScanSuccess = (decodedText: string) => {
     // منع المسح المتكرر
     if (hasScanned || isScanning) {
-      addDebugLog("⚠️ مسح قيد التقدم بالفعل");
+      addDebugLog(" مسح قيد التقدم بالفعل");
       return;
     }
 
-    addDebugLog(`✅ تم قراءة QR Code: ${decodedText}`);
+    addDebugLog(` تم قراءة QR Code: ${decodedText}`);
 
     setHasScanned(true);
 
@@ -106,13 +105,13 @@ export const QRScannerCamera: React.FC<QRScannerCameraProps> = ({
     ) {
       return;
     }
-    addDebugLog(`⚠️ خطأ: ${error.substring(0, 50)}...`);
+    addDebugLog(` خطأ: ${error.substring(0, 50)}...`);
   };
 
   const startCamera = async () => {
     setCameraError(null);
     setHasScanned(false);
-    addDebugLog("🚀 جاري تشغيل الكاميرا...");
+    addDebugLog(" جاري تشغيل الكاميرا...");
 
     try {
       // التحقق من وجود كاميرا
@@ -121,7 +120,7 @@ export const QRScannerCamera: React.FC<QRScannerCameraProps> = ({
         (device) => device.kind === "videoinput",
       );
 
-      addDebugLog(`📹 عدد الكاميرات: ${videoDevices.length}`);
+      addDebugLog(` عدد الكاميرات: ${videoDevices.length}`);
 
       if (videoDevices.length === 0) {
         setCameraError("لم يتم العثور على كاميرا على هذا الجهاز.");
@@ -149,7 +148,7 @@ export const QRScannerCamera: React.FC<QRScannerCameraProps> = ({
   };
 
   const stopCamera = () => {
-    addDebugLog("🛑 إيقاف الكاميرا");
+    addDebugLog(" إيقاف الكاميرا");
     if (scannerRef.current) {
       scannerRef.current.clear();
       scannerRef.current = null;

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const apiClient = axios.create({
-  baseURL: "http://localhost:8000/api",
+  baseURL: "http://127.0.0.1:8000/api",
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -13,9 +13,9 @@ apiClient.interceptors.request.use(
     const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log("✅ Token added to request:", config.url);
+      console.log(" Token added to request:", config.url);
     } else {
-      console.warn("⚠️ No token found for:", config.url);
+      console.warn(" No token found for:", config.url);
     }
     return config;
   },

@@ -1,98 +1,123 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
+import { useAuth } from "../../context/GlobalState";
+import { ActionTypes } from "../../context/AppReducer";
+import { Button } from "../../components/Button";
 import {
-  Package,
+  packagesApi,
+  UpdatePackageData,
+  CreatePackageData,
+} from "../../APIMethod/packages";
+import toast from "react-hot-toast";
+import { AddNewPackage } from "./components/AddNewPackage";
+import { UpdatePackage } from "./components/UpdatePackage";
+
+import {
   Plus,
   Clock,
-  Calendar,
   DollarSign,
   Edit2,
   Trash2,
   Check,
   Star,
   TrendingUp,
+  Package,
 } from "lucide-react";
 
-interface PackageItem {
-  id: string;
-  name: string;
-  type: "weekly" | "monthly";
-  price: number;
-  hours: number;
-  features: string[];
-  isPopular?: boolean;
-  subscribers: number;
-}
-
 export function PackagesManagement() {
+  const { state, dispatch } = useAuth();
+  const { packages } = state;
+
+  const [packageToEdit, setPackageToEdit] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [packages, setPackages] = useState<PackageItem[]>([
-    {
-      id: "1",
-      name: "الباقة الأسبوعية الأساسية",
-      type: "weekly",
-      price: 50,
-      hours: 20,
-      features: ["20 ساعة أسبوعياً", "واي فاي مجاني", "قهوة مجانية"],
-      subscribers: 45,
-    },
-    {
-      id: "2",
-      name: "الباقة الأسبوعية المتقدمة",
-      type: "weekly",
-      price: 80,
-      hours: 35,
-      features: [
-        "35 ساعة أسبوعياً",
-        "واي فاي مجاني",
-        "قهوة مجانية",
-        "غرفة اجتماعات",
-      ],
-      isPopular: true,
-      subscribers: 78,
-    },
-    {
-      id: "3",
-      name: "الباقة الشهرية الأساسية",
-      type: "monthly",
-      price: 150,
-      hours: 80,
-      features: [
-        "80 ساعة شهرياً",
-        "واي فاي مجاني",
-        "قهوة مجانية",
-        "خزانة خاصة",
-      ],
-      subscribers: 32,
-    },
-    {
-      id: "4",
-      name: "الباقة الشهرية الذهبية",
-      type: "monthly",
-      price: 250,
-      hours: 150,
-      features: [
-        "150 ساعة شهرياً",
-        "واي فاي مجاني",
-        "قهوة مجانية",
-        "خزانة خاصة",
-        "غرفة اجتماعات",
-        "أولوية في الحجز",
-      ],
-      isPopular: true,
-      subscribers: 56,
-    },
-  ]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
 
-  const getTypeColor = (type: string) => {
-    return type === "weekly"
-      ? "bg-blue-100 text-blue-700 border-blue-200"
-      : "bg-purple-100 text-purple-700 border-purple-200";
+  // جلب الباقات
+  useEffect(() => {
+    fetchPackages();
+  }, []);
+
+  const fetchPackages = async () => {
+    setLoading(true);
+    try {
+      const response = await packagesApi.getPackage();
+      dispatch({ type: ActionTypes.SET_PACKAGE, payload: response.data });
+    } catch (error) {
+      console.error("Failed To Retrieve The Packages", error);
+      toast.error("Failed To Download The Packages");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const getTypeText = (type: string) => {
-    return type === "weekly" ? "أسبوعية" : "شهرية";
+  const handleAddPackage = async (packageData: CreatePackageData) => {
+    try {
+      const loadingToast = toast.loading("The Package Is Being added ...");
+      const result = await packagesApi.addPackage(packageData);
+
+      dispatch({ type: ActionTypes.ADD_PACKAGE, payload: result.data });
+      setShowAddModal(false);
+
+      toast.success("The package has been successfully added", {
+        id: loadingToast,
+      });
+      await fetchPackages(); // تحديث البيانات
+    } catch (error) {
+      console.error("Add Failed", error);
+      toast.error("Failed To Add The Package");
+    }
   };
+
+  const handleUpdatePackage = async (
+    packageData: UpdatePackageData,
+    packageId: number,
+  ) => {
+    try {
+      const loadingToast = toast.loading("The Package Is Being Modified ...");
+      await packagesApi.updatePackage(packageId, packageData);
+
+      dispatch({
+        type: ActionTypes.UPDATE_PACKAGE,
+        payload: { ...packageData, id: packageId },
+      });
+      setPackageToEdit(null);
+
+      toast.success("تم تعديل الباقة بنجاح", { id: loadingToast });
+      await fetchPackages();
+    } catch (error) {
+      console.error("Modify Failed", error);
+      toast.error("Failed To Modify The Package");
+    }
+  };
+
+  const handleDeletePackage = async (packageId: number) => {
+    try {
+      const loadingToast = toast.loading("The Package Is Being Deleted ...");
+      await packagesApi.deletePackage(packageId);
+
+      dispatch({ type: ActionTypes.DELETE_PACKAGE, payload: packageId });
+
+      toast.success("The Package Has Been successfully Deleted", {
+        id: loadingToast,
+      });
+    } catch (error) {
+      console.error("Delete Failed", error);
+      toast.error("Failed To Delete The Package");
+    }
+  };
+
+  const filteredPackages = packages.filter((thePackage) => {
+    const matchesSearch = thePackage.name
+      ?.toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesStatus =
+      filterStatus === "all" ||
+      (filterStatus === "active" && thePackage.is_active === 1) ||
+      (filterStatus === "inactive" && thePackage.is_active === 0);
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className="p-6 space-y-6">
@@ -113,8 +138,9 @@ export function PackagesManagement() {
         </button>
       </div>
 
-      {/* Stats */}
+      {/* Stats - بدون تغيير */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* ... إحصائيات كما هي ... */}
         <div className="bg-white rounded-2xl shadow-md p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
@@ -134,7 +160,7 @@ export function PackagesManagement() {
             <TrendingUp className="w-5 h-5 text-green-500" />
           </div>
           <h3 className="text-2xl text-gray-900 mb-1">
-            {packages.reduce((sum, pkg) => sum + pkg.subscribers, 0)}
+            {packages.reduce((sum, pkg) => sum + (pkg.subscribers || 0), 0)}
           </h3>
           <p className="text-gray-600 text-sm">إجمالي المشتركين</p>
         </div>
@@ -153,197 +179,138 @@ export function PackagesManagement() {
         </div>
       </div>
 
-      {/* Packages Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-        {packages.map((pkg, index) => (
-          <motion.div
-            key={pkg.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className={`bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-shadow ${
-              pkg.isPopular ? "ring-2 ring-[#ffbf1f]" : ""
-            }`}
+      {/* Search & Filters - إضافة */}
+      <div className="bg-white rounded-2xl shadow-md p-6">
+        <div className="flex gap-4">
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              placeholder="ابحث عن باقة..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#ffbf1f]"
+            />
+          </div>
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#ffbf1f]"
           >
-            {/* Package Header */}
-            <div
-              className={`${
-                pkg.isPopular
-                  ? "bg-gradient-to-r from-[#ffbf1f] to-[#e6ac1c]"
-                  : "bg-gradient-to-r from-[#034363] to-[#045a85]"
-              } p-6 relative`}
+            <option value="all">جميع الحالات</option>
+            <option value="active">نشطة</option>
+            <option value="inactive">غير نشطة</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Packages Grid */}
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="text-gray-500">جاري تحميل الباقات...</div>
+        </div>
+      ) : filteredPackages.length === 0 ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="text-gray-500">لا توجد باقات مطابقة للبحث</div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+          {filteredPackages.map((eachPackage, index) => (
+            <motion.div
+              key={eachPackage.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className={`bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col h-full ${
+                eachPackage.isPopular ? "ring-2 ring-[#ffbf1f]" : ""
+              }`}
             >
-              {pkg.isPopular && (
-                <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-lg">
-                  <Star className="w-4 h-4 text-white" />
-                  <span className="text-sm text-white">الأكثر شعبية</span>
-                </div>
-              )}
-
-              <div className="mt-8">
-                <h3 className="text-2xl text-white mb-2">{pkg.name}</h3>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl text-white">{pkg.price}</span>
-                  <span className="text-white/80">ريال</span>
-                  <span className="text-white/60 text-sm">
-                    / {getTypeText(pkg.type)}
-                  </span>
+              {/* Package Header */}
+              <div className="bg-gradient-to-r from-[#034363] to-[#045a85] p-6">
+                <div className="mt-8">
+                  <h3 className="text-2xl text-white mb-2 font-bold">
+                    {eachPackage.name}
+                  </h3>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl text-white font-bold">
+                      {eachPackage.price}
+                    </span>
+                    <span className="text-white/80">ليرة سورية</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Package Details */}
-            <div className="p-6 space-y-4">
-              <div className="flex items-center justify-between pb-4 border-b border-gray-100">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-[#ffbf1f]" />
-                  <span className="text-gray-700">{pkg.hours} ساعة</span>
+              {/* Package Details */}
+              <div className="p-6 space-y-4 flex-1">
+                <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-[#ffbf1f]" />
+                    <span className="text-gray-700 font-medium">
+                      {eachPackage.hours} ساعة
+                    </span>
+                  </div>
                 </div>
-                <span
-                  className={`px-3 py-1 rounded-lg text-sm border ${getTypeColor(pkg.type)}`}
-                >
-                  {getTypeText(pkg.type)}
-                </span>
-              </div>
 
-              {/* Features */}
-              <div className="space-y-3">
-                {pkg.features.map((feature, idx) => (
-                  <div key={idx} className="flex items-center gap-3">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 group hover:bg-gray-50 p-2 rounded-lg transition-colors">
                     <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center shrink-0">
                       <Check className="w-3 h-3 text-green-600" />
                     </div>
-                    <span className="text-gray-700 text-sm">{feature}</span>
+                    <span className="text-gray-700 text-sm">
+                      الباقة صالحة لمدة {eachPackage.duration_days} يوم
+                    </span>
                   </div>
-                ))}
-              </div>
-
-              {/* Subscribers */}
-              <div className="pt-4 border-t border-gray-100">
-                <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
-                  <span>عدد المشتركين</span>
-                  <span className="text-[#034363]">
-                    {pkg.subscribers} مشترك
-                  </span>
-                </div>
-                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-[#ffbf1f] to-[#e6ac1c]"
-                    style={{
-                      width: `${Math.min((pkg.subscribers / 100) * 100, 100)}%`,
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="p-4 bg-gray-50 border-t border-gray-100 flex gap-2">
-              <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-[#034363] text-white rounded-xl hover:bg-[#045a85] transition-colors">
-                <Edit2 className="w-4 h-4" />
-                تعديل
-              </button>
-              <button className="flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-colors">
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Add Package Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-6">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8 max-h-[90vh] overflow-y-auto"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl text-gray-900">إضافة باقة جديدة</h2>
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-xl flex items-center justify-center transition-colors"
-              >
-                ✕
-              </button>
-            </div>
-
-            <form className="space-y-4">
-              <div>
-                <label className="block text-sm text-gray-700 mb-2">
-                  اسم الباقة
-                </label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-[#ffbf1f] focus:outline-none"
-                  placeholder="مثال: الباقة الأسبوعية الذهبية"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm text-gray-700 mb-2">
-                    نوع الباقة
-                  </label>
-                  <select className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-[#ffbf1f] focus:outline-none">
-                    <option value="weekly">أسبوعية</option>
-                    <option value="monthly">شهرية</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm text-gray-700 mb-2">
-                    السعر (ريال)
-                  </label>
-                  <input
-                    type="number"
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-[#ffbf1f] focus:outline-none"
-                    placeholder="150"
-                  />
+                  <div className="flex items-center gap-3 group hover:bg-gray-50 p-2 rounded-lg transition-colors">
+                    <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center shrink-0">
+                      <Check className="w-3 h-3 text-green-600" />
+                    </div>
+                    <span className="text-gray-700 text-sm">
+                      تكلفة الساعة الواحدة {eachPackage.price_per_hour} ليرة
+                      سورية
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm text-gray-700 mb-2">
-                  عدد الساعات
-                </label>
-                <input
-                  type="number"
-                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-[#ffbf1f] focus:outline-none"
-                  placeholder="80"
-                />
+              <div className="p-6 pt-0">
+                <div className="flex gap-2 pt-4 border-t border-gray-100">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 hover:bg-[#034363] hover:text-white transition-colors"
+                    onClick={() => setPackageToEdit(eachPackage)}
+                  >
+                    <Edit2 className="w-4 h-4 ml-1" />
+                    تعديل
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 text-red-600 border-red-600 hover:bg-red-500 hover:text-white transition-colors"
+                    onClick={() => handleDeletePackage(eachPackage.id)}
+                  >
+                    <Trash2 className="w-4 h-4 ml-1" />
+                    حذف
+                  </Button>
+                </div>
               </div>
-
-              <div>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="w-5 h-5 rounded border-gray-300"
-                  />
-                  <span className="text-sm text-gray-700">
-                    تعيين كباقة مميزة
-                  </span>
-                </label>
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors"
-                >
-                  إلغاء
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-[#ffbf1f] to-[#e6ac1c] text-[#034363] rounded-xl hover:shadow-lg transition-all"
-                >
-                  إضافة الباقة
-                </button>
-              </div>
-            </form>
-          </motion.div>
+            </motion.div>
+          ))}
         </div>
+      )}
+
+      {showAddModal && (
+        <AddNewPackage
+          onClose={() => setShowAddModal(false)}
+          onAddPackage={handleAddPackage}
+        />
+      )}
+
+      {packageToEdit && (
+        <UpdatePackage
+          package={packageToEdit}
+          onClose={() => setPackageToEdit(null)}
+          onUpdatePackage={handleUpdatePackage}
+        />
       )}
     </div>
   );

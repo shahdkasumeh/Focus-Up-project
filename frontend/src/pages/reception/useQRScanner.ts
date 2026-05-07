@@ -66,7 +66,7 @@ export const useQRScanner = () => {
         studentId: `#${data.id}`,
         tableName: `طاولة رقم ${data.table?.table_num || "غير محدد"}`,
         checkInTime: formatDateTime(data.actual_start),
-        message: message || "✅ تم تسجيل الدخول بنجاح",
+        message: message || "تم تسجيل الدخول بنجاح",
       };
     },
     [formatDateTime],
@@ -97,7 +97,7 @@ export const useQRScanner = () => {
         checkOutTime: formatDateTime(data.actual_end),
         duration: `${hours.toFixed(2)} ساعة`,
         totalPrice: `${totalPrice.toFixed(2)} ريال`,
-        message: (message || "✅ تم تسجيل الخروج بنجاح") + detailsMessage,
+        message: (message || " تم تسجيل الخروج بنجاح") + detailsMessage,
       };
     },
     [formatDateTime],
@@ -105,12 +105,12 @@ export const useQRScanner = () => {
 
   // معالجة الخطأ
   const handleError = useCallback((error: any): ScanResult => {
-    let errorMessage = "❌ فشلت العملية";
+    let errorMessage = " فشلت العملية";
 
     if (error.response?.data?.message) {
-      errorMessage = `❌ ${error.response.data.message}`;
+      errorMessage = ` ${error.response.data.message}`;
     } else if (error.message) {
-      errorMessage = `❌ ${error.message}`;
+      errorMessage = ` ${error.message}`;
     }
 
     return {

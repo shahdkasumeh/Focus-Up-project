@@ -3,15 +3,15 @@ import { motion } from "motion/react";
 import { Button } from "../../../components/Button";
 import { Input } from "../../../components/Input";
 import { Plus, X } from "lucide-react";
-import { roomsApi, Room } from "../../../APIMethod/rooms";
 import toast from "react-hot-toast";
+import { CreateRoomData } from "../../../APIMethod/rooms";
 
 export function AddNewRoom({
   onClose,
-  onSuccess,
+  onAddRoom,
 }: {
   onClose: () => void;
-  onSuccess?: (room: Room) => void;
+  onAddRoom: (roomData: CreateRoomData) => void;
 }) {
   const [formData, setFormData] = useState({
     name: "",
@@ -19,25 +19,28 @@ export function AddNewRoom({
     type: "",
   });
 
-  const handleAddRoom = async () => {
-    try {
-      console.log("roomsApi.addRoom:", roomsApi.addRoom);
-      const result = await roomsApi.addRoom({
-        name: formData.name,
-        capacity: Number(formData.capacity),
-        type: formData.type,
-      });
-      console.log("تمت الإضافة بنجاح!");
-
-      if (onSuccess) {
-        onSuccess(result.data);
-      }
-
-      onClose();
-    } catch (error) {
-      console.error("فشل الإضافة:", error);
-      toast.error("Add Failed ");
+  const handleSubmit = () => {
+    if (!formData.name.trim()) {
+      toast.error("يرجى إدخال اسم القاعة");
+      return;
     }
+    if (!formData.capacity || Number(formData.capacity) <= 0) {
+      toast.error("يرجى إدخال سعة صحيحة (أكبر من 0)");
+      return;
+    }
+    if (!formData.type.trim()) {
+      toast.error("يرجى إدخال نوع القاعة");
+      return;
+    }
+
+    // تجهيز البيانات للإرسال
+    const roomData = {
+      name: formData.name,
+      capacity: Number(formData.capacity),
+      type: formData.type,
+    };
+
+    onAddRoom(roomData);
   };
 
   return (
@@ -85,7 +88,7 @@ export function AddNewRoom({
 
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700">
-                السعة{" "}
+                السعة
               </label>
               <Input
                 type="number"
@@ -103,11 +106,7 @@ export function AddNewRoom({
             <Button variant="outline" className="flex-1" onClick={onClose}>
               إلغاء
             </Button>
-            <Button
-              variant="primary"
-              className="flex-1"
-              onClick={handleAddRoom}
-            >
+            <Button variant="primary" className="flex-1" onClick={handleSubmit}>
               <Plus className="w-5 h-5 ml-2" />
               إضافة القاعة
             </Button>

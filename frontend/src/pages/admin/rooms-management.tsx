@@ -3,7 +3,11 @@ import { motion } from "motion/react";
 import { Button } from "../../components/Button";
 import { Plus, Search, Edit2, Trash2, MapPin, Users } from "lucide-react";
 import { AddNewRoom } from "./components/AddNewRoom";
-import { roomsApi, Room } from "../../APIMethod/rooms";
+import {
+  roomsApi,
+  UpdateRoomData,
+  CreateRoomData,
+} from "../../APIMethod/rooms";
 import { useAuth } from "../../context/GlobalState";
 import { ActionTypes } from "../../context/AppReducer";
 import toast from "react-hot-toast";
@@ -17,6 +21,7 @@ export function RoomsManagement() {
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("all");
   const [EditRoom, setEditRoom] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState(null); // ✅新增: لتخزين القاعة المطلوب تعديلها
 
   useEffect(() => {
     fetchRooms();
@@ -36,28 +41,70 @@ export function RoomsManagement() {
     }
   };
 
-  const handleRoomAdded = (newRoom: Room) => {
-    dispatch({ type: ActionTypes.ADD_ROOM, payload: newRoom });
-    setShowAddRoomModal(false);
-    toast.success("تمت إضافة القاعة بنجاح");
-  };
-
-  const handleRoomUpdate = (newRoom: Room) => {
-    dispatch({ type: ActionTypes.UPDATE_ROOM, payload: newRoom });
-    setShowAddRoomModal(false);
-    toast.success("تمت تعديل القاعة بنجاح");
-  };
-
-  const handleRoomDelete = async (roomId: number) => {
+  // ✅ دالة جديدة وموحدة لإضافة قاعة (تم دمج handleRoomAdded السابقة)
+  const handleAddRoom = async (roomData: CreateRoomData) => {
     try {
+      // إضافة toast loading لتحسين تجربة المستخدم
+      const loadingToast = toast.loading("جاري إضافة القاعة...");
+
+      console.log("إضافة قاعة جديدة:", roomData);
+      const result = await roomsApi.addRoom(roomData);
+
+      // تحديث الـ state باستخدام dispatch
+      dispatch({ type: ActionTypes.ADD_ROOM, payload: result.data });
+
+      // إغلاق المودال
+      setShowAddRoomModal(false);
+
+      // إظهار رسالة نجاح
+      toast.success("تمت إضافة القاعة بنجاح", { id: loadingToast });
+
+      // ✅ إضافة: تحديث القاعات من الخادم للتأكد من المزامنة
+      await fetchRooms();
+    } catch (error) {
+      console.error("فشل الإضافة:", error);
+      toast.error("فشل في إضافة القاعة. يرجى المحاولة مرة أخرى");
+    }
+  };
+
+  // ✅ دالة موحدة لتعديل قاعة (تم تحسين handleRoomUpdate السابقة)
+  const handleUpdateRoom = async (updatedRoom: UpdateRoomData) => {
+    try {
+      const loadingToast = toast.loading("جاري تعديل القاعة...");
+
+      await roomsApi.updateRooms(updatedRoom);
+
+      // تحديث الـ state
+      dispatch({ type: ActionTypes.UPDATE_ROOM, payload: updatedRoom });
+
+      // إغلاق مودال التعديل
+      setEditRoom(false);
+      setSelectedRoom(null); // ✅ تنظيف القاعة المحددة
+
+      toast.success("تم تعديل القاعة بنجاح", { id: loadingToast });
+
+      // ✅ تحديث القاعات للتأكد من المزامنة
+      await fetchRooms();
+    } catch (error) {
+      console.error("فشل التعديل:", error);
+      toast.error("فشل في تعديل القاعة");
+    }
+  };
+
+  // ✅ دالة موحدة للحذف (تم تحسين handleRoomDelete السابقة)
+  const handleDeleteRoom = async (roomId: number) => {
+    try {
+      const loadingToast = toast.loading("جاري حذف القاعة...");
+
       await roomsApi.deleteRoom(roomId);
 
+      // تحديث الـ state
       dispatch({
         type: ActionTypes.DELETE_ROOM,
         payload: roomId,
       });
 
-      toast.success("تم حذف القاعة بنجاح");
+      toast.success("تم حذف القاعة بنجاح", { id: loadingToast });
     } catch (error) {
       console.error("فشل في حذف القاعة:", error);
       toast.error("فشل في حذف القاعة");
@@ -174,7 +221,9 @@ export function RoomsManagement() {
                     variant="outline"
                     size="sm"
                     className="flex-1"
-                    onClick={() => setEditRoom(true)}
+                    onClick={() => {
+                      setEditRoom(true);
+                    }}
                   >
                     <Edit2 className="w-4 h-4 ml-1" />
                     تعديل
@@ -183,7 +232,7 @@ export function RoomsManagement() {
                     variant="outline"
                     size="sm"
                     className="flex-1 text-red-600 border-red-600 hover:bg-red-500 hover:text-white"
-                    onClick={() => handleRoomDelete(room.id)}
+                    onClick={() => handleDeleteRoom(room.id)} // ✅ تغيير: استخدام الدالة الجديدة
                   >
                     <Trash2 className="w-4 h-4 ml-1" />
                     حذف
@@ -196,17 +245,23 @@ export function RoomsManagement() {
       )}
 
       {/* Update Room Modal */}
-      {EditRoom && (
-        <UpdateRoom
-          onClose={() => setEditRoom(false)}
-          onSuccess={handleRoomUpdate}
-        />
-      )}
+      {EditRoom &&
+        selectedRoom && ( // ✅ تغيير: إضافة التحقق من وجود selectedRoom
+          <UpdateRoom
+            room={selectedRoom} // ✅新增: تمرير القاعة المطلوب تعديلها
+            onClose={() => {
+              setEditRoom(false);
+              setSelectedRoom(null); // ✅ تنظيف القاعة المحددة
+            }}
+            onUpdateRoom={handleUpdateRoom} // ✅ تغيير: استخدام الدالة الجديدة
+          />
+        )}
+
       {/* Add Room Modal */}
       {showAddRoomModal && (
         <AddNewRoom
           onClose={() => setShowAddRoomModal(false)}
-          onSuccess={handleRoomAdded}
+          onAddRoom={handleAddRoom} // ✅ تغيير: استخدام الدالة الجديدة بدلاً من handleRoomAdded
         />
       )}
     </div>

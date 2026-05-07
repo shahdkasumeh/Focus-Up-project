@@ -1,6 +1,7 @@
 import React from "react";
 import { Room } from "../APIMethod/rooms";
 import { Table } from "../APIMethod/tables";
+import { Package } from "../APIMethod/packages";
 
 //typescript
 export interface User {
@@ -14,6 +15,7 @@ export interface AuthState {
   user: User | null;
   rooms: Room[];
   tables: Table[];
+  packages: Package[];
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
@@ -32,6 +34,7 @@ export const initialState: AuthState = {
   user: initialUser,
   rooms: [],
   tables: [],
+  packages: [],
   isAuthenticated: !!initialUser,
   loading: false,
   error: null,
@@ -52,6 +55,10 @@ export enum ActionTypes {
   DELETE_TABLES = "DELETE_TABLES",
   ADD_TABLE = "ADD_TABLE",
   UPDATE_TABLE = "UPDATE_TABLE",
+  SET_PACKAGE = "SET_PACKAGE",
+  ADD_PACKAGE = "ADD_PACKAGE",
+  UPDATE_PACKAGE = "UPDATE_PACKAGE",
+  DELETE_PACKAGE = "DELETE_PACKAGE",
 }
 
 const AppReducer = (
@@ -147,6 +154,33 @@ const AppReducer = (
         ...state,
         tables: state.tables.map((table) =>
           table.id === action.payload.id ? action.payload : table,
+        ),
+      };
+
+    case ActionTypes.SET_PACKAGE:
+      return {
+        ...state,
+        packages: action.payload,
+      };
+
+    case ActionTypes.DELETE_PACKAGE:
+      return {
+        ...state,
+        packages: state.packages.filter(
+          (packages) => packages.id !== action.payload,
+        ),
+      };
+    case ActionTypes.ADD_PACKAGE:
+      return {
+        ...state,
+        packages: [action.payload, ...state.packages],
+      };
+
+    case ActionTypes.UPDATE_PACKAGE:
+      return {
+        ...state,
+        packages: state.packages.map((packages) =>
+          packages.id === action.payload.id ? action.payload : packages,
         ),
       };
 
