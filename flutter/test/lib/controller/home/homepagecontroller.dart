@@ -9,6 +9,7 @@ abstract class HomePageController extends GetxController {
   goToLuckyWheel();
   goToStudyCompanion();
   goToPackages();
+  goToTasks();
 }
 
 class HomePageControllerImp extends HomePageController {
@@ -35,5 +36,10 @@ class HomePageControllerImp extends HomePageController {
   @override
   goToPackages() {
     Get.toNamed(AppRoutes.packagesscreen);
+  }
+  
+  @override
+  goToTasks() {
+    Get.toNamed(AppRoutes.taskscreen);
   }
 }

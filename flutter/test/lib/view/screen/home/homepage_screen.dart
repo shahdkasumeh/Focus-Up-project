@@ -97,7 +97,9 @@ class HomepageScreen extends GetView<HomePageControllerImp> {
                     subtitle: 'تابع إنجازك',
                     icon: Icons.task_alt_rounded,
                     color: const Color(0xFF0EA5E9),
-                    onTap: () {},
+                    onTap: () {
+                      controller.goToTasks();
+                    },
                   ),
                 ],
               ),

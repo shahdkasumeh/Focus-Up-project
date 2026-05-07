@@ -14,6 +14,7 @@ import 'package:test/bindings/splash_screen_bindings.dart';
 import 'package:test/bindings/study_companion_screen_bindings.dart';
 import 'package:test/bindings/success_reset_password_screen_bindings.dart';
 import 'package:test/bindings/success_sign_up_bindings.dart';
+import 'package:test/bindings/task_screen_bindings.dart';
 import 'package:test/bindings/type_booking_bindings.dart';
 import 'package:test/core/class/constant/storagehandler.dart';
 import 'package:test/core/services/services.dart';
@@ -30,6 +31,7 @@ import 'package:test/view/screen/home/luckywheel_screen.dart';
 import 'package:test/view/screen/home/packages_screen.dart';
 import 'package:test/view/screen/home/qrcode_screen.dart';
 import 'package:test/view/screen/home/study_companion_screen.dart';
+import 'package:test/view/screen/home/task_screen.dart';
 import 'package:test/view/screen/reservation/crowded_hall_without_reservation.dart';
 import 'package:test/view/screen/reservation/discovering_the_congestion_screen.dart';
 import 'package:test/view/screen/reservation/room_details_screen.dart';
@@ -131,6 +133,11 @@ class MyApp extends StatelessWidget {
           name: "/packagesscreen",
           page: () => PackagesScreen(),
           binding: PackagesScreenBindings(),
+        ),
+        GetPage(
+          name: "/taskscreen",
+          page: () => TaskScreen(),
+          binding: TaskScreenBindings(),
         ),
       ],
     );

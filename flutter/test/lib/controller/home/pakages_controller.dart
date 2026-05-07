@@ -12,18 +12,15 @@ class PackagesController extends GetxController {
 
   PakageData packageData = PakageData(Get.find());
 
-  /// الاشتراك
   RxList<PackageModel> packagesToBuy = <PackageModel>[].obs;
 
-  /// الشخصية
   RxList<BuyPackageModel> myPackages = <BuyPackageModel>[].obs;
 
-  /// الحالية
   Rxn<BuyPackageModel> currentPackage = Rxn<BuyPackageModel>();
 
   Rxn<PackageModel> selectedPackage = Rxn<PackageModel>();
 
-  final tabs = ['الحالية', 'الاشتراك', 'الشخصية'];
+  final tabs = ['الشخصية', 'الاشتراك', 'الحالية'];
 
   @override
   void onInit() {
@@ -42,8 +39,6 @@ class PackagesController extends GetxController {
       getMyPackages(); // الشخصية
     }
   }
-
-  /// الاشتراك
 
   Future<void> getPackagesToBuy() async {
     try {
@@ -75,8 +70,6 @@ class PackagesController extends GetxController {
     }
   }
 
-  /// شراء باقة
-
   Future<void> buyPackage(int packageId) async {
     try {
       isBuying.value = true;
@@ -105,8 +98,6 @@ class PackagesController extends GetxController {
       isBuying.value = false;
     }
   }
-
-  /// الشخصية
 
   Future<void> getMyPackages() async {
     try {
@@ -139,8 +130,6 @@ class PackagesController extends GetxController {
       isLoading.value = false;
     }
   }
-
-  /// الحالية active
 
   Future<void> getCurrentPackage() async {
     try {
