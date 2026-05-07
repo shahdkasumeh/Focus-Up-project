@@ -70,29 +70,29 @@ class LoginControllerImp extends LoginController {
       (data) async {
         print("📦 DATA => $data");
 
-        if (data["token"] != null) {
-          // ❌ لا تستخدم auth.token
-          // final auth = AuthModel.fromJson(data);
+       if (data["token"] != null) {
+  final token = data["token"];
 
-          // ✅ خذ التوكن مباشرة من response
-          final token = data["token"];
+  print("✅ TOKEN DIRECT => $token");
 
-          print("✅ TOKEN DIRECT => $token");
+  await StorageHandler().setToken(token);
 
-          await StorageHandler().setToken(token);
+  print("🔥 TOKEN SAVED => ${StorageHandler().token}");
 
-          print("🔥 TOKEN SAVED => ${StorageHandler().token}");
+  final auth = AuthModel.fromJson(data);
 
-          // إذا بدك المستخدم
-          final auth = AuthModel.fromJson(data);
+  await StorageHandler().setUserId(auth.user.id);
 
-          await StorageHandler().setQrCode(auth.user.fullName);
+  print("USER ID SAVED => ${StorageHandler().userId}");
 
-          statusRequest = StatusRequest.success;
-          update();
+  await StorageHandler().setQrCode(auth.user.fullName);
 
-          Get.offAllNamed(AppRoutes.homepagescreen);
-        } else {
+  statusRequest = StatusRequest.success;
+  update();
+
+  Get.offAllNamed(AppRoutes.homepagescreen);
+}
+        else {
           statusRequest = StatusRequest.failure;
           update();
 

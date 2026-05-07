@@ -6,9 +6,10 @@ class PostModel {
   final String userName;
   final bool isOwner;
 
-  int likesCount;   // ✅ بدون final وبدون ?
-  bool isLiked;     // ✅ بدون final وبدون ?
-  int commentsCount; // ✅ بدون final وبدون ?
+  int likesCount;
+  bool isLiked;
+  int commentsCount;
+
   PostModel({
     required this.id,
     required this.title,
@@ -23,16 +24,15 @@ class PostModel {
 
   factory PostModel.fromJson(Map<String, dynamic> json) {
     return PostModel(
-
-      id: json['id'] ?? 0,
-      title: json['title'] ?? '',
-      content: json['content'] ?? '',
-      createdAt: json['created_at'] ?? '',
-      userName: json['user']?['full_name'] ?? '',
-      isOwner: json['is_owner'] ?? false,
-      likesCount: json['likes_count'] ?? 0,
-      isLiked: json['is_liked'] ?? false,
-      commentsCount: json['comments_count'] ?? 0,
+      id: int.tryParse(json['id'].toString()) ?? 0,
+      title: json['title']?.toString() ?? '',
+      content: json['content']?.toString() ?? '',
+      createdAt: json['created_at']?.toString() ?? '',
+      userName: json['user']?['full_name']?.toString() ?? '',
+      isOwner: json['is_owner'] == true,
+      likesCount: int.tryParse(json['likes_count'].toString()) ?? 0,
+      isLiked: json['is_liked'] == true,
+      commentsCount: int.tryParse(json['comments_count'].toString()) ?? 0,
     );
   }
 }

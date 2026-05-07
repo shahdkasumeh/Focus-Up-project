@@ -47,9 +47,7 @@ class StudyCompanionScreen extends GetView<StudyCompanionController> {
                 ),
               )
             else
-              ...controller.posts.map(
-                (post) => PostCard(post: post, controller: controller),
-              ),
+              ...controller.posts.map((post) => PostCard(post: post)),
           ],
         );
       }),

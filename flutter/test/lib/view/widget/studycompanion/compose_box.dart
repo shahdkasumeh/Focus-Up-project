@@ -44,7 +44,30 @@ class ComposeBox extends GetView<StudyCompanionController> {
               ),
             ],
           ),
+
           const SizedBox(height: 12),
+
+          TextField(
+            controller: controller.titleController,
+            textAlign: TextAlign.right,
+            decoration: InputDecoration(
+              hintText: "عنوان الإعلان",
+              fillColor: Colors.white,
+              filled: true,
+              contentPadding: const EdgeInsets.all(14),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xffD7D7D7)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xffD7D7D7)),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
           TextField(
             controller: controller.contentController,
             maxLines: 3,
@@ -64,25 +87,36 @@ class ComposeBox extends GetView<StudyCompanionController> {
               ),
             ),
           ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    backgroundColor: Appcolor.primary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  onPressed: controller.posts,
 
-                  child: const Text("نشر"),
+          const SizedBox(height: 10),
+
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: Obx(
+              () => OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: Appcolor.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
+                onPressed: controller.isCreating.value
+                    ? null
+                    : controller.createPost,
+                child: controller.isCreating.value
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text("نشر"),
               ),
-              const SizedBox(width: 10),
-            ],
+            ),
           ),
         ],
       ),

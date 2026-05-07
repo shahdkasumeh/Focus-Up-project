@@ -14,4 +14,7 @@ class AppLink {
   static const String buyPackage = "$server/buy";
   static const String myPackage = "$server/myPackage";
   static const String activePackage = "$server/active";
+  static const String posts = "$server/posts";
+  static const String addcomments = "posts/{id}/comments";
+  static const String comments = "$server/posts/{postId}/comments/{commentId}";
 }
