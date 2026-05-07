@@ -85,6 +85,8 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::delete('/packages/{package}', [PackageController::class, 'destroy']);
         //->middleware('can:package.delete');
     Route::get('/stats', [PackageController::class, 'stats']);
+    Route::get('/pending', [ConsumptionPackageController::class, 'pending']);
+    Route::put('/active/{id}', [ConsumptionPackageController::class, 'activeStatus']);
 
 
         //الباقات لطالب

@@ -15,10 +15,8 @@ return new class extends Migration
             $table->id();
 
             // ربط الباقة بالمستخدم
-            $table->foreignId('user_id')
-                ->constrained()
-                ->cascadeOnDelete();
-
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('package_id')->constrained()->cascadeOnDelete();
 
 
             // تاريخ بداية ونهاية الاشتراك

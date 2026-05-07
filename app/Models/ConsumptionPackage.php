@@ -9,6 +9,7 @@ class ConsumptionPackage extends Model
 {
     protected $fillable = [
         'user_id',
+        'package_id',
         'starts_at',
         'expires_at',
         'total_hours',
@@ -37,6 +38,11 @@ class ConsumptionPackage extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function package()
+    {
+        return $this->belongsTo(Package::class);
     }
 
     // =========================================================

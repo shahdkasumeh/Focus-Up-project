@@ -21,11 +21,7 @@ class ConsumptionPackageResource extends JsonResource
             'expires_at'      => $this->expires_at?->setTimezone('Asia/Damascus')->toDateTimeString(),
             'created_at'      => $this->created_at->setTimezone('Asia/Damascus')->toDateTimeString(),
 
-            // يظهر فقط في indexManagement
-            'user' => $this->whenLoaded('user', fn() => [
-                'id'   => $this->user->id,
-                'name' => $this->user->name,
-            ]),
+
         ];
     }
 }

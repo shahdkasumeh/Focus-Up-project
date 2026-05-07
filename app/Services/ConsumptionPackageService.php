@@ -135,7 +135,7 @@ class ConsumptionPackageService
             ->first();
     }
 
-    public static function purchaseFromPlan(int $userId, int $planId): ConsumptionPackage
+    public static function purchaseFromPlan( $userId,  $planId): ConsumptionPackage
 {
     return DB::transaction(function () use ($userId, $planId) {
 
@@ -162,6 +162,7 @@ class ConsumptionPackageService
 
         return ConsumptionPackage::create([
             'user_id'         => $userId,
+            'package_id'=>$planId,
             'starts_at'       => now(),
             'expires_at'      => now()->addDays($plan->duration_days),
             'total_hours'     => $plan->hours,
