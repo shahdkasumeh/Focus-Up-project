@@ -2,17 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class ConsumptionPackage extends Model
 {
-    /** @use HasFactory<\Database\Factories\ConsumptionPackageFactory> */
-    use HasFactory;
-
-
     protected $fillable = [
         'user_id',
+        'package_id',
         'starts_at',
         'expires_at',
         'total_hours',
@@ -22,25 +19,75 @@ class ConsumptionPackage extends Model
         'status',
     ];
 
-    public function pakage()
+    protected function casts(): array
     {
-        return $this->belongsTo(Package::class);
+        return [
+            'starts_at'       => 'datetime',
+            'expires_at'      => 'datetime',
+            'total_hours'     => 'decimal:2',
+            'remaining_hours' => 'decimal:2',
+            'total_price'     => 'decimal:2',
+            'remaining_price' => 'decimal:2',
+        ];
     }
 
-
-    public function bookings()
-    {
-        return $this->hasMany(Booking::class);
-    }
+    // =========================================================
+    // Relations
+    // =========================================================
 
     public function user()
     {
         return $this->belongsTo(User::class);
     }
+
+    public function package()
+    {
+        return $this->belongsTo(Package::class);
+    }
+
+    // =========================================================
+    // Scopes
+    // =========================================================
+
+    /**
+     * باقة نشطة وصالحة (لم تنتهِ صلاحيتها ولم تصفر ساعاتها)
+     */
     public function scopeActive($query)
     {
         return $query->where('status', 'active')
-            ->where('expires_at', '>', now())
+            ->where(function ($q) {
+                $q->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            })
             ->where('remaining_hours', '>', 0);
+    }
+
+    public function scopePending($query)
+{
+    return $query->where('status', 'pending');
+}
+
+    // =========================================================
+    // Helpers
+    // =========================================================
+
+    /**
+     * هل الباقة صالحة للاستخدام الآن؟
+     */
+    public function isValid(): bool
+    {
+        if ($this->status !== 'active') {
+            return false;
+        }
+
+        if ($this->remaining_hours <= 0) {
+            return false;
+        }
+
+        if ($this->expires_at && $this->expires_at->isPast()) {
+            return false;
+        }
+
+        return true;
     }
 }

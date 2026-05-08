@@ -46,7 +46,7 @@ class CommentController extends Controller
         $this->commentService->delete(
             comment: $comment,
             authUserId: $request->user()->id,
-            role: $request->user()->role_type,
+            role: $request->user()->role_type ?? 'client',
             post: $post,
         );
 

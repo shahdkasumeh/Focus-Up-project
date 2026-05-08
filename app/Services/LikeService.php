@@ -12,10 +12,6 @@ class LikeService
     {
         $user = Auth::user();
 
-        // منع الإعجاب بإعلانك الخاص (اختياري)
-        if ($post->usersid === $user->id) {
-            abort(403, 'You cannot like your own post.');
-        }
 
         $cacheKey = "user_{$user->id}_liked_post_{$post->id}";
 
@@ -31,7 +27,7 @@ class LikeService
             ];
         } else {
             // إضافة لايك
-            Cache::put($cacheKey, true, now()->addDays(30)); // يخزن لمدة 30 يوم
+            Cache::put($cacheKey, true);
             $post->increment('likes_count');
             return [
                 'action' => 'liked',

@@ -65,7 +65,7 @@ class PostController extends Controller
         $this->postService->delete(
             post: $post,
             authUserId: $request->user()->id,
-            role: $request->user()->role_type,
+            role: $request->user()->role_type  ?? 'client',
         );
 
         return response()->json(['message' => 'Post deleted successfully.']);

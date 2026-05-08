@@ -157,78 +157,6 @@ class BookingService
         ]);
     });
 }
-    // =========================================================
-    // 2. WALK-IN (QR direct start)
-    // =========================================================
-
-//     public static function walkIn(int $userId, ?int $tableId, ?int $roomId): Booking
-//     {
-//         return DB::transaction(function () use ($userId, $tableId, $roomId) {
-
-//             if (!$tableId && !$roomId) {
-//                 throw new \Exception('يجب اختيار طاولة أو غرفة.');
-//             }
-
-//             if ($tableId && $roomId) {
-//                 throw new \Exception('لا يمكن اختيار الاثنين.');
-//             }
-// $userConflict = Booking::where('user_id', $userId)
-//                 ->whereIn('status', ['pending', 'active'])
-//                 ->lockForUpdate()
-//                 ->exists();
-
-//             if ($userConflict) {
-//                 throw new \Exception('لديك حجز نشط.');
-//             }
-
-//             if ($tableId) {
-
-//                 $place = Table::lockForUpdate()->findOrFail($tableId);
-
-//                 if (!$place->is_active) {
-//                     throw new \Exception('الطاولة غير متاحة.');
-//                 }
-
-//                 $this->checkActivePlace($tableId, null);
-
-//                 Table::where('id', $tableId)->update(['is_occupied' => true]);
-
-//             } else {
-
-//                 $place = Room::lockForUpdate()->findOrFail($roomId);
-
-//                 if (!$place->is_active) {
-//                     throw new \Exception('الغرفة غير متاحة.');
-//                 }
-
-//                 if ($place->type !== 'walk_in') {
-//                     throw new \Exception('هذه الغرفة للحجز المسبق فقط.');
-//                 }
-
-//                 $this->checkActivePlace(null, $roomId);
-
-//                 Room::where('id', $roomId)->update(['is_occupied' => true]);
-//             }
-
-//             $discountPercent = LuckyWheel::where('user_id', $userId)
-//                 ->where('prize_type', 'discount')
-//                 ->where('is_used', false)
-//                 ->lockForUpdate()
-//                 ->value('discount_percent') ?? 0;
-
-//             return Booking::create([
-//                 'user_id'          => $userId,
-//                 'table_id'         => $tableId,
-//                 'room_id'          => $roomId,
-//                 'scheduled_start'  => null,
-//                 'scheduled_end'    => null,
-//                 'actual_start'     => now(),
-//                 'discount_percent' => $discountPercent,
-//                 'status'           => 'active',
-//             ]);
-//         });
-//     }
-
 //     // =========================================================
 //     // 3. CHECK IN (QR start for scheduled booking)
 //     // =========================================================
@@ -477,31 +405,62 @@ class BookingService
         }
     }
 
-    public static function getPricePerHour(int $userId): float
-    {
-        $sub = ConsumptionPackage::where('user_id', $userId)->active()->first();
-
-        if ($sub) {
-            return (float) $sub->price_per_hour;
-        }
-
-        return (float) Setting::where('key', 'default_price_per_hour')->value('value');
-    }
-
-    public static function deductFromSubscription(int $userId, float $hours, float $price): void
-    {
-        $sub = ConsumptionPackage::where('user_id', $userId)->active()->first();
-
-        if (!$sub) return;
-
-        $sub->update([
-            'remaining_hours' => max(0, $sub->remaining_hours - $hours),
-            'remaining_price' => max(0, $sub->remaining_price - $price),
-        ]);
-    }
-    public static function getFullBookingStats(): array
+    private static function getPricePerHour(int $userId): float
 {
-    $stats = Booking::selectRaw('status, COUNT(*) as count')
+    // أولاً: هل عنده باقة نشطة؟
+    $package = ConsumptionPackage::where('user_id', $userId)
+        ->where('status', 'active')
+        ->where(function ($q) {
+            $q->whereNull('expires_at')
+            ->orWhere('expires_at', '>', now());
+        })
+        ->where('remaining_hours', '>', 0)
+        ->lockForUpdate()
+        ->first();
+
+    if ($package && $package->remaining_hours > 0) {
+        // سعر الساعة من الباقة = المبلغ المتبقي ÷ الساعات المتبقية
+        return round((float) $package->remaining_price / (float) $package->remaining_hours, 2);
+    }
+
+    // ثانياً: السعر العادي من الإعدادات
+    return (float) Setting::where('key', 'default_price_per_hour')->value('value') ?? 0;
+}
+
+private static function deductFromSubscription(
+    int $userId,
+    float $hours,
+    float $totalPrice
+): void {
+
+    $package = ConsumptionPackage::where('user_id', $userId)
+        ->where('status', 'active')
+        ->where(function ($q) {
+            $q->whereNull('expires_at')
+                ->orWhere('expires_at', '>', now());
+        })
+        ->where('remaining_hours', '>', 0)
+        ->lockForUpdate()
+        ->first();
+
+    if (!$package) {
+        return; // لا باقة → لا خصم
+    }
+
+    $newHours  = max(0, round((float) $package->remaining_hours - $hours, 2));
+    $newAmount = max(0, round((float) $package->remaining_price - $totalPrice, 2));
+    $expired   = ($newHours <= 0);
+
+    $package->update([
+        'remaining_hours' => $newHours,
+        'remaining_price' => $newAmount,
+        'status'          => $expired ? 'expired' : 'active',
+    ]);
+}
+
+    public static function getFullBookingStatus(): array
+{
+    $status = Booking::selectRaw('status, COUNT(*) as count')
         ->groupBy('status')
         ->pluck('count', 'status');
 
@@ -509,10 +468,10 @@ class BookingService
 
     return [
         'total'     => $total,
-        'active'    => $stats['active'] ?? 0,
-        'completed' => $stats['completed'] ?? 0,
-        'cancelled' => $stats['cancelled'] ?? 0,
-        'pending'   => $stats['pending'] ?? 0,
+        'active'    => $status['active'] ?? 0,
+        'completed' => $status['completed'] ?? 0,
+        'cancelled' => $status['cancelled'] ?? 0,
+        'pending'   => $status['pending'] ?? 0,
         'no_show'   => $stats['no_show'] ?? 0,
     ];
 }

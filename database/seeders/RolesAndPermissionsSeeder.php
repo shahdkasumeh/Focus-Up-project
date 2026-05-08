@@ -17,18 +17,20 @@ class RolesAndPermissionsSeeder extends Seeder
             'name' => 'admin'
         ]);
 
-        $student = Role::create([
-            'name' => 'student'
+        $client = Role::create([
+            'name' => 'client'
         ]);
 
         $receptionist = Role::create([
             'name' => 'receptionist'
         ]);
 
-        $this->applyCRUDS('table');
-        $this->applyCRUDS('room');
+        $this->applyCRUDs('table');
+        $this->applyCRUDs('room');
+        $this->applyCRUDs('Package');
+
+
         $this->applyAdminPermissions($admin);
-        // $this->applyStudentPermissions($student);
     }
     private function applyCRUDs(string $name)
     {

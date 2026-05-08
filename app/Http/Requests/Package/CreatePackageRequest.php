@@ -22,9 +22,12 @@ class CreatePackageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'type' => 'required|string',
-            'price' => 'required|numeric',
-            'duration_hours' => 'required|integer'
+            "name"=>"string|required|",
+            "hours"=> "required|integer",
+            "price"=> "required|decimal:3,10",
+            "duration_days"=>"required|integer",
+
+
         ];
     }
 }

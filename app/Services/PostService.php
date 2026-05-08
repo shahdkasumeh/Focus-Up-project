@@ -59,6 +59,7 @@ class PostService
 
     public function delete(Post $post, int $authUserId, string $role): void
     {
+        $role = $role ?? 'client';
         abort_if(
             $post->userid !== $authUserId && $role !== 'admin',
             403,

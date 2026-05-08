@@ -33,6 +33,7 @@ class CommentService
 
     public function delete(Comment $comment, int $authUserId, string $role, Post $post): void
     {
+        $role = $role ?? 'client';
         $isOwner = $comment->userid === $authUserId;
         $isAdmin = $role === 'admin';
         $isPostOwner = $post->userid === $authUserId;

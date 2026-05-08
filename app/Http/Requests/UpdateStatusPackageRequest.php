@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Package;
+namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdatePackageRequest extends FormRequest
+class UpdateStatusPackageRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,12 +22,7 @@ class UpdatePackageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "name"=>"string|required|",
-            "hours"=> "required|integer",
-            "price"=> "required|decimal:3,10",
-            "duration_days"=>"required|integer",
-
-            'is_active'=>['sometimes','in:0,1']
+            'status' => ['required', 'in:active']
         ];
     }
 }
