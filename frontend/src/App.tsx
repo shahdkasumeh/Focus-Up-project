@@ -13,6 +13,7 @@ import { BookingsManagement } from "./pages/admin/bookings-management";
 import { EventsManagement } from "./pages/admin/Events-management";
 import { PackagesManagement } from "./pages/admin/packages-management";
 import { Reports } from "./pages/admin/reports";
+import { WheelManagement } from "./pages/admin/wheel-management";
 
 // Pages - Public
 import { Login } from "./pages/Login";
@@ -41,6 +42,7 @@ function App() {
           <Route path="events" element={<EventsManagement />} />
           <Route path="packages" element={<PackagesManagement />} />
           <Route path="reports" element={<Reports />} />
+          <Route path="wheel" element={<WheelManagement />} />
         </Route>
       )}
 

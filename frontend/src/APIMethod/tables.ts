@@ -41,8 +41,8 @@ export const tablesApi = {
   addTable: async (tableData: AddTableData): Promise<AddTableResponse> => {
     return api.post<AddTableResponse>("/tables", tableData);
   },
-  deleteRoom: async (id: number): Promise<DeleteTableResponse> => {
-    return api.delete<DeleteTableResponse>(`/rooms/${id}`);
+  deleteTable: async (id: number): Promise<DeleteTableResponse> => {
+    return api.delete<DeleteTableResponse>(`/tables/${id}`);
   },
 
   updateTable: async (

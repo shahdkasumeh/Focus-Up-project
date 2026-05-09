@@ -13,19 +13,25 @@ export function AdminTablesManagement() {
   const { tables } = state;
   const [selectedRoom, setSelectedRoom] = useState<string>("");
   const [showAddTableModal, setShowAddTableModal] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchTables() {
-      if (state.tables.length > 0) return;
-      try {
-        const response = await tablesApi.getAllTables();
-        dispatch({ type: ActionTypes.SET_TABLES, payload: response.data });
-      } catch (error) {
-        console.log("خطأ", error);
-      }
-    }
     fetchTables();
   }, []);
+
+  async function fetchTables() {
+    setLoading(true);
+    try {
+      const response = await tablesApi.getAllTables();
+      console.log("الطاولات المستلمة:", response.data);
+      dispatch({ type: ActionTypes.SET_TABLES, payload: response.data });
+    } catch (error) {
+      console.error("فشل في جلب القاعات:", error);
+      toast.error("فشل في تحميل القاعات");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   // دمج القاعات والطاولات
   const roomsWithTables = useMemo(() => {

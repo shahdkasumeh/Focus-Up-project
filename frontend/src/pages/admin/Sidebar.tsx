@@ -1,15 +1,12 @@
-// pages/admin/Sidebar.tsx (نسخة مبسطة)
 import {
   LayoutDashboard,
   Building2,
-  Users,
   Calendar,
   FileText,
-  Settings,
   LogOut,
   Table,
-  CalendarDays,
   Package,
+  Gift,
 } from "lucide-react";
 import { useAuth } from "../../context/GlobalState";
 import { ActionTypes } from "../../context/AppReducer";
@@ -26,6 +23,7 @@ const menuItems = [
   { id: "tables", label: "إدارة الطاولات", icon: Table },
   { id: "bookings", label: "إدارة الحجوزات", icon: Calendar },
   { id: "packages", label: "إدارة الباقات", icon: Package },
+  { id: "wheel", label: "إدارة عجلة الحظ", icon: Gift },
   { id: "reports", label: "التقارير", icon: FileText },
 ];
 

@@ -1,7 +1,7 @@
 import React from "react";
 import { Room } from "../APIMethod/rooms";
 import { Table } from "../APIMethod/tables";
-import { Package } from "../APIMethod/packages";
+import { Packages } from "../APIMethod/packages";
 
 //typescript
 export interface User {
@@ -15,7 +15,7 @@ export interface AuthState {
   user: User | null;
   rooms: Room[];
   tables: Table[];
-  packages: Package[];
+  packages: Packages[];
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;

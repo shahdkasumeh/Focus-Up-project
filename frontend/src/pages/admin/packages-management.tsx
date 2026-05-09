@@ -28,7 +28,8 @@ export function PackagesManagement() {
   const { state, dispatch } = useAuth();
   const { packages } = state;
 
-  const [packageToEdit, setPackageToEdit] = useState(null);
+  //const [packageToEdit, setPackageToEdit] = useState(null);
+  const [packageToEdit, setPackageToEdit] = useState<any>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -112,11 +113,8 @@ export function PackagesManagement() {
     const matchesSearch = thePackage.name
       ?.toLowerCase()
       .includes(searchQuery.toLowerCase());
-    const matchesStatus =
-      filterStatus === "all" ||
-      (filterStatus === "active" && thePackage.is_active === 1) ||
-      (filterStatus === "inactive" && thePackage.is_active === 0);
-    return matchesSearch && matchesStatus;
+
+    return matchesSearch;
   });
 
   return (
@@ -131,7 +129,7 @@ export function PackagesManagement() {
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ffbf1f] to-[#e6ac1c] text-[#034363] rounded-xl hover:shadow-lg transition-all"
+          className="flex items-center gap-2 px-6 py-3 bg-linear-to-r from-[#ffbf1f] to-[#e6ac1c] text-[#034363] rounded-xl hover:shadow-lg transition-all"
         >
           <Plus className="w-5 h-5" />
           إضافة باقة
@@ -159,9 +157,7 @@ export function PackagesManagement() {
             </div>
             <TrendingUp className="w-5 h-5 text-green-500" />
           </div>
-          <h3 className="text-2xl text-gray-900 mb-1">
-            {packages.reduce((sum, pkg) => sum + (pkg.subscribers || 0), 0)}
-          </h3>
+
           <p className="text-gray-600 text-sm">إجمالي المشتركين</p>
         </div>
 
@@ -172,9 +168,7 @@ export function PackagesManagement() {
             </div>
             <TrendingUp className="w-5 h-5 text-green-500" />
           </div>
-          <h3 className="text-2xl text-gray-900 mb-1">
-            {packages.filter((p) => p.isPopular).length}
-          </h3>
+
           <p className="text-gray-600 text-sm">باقات مميزة</p>
         </div>
       </div>
@@ -220,12 +214,10 @@ export function PackagesManagement() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className={`bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col h-full ${
-                eachPackage.isPopular ? "ring-2 ring-[#ffbf1f]" : ""
-              }`}
+              className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col h-full"
             >
               {/* Package Header */}
-              <div className="bg-gradient-to-r from-[#034363] to-[#045a85] p-6">
+              <div className="bg-linear-to-r from-[#034363] to-[#045a85] p-6">
                 <div className="mt-8">
                   <h3 className="text-2xl text-white mb-2 font-bold">
                     {eachPackage.name}

@@ -21,7 +21,7 @@ export function RoomsManagement() {
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("all");
   const [EditRoom, setEditRoom] = useState(false);
-  const [selectedRoom, setSelectedRoom] = useState(null); // ✅新增: لتخزين القاعة المطلوب تعديلها
+  const [selectedRoom, setSelectedRoom] = useState(null);
 
   useEffect(() => {
     fetchRooms();
@@ -41,25 +41,19 @@ export function RoomsManagement() {
     }
   };
 
-  // ✅ دالة جديدة وموحدة لإضافة قاعة (تم دمج handleRoomAdded السابقة)
   const handleAddRoom = async (roomData: CreateRoomData) => {
     try {
-      // إضافة toast loading لتحسين تجربة المستخدم
       const loadingToast = toast.loading("جاري إضافة القاعة...");
 
       console.log("إضافة قاعة جديدة:", roomData);
       const result = await roomsApi.addRoom(roomData);
 
-      // تحديث الـ state باستخدام dispatch
       dispatch({ type: ActionTypes.ADD_ROOM, payload: result.data });
 
-      // إغلاق المودال
       setShowAddRoomModal(false);
 
-      // إظهار رسالة نجاح
       toast.success("تمت إضافة القاعة بنجاح", { id: loadingToast });
 
-      // ✅ إضافة: تحديث القاعات من الخادم للتأكد من المزامنة
       await fetchRooms();
     } catch (error) {
       console.error("فشل الإضافة:", error);
@@ -67,23 +61,19 @@ export function RoomsManagement() {
     }
   };
 
-  // ✅ دالة موحدة لتعديل قاعة (تم تحسين handleRoomUpdate السابقة)
   const handleUpdateRoom = async (updatedRoom: UpdateRoomData) => {
     try {
       const loadingToast = toast.loading("جاري تعديل القاعة...");
 
       await roomsApi.updateRooms(updatedRoom);
 
-      // تحديث الـ state
       dispatch({ type: ActionTypes.UPDATE_ROOM, payload: updatedRoom });
 
-      // إغلاق مودال التعديل
       setEditRoom(false);
-      setSelectedRoom(null); // ✅ تنظيف القاعة المحددة
+      setSelectedRoom(null);
 
       toast.success("تم تعديل القاعة بنجاح", { id: loadingToast });
 
-      // ✅ تحديث القاعات للتأكد من المزامنة
       await fetchRooms();
     } catch (error) {
       console.error("فشل التعديل:", error);
@@ -91,7 +81,6 @@ export function RoomsManagement() {
     }
   };
 
-  // ✅ دالة موحدة للحذف (تم تحسين handleRoomDelete السابقة)
   const handleDeleteRoom = async (roomId: number) => {
     try {
       const loadingToast = toast.loading("جاري حذف القاعة...");
