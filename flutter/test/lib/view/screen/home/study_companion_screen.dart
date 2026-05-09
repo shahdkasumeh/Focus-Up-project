@@ -26,16 +26,13 @@ class StudyCompanionScreen extends GetView<StudyCompanionController> {
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
-
         return ListView(
           padding: const EdgeInsets.all(14),
           children: [
-            // 🟢 Compose Box
             const ComposeBox(),
 
             const SizedBox(height: 14),
 
-            // 📌 POSTS LIST
             if (controller.posts.isEmpty)
               const Center(
                 child: Padding(

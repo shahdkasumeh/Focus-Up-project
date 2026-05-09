@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:test/controller/home/study_companion_controller.dart';
 import 'package:test/core/class/constant/appcolor.dart';
+import 'package:test/view/widget/studycompanion/comment_input.dart';
 
 class CommentBottomSheet extends StatelessWidget {
   final int postId;
@@ -13,7 +14,6 @@ class CommentBottomSheet extends StatelessWidget {
     required this.postId,
     required this.controller,
   });
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -63,9 +63,7 @@ class CommentBottomSheet extends StatelessWidget {
                         ),
                       );
                     }
-
                     final comments = controller.commentsMap[postId] ?? [];
-
                     if (comments.isEmpty) {
                       return const Center(
                         child: Text(
@@ -78,14 +76,12 @@ class CommentBottomSheet extends StatelessWidget {
                         ),
                       );
                     }
-
                     return ListView.builder(
                       controller: scrollController,
                       padding: const EdgeInsets.symmetric(horizontal: 18),
                       itemCount: comments.length,
                       itemBuilder: (context, index) {
                         final comment = comments[index];
-
                         return Container(
                           margin: const EdgeInsets.only(bottom: 12),
                           padding: const EdgeInsets.all(14),
@@ -141,7 +137,6 @@ class CommentBottomSheet extends StatelessWidget {
                                                 comment,
                                               );
                                             }
-
                                             if (value == 'delete') {
                                               controller.deleteComment(
                                                 postId,
@@ -149,7 +144,6 @@ class CommentBottomSheet extends StatelessWidget {
                                               );
                                             }
                                           },
-
                                           itemBuilder: (context) => const [
                                             PopupMenuItem(
                                               value: 'edit',
@@ -217,7 +211,6 @@ class CommentBottomSheet extends StatelessWidget {
                                       ),
 
                                       const SizedBox(width: 8),
-
                                       CircleAvatar(
                                         radius: 16,
 
@@ -239,7 +232,6 @@ class CommentBottomSheet extends StatelessWidget {
                                   ),
                                 ],
                               ),
-
                               const SizedBox(height: 10),
 
                               /// CONTENT
@@ -259,103 +251,11 @@ class CommentBottomSheet extends StatelessWidget {
                     );
                   }),
                 ),
-
-                _commentInput(context),
+                CommentInput(postId: postId),
               ],
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _commentInput(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(
-        left: 14,
-        right: 14,
-        top: 12,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 12,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(.06),
-            blurRadius: 12,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          /// SEND
-          Obx(
-            () => InkWell(
-              onTap: controller.isCommenting.value
-                  ? null
-                  : () {
-                      controller.addOrUpdateComment(postId);
-                    },
-
-              borderRadius: BorderRadius.circular(16),
-
-              child: Container(
-                width: 52,
-                height: 52,
-
-                decoration: BoxDecoration(
-                  color: Appcolor.scondary,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-
-                child: controller.isCommenting.value
-                    ? const Padding(
-                        padding: EdgeInsets.all(14),
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Icon(Icons.send_rounded, color: Colors.white),
-              ),
-            ),
-          ),
-
-          const SizedBox(width: 10),
-
-          /// INPUT
-          Expanded(
-            child: Obx(
-              () => TextField(
-                controller: controller.commentController,
-
-                textAlign: TextAlign.right,
-                minLines: 1,
-                maxLines: 4,
-
-                decoration: InputDecoration(
-                  hintText: controller.editingCommentId.value == 0
-                      ? 'اكتبي تعليق...'
-                      : 'عدّلي التعليق...',
-
-                  filled: true,
-                  fillColor: const Color(0xFFF5F5F7),
-
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
-
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

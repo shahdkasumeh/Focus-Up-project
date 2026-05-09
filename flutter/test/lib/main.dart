@@ -7,6 +7,7 @@ import 'package:test/bindings/initialbindings.dart';
 import 'package:test/bindings/login_screen_bindings.dart';
 import 'package:test/bindings/lucky_wheel_screen_bindings.dart';
 import 'package:test/bindings/packages_screen_bindings.dart';
+import 'package:test/bindings/profile_screen_bindings.dart';
 import 'package:test/bindings/qr_binding.dart';
 import 'package:test/bindings/reset_password_screen_bindings.dart';
 import 'package:test/bindings/sign_up_screen_bindings.dart';
@@ -29,6 +30,7 @@ import 'package:test/view/screen/auth/success_signup.dart';
 import 'package:test/view/screen/home/homepage_screen.dart';
 import 'package:test/view/screen/home/luckywheel_screen.dart';
 import 'package:test/view/screen/home/packages_screen.dart';
+import 'package:test/view/screen/home/profile_screen.dart';
 import 'package:test/view/screen/home/qrcode_screen.dart';
 import 'package:test/view/screen/home/study_companion_screen.dart';
 import 'package:test/view/screen/home/task_screen.dart';
@@ -138,6 +140,11 @@ class MyApp extends StatelessWidget {
           name: "/taskscreen",
           page: () => TaskScreen(),
           binding: TaskScreenBindings(),
+        ),
+        GetPage(
+          name: "/profilescreen",
+          page: () => ProfileScreen(),
+          binding: ProfileScreenBindings(),
         ),
       ],
     );

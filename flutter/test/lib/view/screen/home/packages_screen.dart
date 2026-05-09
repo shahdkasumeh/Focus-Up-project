@@ -10,7 +10,6 @@ import 'package:test/view/widget/pakages/tabs.dart';
 
 class PackagesScreen extends GetView<PackagesController> {
   const PackagesScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,24 +18,19 @@ class PackagesScreen extends GetView<PackagesController> {
         children: [
           Header(),
           const SizedBox(height: 22),
-
           Tabs(),
-
           const SizedBox(height: 24),
-
           Expanded(
             child: Obx(() {
               /// الشخصية
               if (controller.selectedTab.value == 0) {
                 return const MyPackagesView();
               }
-
               if (controller.isLoading.value) {
                 return const Center(
                   child: CircularProgressIndicator(color: Appcolor.primary),
                 );
               }
-
               /// الاشتراك
               if (controller.selectedTab.value == 1) {
                 if (controller.packagesToBuy.isEmpty) {
@@ -52,7 +46,6 @@ class PackagesScreen extends GetView<PackagesController> {
                     ),
                   );
                 }
-
                 return RefreshIndicator(
                   color: Appcolor.scondary,
 
@@ -71,7 +64,6 @@ class PackagesScreen extends GetView<PackagesController> {
                   ),
                 );
               }
-
               /// الحالية
               if (controller.selectedTab.value == 2) {
                 return const MyCurrentPackageView();

@@ -111,6 +111,31 @@ class Crud {
   }
 
   // =========================
+  // ✅ PATCH
+  // =========================
+  Future<Either<Failure, Map<String, dynamic>>> patchData(
+    String url,
+    Map data, {
+    Map<String, String>? headers,
+  }) async {
+    try {
+      print("🚀 PATCH => $url");
+      print("📦 BODY => $data");
+
+      final response = await http.patch(
+        Uri.parse(url),
+        headers: _headers(extra: headers),
+        body: jsonEncode(data),
+      );
+
+      return _handleResponse(response);
+    } catch (e) {
+      print("❌ ERROR => $e");
+      return Left(Failure("Unexpected error"));
+    }
+  }
+
+  // =========================
   // 🗑 DELETE
   // =========================
   Future<Either<Failure, Map<String, dynamic>>> deleteData(
@@ -129,6 +154,50 @@ class Crud {
       return Left(Failure("Unexpected error"));
     }
   }
+  // =========================
+// 🖼 UPLOAD IMAGE
+// =========================
+Future<Either<Failure, Map<String, dynamic>>> uploadFile(
+  String url,
+  String filePath, {
+  String fieldName = "image",
+}) async {
+  try {
+    print("🚀 UPLOAD => $url");
+    print("📂 FILE => $filePath");
+
+    final request = http.MultipartRequest(
+      "POST",
+      Uri.parse(url),
+    );
+
+    /// TOKEN
+    if (_token != null && _token!.isNotEmpty) {
+      request.headers["Authorization"] = "Bearer $_token";
+    }
+
+    request.headers["Accept"] = "application/json";
+
+    /// FILE
+    request.files.add(
+      await http.MultipartFile.fromPath(
+        fieldName,
+        filePath,
+      ),
+    );
+
+    final streamedResponse = await request.send();
+
+    final response = await http.Response.fromStream(
+      streamedResponse,
+    );
+
+    return _handleResponse(response);
+  } catch (e) {
+    print("❌ UPLOAD ERROR => $e");
+    return Left(Failure("Upload failed"));
+  }
+}
 
   // =========================
   // 🧠 RESPONSE HANDLER

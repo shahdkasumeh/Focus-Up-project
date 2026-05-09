@@ -17,4 +17,8 @@ class AppLink {
   static const String posts = "$server/posts";
   static const String addcomments = "posts/{id}/comments";
   static const String comments = "$server/posts/{postId}/comments/{commentId}";
+  static const String tasks = "$server/tasks";
+  static const String profile = "$server/profile";
+  static const String uploadProfileImage = "$server/profile/image";
+  static const String forgetPassword = "$server/forgot-password";
 }

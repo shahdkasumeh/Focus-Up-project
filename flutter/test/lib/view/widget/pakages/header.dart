@@ -15,7 +15,7 @@ class Header extends StatelessWidget {
 
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF5E78D9), Appcolor.scondary],
+          colors: [Appcolor.scondary, Appcolor.scondary],
 
           begin: Alignment.topRight,
           end: Alignment.bottomLeft,
