@@ -4,6 +4,7 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ConsumptionPackageController;
 use App\Http\Controllers\CrowdingController;
 use App\Http\Controllers\PackageController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\TableController;
 use App\Http\Controllers\PostController;
@@ -12,7 +13,7 @@ use App\Http\Controllers\LikeController;
 
 
 use App\Http\Controllers\TaskController;
-use App\Models\ConsumptionPackage;
+// use App\Models\ConsumptionPackage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 require __DIR__ . '/auth.php';
@@ -126,29 +127,38 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 //الباقات للمدير
-        Route::get('/packages', [PackageController::class, 'index']);
-        //->middleware('can:package.index');
+Route::get('/packages', [PackageController::class, 'index']);
+//->middleware('can:package.index');
 
-    Route::post('/packages', [PackageController::class, 'store']);
-       // ->middleware('can:package.create');
+Route::post('/packages', [PackageController::class, 'store']);
+// ->middleware('can:package.create');
 
-    Route::get('/package/{package}', [PackageController::class, 'show']);
-          //->middleware('can:package.show');
+Route::get('/package/{package}', [PackageController::class, 'show']);
+//->middleware('can:package.show');
 
-    Route::put('/packages/{package}', [PackageController::class, 'update']);
-       // ->middleware('can:package.update');
+Route::put('/packages/{package}', [PackageController::class, 'update']);
+// ->middleware('can:package.update');
 
-    Route::delete('/packages/{package}', [PackageController::class, 'destroy']);
-        //->middleware('can:package.delete');
-    Route::get('/stats', [PackageController::class, 'stats']);
-    Route::get('/pending', [ConsumptionPackageController::class, 'pending']);
-    Route::put('/active/{id}', [ConsumptionPackageController::class, 'activeStatus']);
-
-
-        //الباقات لطالب
-        Route::get('/myPackage', [ConsumptionPackageController::class, 'index']);
-        Route::post('/buy', [ConsumptionPackageController::class, 'store']);
-        Route::get('/active', [ConsumptionPackageController::class, 'active']);
+Route::delete('/packages/{package}', [PackageController::class, 'destroy']);
+//->middleware('can:package.delete');
+Route::get('/stats', [PackageController::class, 'stats']);
+Route::get('/pending', [ConsumptionPackageController::class, 'pending']);
+Route::put('/active/{id}', [ConsumptionPackageController::class, 'activeStatus']);
 
 
+//الباقات لطالب
+Route::get('/myPackage', [ConsumptionPackageController::class, 'index']);
+Route::post('/buy', [ConsumptionPackageController::class, 'store']);
+Route::get('/active', [ConsumptionPackageController::class, 'active']);
 
+
+Route::middleware('auth:sanctum')->group(function () {
+
+    Route::prefix('profile')->group(function () {
+        Route::get('/', [ProfileController::class, 'show']);
+        Route::post('/', [ProfileController::class, 'store']);
+        Route::put('/', [ProfileController::class, 'update']);
+        Route::post('/image', [ProfileController::class, 'uploadImage']);
+    });
+
+});

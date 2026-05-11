@@ -38,7 +38,7 @@ class RegisteredUserController extends Controller
             'role_type' => $request->input('role', 'student'),
 
         ]);
-        $user->assignRole('student');
+        // $user->assignRole('student');
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
