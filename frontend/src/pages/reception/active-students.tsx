@@ -1,103 +1,56 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
-import {
-  ArrowRight,
-  User,
-  Clock,
-  MapPin,
-  Search,
-  LogOut,
-  Phone,
-  Mail,
-} from "lucide-react";
-import { Button } from "../../components/Button";
+import { ArrowRight, User, Clock, MapPin, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { StudentsDetailsModel } from "./components/StudentsDetailsModel";
-
-interface Student {
-  id: string;
-  name: string;
-  studentId: string;
-  table: string;
-  checkInTime: string;
-  duration: string;
-  phone: string;
-  email: string;
-}
+import { useAuth } from "../../context/GlobalState";
+import { ActionTypes } from "../../context/AppReducer";
+import { BookingDetails, bookingsAPI } from "../../APIMethod/bookings";
+import toast from "react-hot-toast";
 
 export function ActiveStudents() {
   const navigate = useNavigate();
-
+  const { state, dispatch } = useAuth();
+  const { bookingDetails } = state;
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [selectedStudent, setSelectedStudent] = useState<BookingDetails | null>(
+    null,
+  );
+  const [loading, setLoading] = useState(true);
 
-  const [students] = useState<Student[]>([
-    {
-      id: "1",
-      name: "محمد أحمد العتيبي",
-      studentId: "STU-2024-001",
-      table: "A-12",
-      checkInTime: "09:30",
-      duration: "2 ساعة و 15 دقيقة",
-      phone: "0501234567",
-      email: "mohammad@example.com",
-    },
-    {
-      id: "2",
-      name: "فاطمة علي الغامدي",
-      studentId: "STU-2024-002",
-      table: "B-05",
-      checkInTime: "08:45",
-      duration: "3 ساعات",
-      phone: "0507654321",
-      email: "fatima@example.com",
-    },
-    {
-      id: "3",
-      name: "خالد سعيد القحطاني",
-      studentId: "STU-2024-003",
-      table: "C-08",
-      checkInTime: "10:15",
-      duration: "1 ساعة و 30 دقيقة",
-      phone: "0509876543",
-      email: "khalid@example.com",
-    },
-    {
-      id: "4",
-      name: "نورة حسن الدوسري",
-      studentId: "STU-2024-004",
-      table: "A-15",
-      checkInTime: "09:00",
-      duration: "2 ساعة و 45 دقيقة",
-      phone: "0503456789",
-      email: "noura@example.com",
-    },
-    {
-      id: "5",
-      name: "عبدالله محمد الشهري",
-      studentId: "STU-2024-005",
-      table: "B-10",
-      checkInTime: "11:00",
-      duration: "45 دقيقة",
-      phone: "0508765432",
-      email: "abdullah@example.com",
-    },
-  ]);
+  useEffect(() => {
+    fetchBookingDetails();
+  }, []);
 
-  const filteredStudents = students.filter(
-    (student) =>
-      student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.studentId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.table.toLowerCase().includes(searchQuery.toLowerCase()),
+  const fetchBookingDetails = async () => {
+    setLoading(true);
+    try {
+      const response = await bookingsAPI.getBookingDetails();
+      console.log("الحجوزات المستلمة:", response.data);
+      dispatch({
+        type: ActionTypes.SET_BOOKINGDETAILS,
+        payload: response.data,
+      });
+    } catch (error) {
+      console.error("فشل في جلب الحجوزات:", error);
+      toast.error("فشل في تحميل الحجوزات");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredBookings = bookingDetails.filter(
+    (booking) =>
+      booking.user.full_name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      booking.user.id.toString().includes(searchQuery.toLowerCase()) ||
+      booking.place.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      booking.status.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const handleBack = () => {
     navigate(-1);
-  };
-
-  const handleCheckOut = (student: Student) => {
-    console.log(`تسجيل خروج للطالب: ${student.name}`);
-    setSelectedStudent(null);
   };
 
   return (
@@ -122,7 +75,7 @@ export function ActiveStudents() {
             <p className="text-sm text-blue-100 mb-1">
               إجمالي الطلاب المتواجدين
             </p>
-            <p className="text-3xl font-bold">{students.length}</p>
+            <p className="text-3xl font-bold">{bookingDetails.length}</p>
           </div>
         </div>
       </div>
@@ -144,9 +97,9 @@ export function ActiveStudents() {
 
         {/* Students List */}
         <div className="space-y-4">
-          {filteredStudents.map((student, index) => (
+          {filteredBookings.map((student, index) => (
             <motion.div
-              key={student.id}
+              key={index}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
@@ -156,24 +109,24 @@ export function ActiveStudents() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4 flex-1">
                   <div className="w-14 h-14 bg-linear-to-br from-[#034363] to-[#045a85] rounded-2xl flex items-center justify-center text-white text-xl font-bold">
-                    {student.name.charAt(0)}
+                    {student.user.full_name.charAt(0)}
                   </div>
                   <div className="flex-1">
                     <h3 className="text-lg font-bold text-gray-900 mb-1">
-                      {student.name}
+                      {student.user.full_name}
                     </h3>
                     <div className="flex items-center gap-4 text-sm text-gray-600">
                       <span className="flex items-center gap-1">
                         <User className="w-4 h-4" />
-                        {student.studentId}
+                        {student.user.id}
                       </span>
                       <span className="flex items-center gap-1">
                         <MapPin className="w-4 h-4" />
-                        طاولة {student.table}
+                        طاولة {student.place.name}
                       </span>
                       <span className="flex items-center gap-1">
                         <Clock className="w-4 h-4" />
-                        دخول: {student.checkInTime}
+                        دخول: {student.actual_start}
                       </span>
                     </div>
                   </div>
@@ -183,28 +136,16 @@ export function ActiveStudents() {
                   <div className="text-left">
                     <p className="text-sm text-gray-600 mb-1">المدة</p>
                     <p className="text-lg font-bold text-[#034363]">
-                      {student.duration}
+                      {student.hours}
                     </p>
                   </div>
-                  <Button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCheckOut(student);
-                    }}
-                    variant="outline"
-                    size="sm"
-                    className="opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <LogOut className="w-4 h-4 ml-2" />
-                    تسجيل خروج
-                  </Button>
                 </div>
               </div>
             </motion.div>
           ))}
         </div>
 
-        {filteredStudents.length === 0 && (
+        {filteredBookings.length === 0 && (
           <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
             <User className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500">لا توجد نتائج للبحث</p>
@@ -217,7 +158,6 @@ export function ActiveStudents() {
         <StudentsDetailsModel
           setSelectedStudent={setSelectedStudent}
           selectedStudent={selectedStudent}
-          handleCheckOut={handleCheckOut}
         />
       )}
     </div>

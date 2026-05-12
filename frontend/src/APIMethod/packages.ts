@@ -1,6 +1,6 @@
 import { api } from "./client";
 
-export interface Packages {
+export interface AdminPackages {
   id: number;
   name: string;
   hours: number;
@@ -10,8 +10,15 @@ export interface Packages {
   price_per_hour: number;
 }
 
+export interface ReceptionPackages {
+  id: number;
+  user_name: string;
+  package_name: string;
+  status: string;
+}
+
 export interface GetPackagesResponse {
-  data: Packages;
+  data: AdminPackages;
   message: string;
 }
 
@@ -23,7 +30,7 @@ export interface CreatePackageData {
 }
 
 export interface CreatePackageResponse {
-  data: Packages;
+  data: AdminPackages;
   message: string;
 }
 
@@ -41,12 +48,21 @@ export interface UpdatePackageData {
 }
 
 export interface UpdatePackageResponse {
-  data: Packages;
+  data: AdminPackages;
+}
+
+export interface ReceptionPackageResponse {
+  data: ReceptionPackages;
+  message: string;
+}
+
+export interface UpdateReceptionPackageData {
+  status: string;
 }
 
 export const packagesApi = {
-  getPackage: async (): Promise<{ data: Packages[] }> => {
-    return api.get<{ data: Packages[] }>("/packages");
+  getPackage: async (): Promise<{ data: AdminPackages[] }> => {
+    return api.get<{ data: AdminPackages[] }>("/packages");
   },
 
   addPackage: async (
@@ -64,5 +80,15 @@ export const packagesApi = {
     packageData: UpdatePackageData,
   ): Promise<UpdatePackageResponse> => {
     return api.put<UpdatePackageResponse>(`/packages/${id}`, packageData);
+  },
+
+  getReceptionPackage: async (): Promise<ReceptionPackageResponse> => {
+    return api.get<ReceptionPackageResponse>("/pending");
+  },
+
+  updateReceptionPackage: async (
+    id: number | string,
+  ): Promise<ReceptionPackages> => {
+    return api.put<ReceptionPackages>(`/active/${id}`);
   },
 };

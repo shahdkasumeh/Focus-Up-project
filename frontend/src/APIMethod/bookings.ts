@@ -2,6 +2,25 @@
 import { api } from "./client";
 import { Table } from "./tables";
 
+export interface BookingDetails {
+  id_booking: number;
+  status: string;
+  user: {
+    id: number;
+    full_name: string;
+  };
+  place: {
+    name: string;
+    id: number;
+  };
+  scheduled_start: string;
+  scheduled_end: string;
+  actual_start: string | null;
+  actual_end: string | null;
+  hours: string | null;
+  total_price: string | null;
+}
+
 export interface BookingCheckInResponse {
   data: {
     id: number;
@@ -40,6 +59,11 @@ export interface BookingCheckOutResponse {
   message: string;
 }
 
+export interface BookingDetailsResponse {
+  data: BookingDetails;
+  message?: string;
+}
+
 export const bookingsAPI = {
   checkIn: async (bookingId: string): Promise<BookingCheckInResponse> => {
     return api.post<BookingCheckInResponse>(`/bookings/check_out`, {
@@ -55,6 +79,10 @@ export const bookingsAPI = {
 
   getBooking: async (bookingId: string) => {
     return api.get(`/bookings/${bookingId}`);
+  },
+
+  getBookingDetails: async (): Promise<{ data: BookingDetails[] }> => {
+    return api.get<{ data: BookingDetails[] }>(`/bookings/managment`);
   },
 };
 

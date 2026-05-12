@@ -66,7 +66,7 @@ async function request<T>(
 export const api = {
   get: <T>(endpoint: string) => request<T>(endpoint, "GET"),
   post: <T>(endpoint: string, data: any) => request<T>(endpoint, "POST", data),
-  put: <T>(endpoint: string, data: any) => request<T>(endpoint, "PUT", data),
+  put: <T>(endpoint: string, data?: any) => request<T>(endpoint, "PUT", data),
   delete: <T>(endpoint: string) => request<T>(endpoint, "DELETE"),
 };
 

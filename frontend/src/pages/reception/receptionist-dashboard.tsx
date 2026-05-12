@@ -10,6 +10,7 @@ import {
   AlertCircle,
   User,
   Settings,
+  Package,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -55,9 +56,9 @@ export function ReceptionistDashboard() {
     },
     {
       id: "profile",
-      title: "الملف الشخصي",
-      description: "إدارة حسابك",
-      icon: User,
+      title: "إدارة الباقات",
+      description: "تعديل حالة الباقات",
+      icon: Package,
       color: "from-[#f0f8fc] to-[#e0f2fe]",
       textColor: "text-[#034363]",
       onClick: () => navigate("/reception/ReceptionistProfile"),

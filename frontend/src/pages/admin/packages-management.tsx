@@ -26,7 +26,7 @@ import {
 
 export function PackagesManagement() {
   const { state, dispatch } = useAuth();
-  const { packages } = state;
+  const { AdminPackages } = state;
 
   //const [packageToEdit, setPackageToEdit] = useState(null);
   const [packageToEdit, setPackageToEdit] = useState<any>(null);
@@ -35,7 +35,6 @@ export function PackagesManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
 
-  // جلب الباقات
   useEffect(() => {
     fetchPackages();
   }, []);
@@ -109,7 +108,7 @@ export function PackagesManagement() {
     }
   };
 
-  const filteredPackages = packages.filter((thePackage) => {
+  const filteredPackages = AdminPackages.filter((thePackage) => {
     const matchesSearch = thePackage.name
       ?.toLowerCase()
       .includes(searchQuery.toLowerCase());
@@ -136,9 +135,7 @@ export function PackagesManagement() {
         </button>
       </div>
 
-      {/* Stats - بدون تغيير */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* ... إحصائيات كما هي ... */}
         <div className="bg-white rounded-2xl shadow-md p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
@@ -146,7 +143,9 @@ export function PackagesManagement() {
             </div>
             <TrendingUp className="w-5 h-5 text-green-500" />
           </div>
-          <h3 className="text-2xl text-gray-900 mb-1">{packages.length}</h3>
+          <h3 className="text-2xl text-gray-900 mb-1">
+            {AdminPackages.length}
+          </h3>
           <p className="text-gray-600 text-sm">إجمالي الباقات</p>
         </div>
 

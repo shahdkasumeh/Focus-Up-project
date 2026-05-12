@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import {
   Search,
@@ -7,107 +7,64 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
-  Edit2,
-  Eye,
-  Download,
-  RefreshCw,
+  CalendarX,
 } from "lucide-react";
-import { Button } from "../../components/Button";
+import { useAuth } from "../../context/GlobalState";
+import { ActionTypes } from "../../context/AppReducer";
+import toast from "react-hot-toast";
 
-const bookings = [
-  {
-    id: 1001,
-    user: "أحمد محمد",
-    email: "ahmed@example.com",
-    phone: "0501234567",
-    room: "قاعة النجاح",
-    center: "مركز التميز الدراسي",
-    date: "2026-02-17",
-    time: "14:00-18:00",
-    seats: ["A1", "A3"],
-    amount: 60,
-    status: "confirmed",
-    paymentMethod: "بطاقة ائتمانية",
-    createdAt: "2026-02-15 10:30",
-  },
-  {
-    id: 1002,
-    user: "سارة أحمد",
-    email: "sara@example.com",
-    phone: "0509876543",
-    room: "قاعة الإبداع",
-    center: "مركز الطموح",
-    date: "2026-02-17",
-    time: "08:00-12:00",
-    seats: ["B5"],
-    amount: 80,
-    status: "pending",
-    paymentMethod: "محفظة إلكترونية",
-    createdAt: "2026-02-16 14:20",
-  },
-  {
-    id: 1003,
-    user: "محمد علي",
-    email: "mohammed@example.com",
-    phone: "0555555555",
-    room: "قاعة الهدوء",
-    center: "مركز السكينة",
-    date: "2026-02-18",
-    time: "14:00-18:00",
-    seats: ["C2", "C3"],
-    amount: 48,
-    status: "confirmed",
-    paymentMethod: "بطاقة ائتمانية",
-    createdAt: "2026-02-16 09:15",
-  },
-  {
-    id: 1004,
-    user: "فاطمة خالد",
-    email: "fatima@example.com",
-    phone: "0544444444",
-    room: "قاعة التفوق",
-    center: "مركز الإنجاز",
-    date: "2026-02-18",
-    time: "18:00-22:00",
-    seats: ["A10"],
-    amount: 72,
-    status: "cancelled",
-    paymentMethod: "بطاقة ائتمانية",
-    createdAt: "2026-02-14 16:45",
-  },
-  {
-    id: 1005,
-    user: "خالد سعيد",
-    email: "khalid@example.com",
-    phone: "0533333333",
-    room: "قاعة المعرفة",
-    center: "مركز العلم",
-    date: "2026-02-19",
-    time: "14:00-18:00",
-    seats: ["D1", "D2", "D3"],
-    amount: 36,
-    status: "confirmed",
-    paymentMethod: "محفظة إلكترونية",
-    createdAt: "2026-02-16 11:30",
-  },
-];
+import { BookingDetails, bookingsAPI } from "../../APIMethod/bookings";
 
 export function BookingsManagement() {
+  const { state, dispatch } = useAuth();
+
+  const { bookingDetails } = state;
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [selectedBooking, setSelectedBooking] = useState<any>(null);
+
+  useEffect(() => {
+    fetchBookingDetails();
+  }, []);
+
+  const fetchBookingDetails = async () => {
+    setLoading(true);
+    try {
+      const response = await bookingsAPI.getBookingDetails();
+      console.log("الحجوزات المستلمة:", response.data);
+      dispatch({
+        type: ActionTypes.SET_BOOKINGDETAILS,
+        payload: response.data,
+      });
+    } catch (error) {
+      console.error("فشل في جلب الحجوزات:", error);
+      toast.error("فشل في تحميل الحجوزات");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     const badges = {
+      pending: {
+        text: "معلق",
+        color: "bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/20",
+        icon: Clock,
+      },
       confirmed: {
         text: "مؤكد",
         color: "bg-[#10B981]/10 text-[#10B981] border-[#10B981]/20",
         icon: CheckCircle2,
       },
-      pending: {
-        text: "معلق",
-        color: "bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/20",
-        icon: Clock,
+      active: {
+        text: "نشط",
+        color: "bg-[#3B82F6]/10 text-[#3B82F6] border-[#3B82F6]/20",
+        icon: CheckCircle2,
+      },
+      completed: {
+        text: "مكتمل",
+        color: "bg-[#10B981]/10 text-[#10B981] border-[#10B981]/20",
+        icon: CheckCircle2,
       },
       cancelled: {
         text: "ملغي",
@@ -115,13 +72,41 @@ export function BookingsManagement() {
         icon: XCircle,
       },
     };
-    return badges[status as keyof typeof badges];
+
+    // إذا كانت الحالة غير معرفة، نعرض حالة افتراضية
+    const defaultBadge = {
+      text: status || "غير معروف",
+      color: "bg-gray-100 text-gray-600 border-gray-200",
+      icon: Clock,
+    };
+
+    return badges[status as keyof typeof badges] || defaultBadge;
   };
 
-  const filteredBookings =
-    statusFilter === "all"
-      ? bookings
-      : bookings.filter((b) => b.status === statusFilter);
+  const getFilteredBookings = () => {
+    let filtered =
+      statusFilter === "all"
+        ? bookingDetails
+        : bookingDetails.filter(
+            (b: BookingDetails) => b.status === statusFilter,
+          );
+
+    if (searchQuery) {
+      filtered = filtered.filter(
+        (booking) =>
+          booking.id_booking ||
+          booking.user.full_name
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()),
+      );
+    }
+
+    return filtered;
+  };
+
+  const filteredBookings = getFilteredBookings();
+
+  const hasNoBookings = filteredBookings.length === 0;
 
   return (
     <div className="p-6 space-y-6">
@@ -131,16 +116,6 @@ export function BookingsManagement() {
           <h1 className="text-3xl text-gray-900 mb-2">إدارة الحجوزات</h1>
           <p className="text-gray-600">عرض وإدارة جميع الحجوزات</p>
         </div>
-        <div className="flex gap-3">
-          <Button variant="outline">
-            <Download className="w-5 h-5 ml-2" />
-            تصدير Excel
-          </Button>
-          <Button variant="primary">
-            <RefreshCw className="w-5 h-5 ml-2" />
-            تحديث
-          </Button>
-        </div>
       </div>
 
       {/* Stats */}
@@ -149,7 +124,7 @@ export function BookingsManagement() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">إجمالي الحجوزات</p>
-              <p className="text-2xl text-gray-900">{bookings.length}</p>
+              <p className="text-2xl text-gray-900">{bookingDetails.length}</p>
             </div>
             <Calendar className="w-10 h-10 text-[#2563EB] opacity-20" />
           </div>
@@ -159,7 +134,9 @@ export function BookingsManagement() {
             <div>
               <p className="text-sm text-gray-600 mb-1">مؤكدة</p>
               <p className="text-2xl text-[#10B981]">
-                {bookings.filter((b) => b.status === "confirmed").length}
+                {
+                  bookingDetails.filter((b) => b.status === "active").length
+                }{" "}
               </p>
             </div>
             <CheckCircle2 className="w-10 h-10 text-[#10B981] opacity-20" />
@@ -170,7 +147,7 @@ export function BookingsManagement() {
             <div>
               <p className="text-sm text-gray-600 mb-1">معلقة</p>
               <p className="text-2xl text-[#F59E0B]">
-                {bookings.filter((b) => b.status === "pending").length}
+                {bookingDetails.filter((b) => b.status === "pending").length}
               </p>
             </div>
             <Clock className="w-10 h-10 text-[#F59E0B] opacity-20" />
@@ -181,7 +158,7 @@ export function BookingsManagement() {
             <div>
               <p className="text-sm text-gray-600 mb-1">ملغاة</p>
               <p className="text-2xl text-[#EF4444]">
-                {bookings.filter((b) => b.status === "cancelled").length}
+                {bookingDetails.filter((b) => b.status === "cancelled").length}
               </p>
             </div>
             <XCircle className="w-10 h-10 text-[#EF4444] opacity-20" />
@@ -222,214 +199,135 @@ export function BookingsManagement() {
       {/* Bookings Table */}
       <div className="bg-white rounded-2xl shadow-md overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-4 text-right text-sm text-gray-600">
-                  رقم الحجز
-                </th>
-                <th className="px-6 py-4 text-right text-sm text-gray-600">
-                  المستخدم
-                </th>
-                <th className="px-6 py-4 text-right text-sm text-gray-600">
-                  القاعة
-                </th>
-                <th className="px-6 py-4 text-right text-sm text-gray-600">
-                  التاريخ
-                </th>
-                <th className="px-6 py-4 text-right text-sm text-gray-600">
-                  الوقت
-                </th>
-                <th className="px-6 py-4 text-right text-sm text-gray-600">
-                  المقاعد
-                </th>
-                <th className="px-6 py-4 text-right text-sm text-gray-600">
-                  المبلغ
-                </th>
-                <th className="px-6 py-4 text-right text-sm text-gray-600">
-                  الحالة
-                </th>
-                <th className="px-6 py-4 text-right text-sm text-gray-600">
-                  الإجراءات
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredBookings.map((booking) => {
-                const statusBadge = getStatusBadge(booking.status);
-                const StatusIcon = statusBadge.icon;
-                return (
-                  <motion.tr
-                    key={booking.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-[#2563EB]">
-                        #{booking.id}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div>
-                        <p className="text-sm text-gray-900">{booking.user}</p>
-                        <p className="text-xs text-gray-500">{booking.email}</p>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div>
-                        <p className="text-sm text-gray-900">{booking.room}</p>
-                        <p className="text-xs text-gray-500">
-                          {booking.center}
-                        </p>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      {booking.date}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      {booking.time}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1">
-                        {booking.seats.map((seat) => (
+          {!hasNoBookings ? (
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-4 text-right text-sm text-gray-600">
+                    رقم الحجز
+                  </th>
+                  <th className="px-6 py-4 text-right text-sm text-gray-600">
+                    المستخدم
+                  </th>
+                  <th className="px-6 py-4 text-right text-sm text-gray-600">
+                    التاريخ & الوقت
+                  </th>
+                  <th className="px-6 py-4 text-right text-sm text-gray-600">
+                    المكان
+                  </th>
+                  <th className="px-6 py-4 text-right text-sm text-gray-600">
+                    المبلغ
+                  </th>
+                  <th className="px-6 py-4 text-right text-sm text-gray-600">
+                    الحالة
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {filteredBookings.map((booking) => {
+                  const statusBadge = getStatusBadge(booking.status);
+                  if (!statusBadge) {
+                    return null;
+                  }
+
+                  const StatusIcon = statusBadge.icon;
+
+                  return (
+                    <motion.tr
+                      key={booking.id_booking}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-[#2563EB] font-medium">
+                          #{booking.id_booking}{" "}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div>
+                          <p className="text-sm text-gray-900 font-medium">
+                            {booking.user.full_name}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            ID: {booking.user.id}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-700">
+                          <p>
+                            {new Date(
+                              booking.scheduled_start,
+                            ).toLocaleDateString("ar-SA")}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {new Date(
+                              booking.scheduled_start,
+                            ).toLocaleTimeString("ar-SA")}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-wrap gap-1">
                           <span
-                            key={seat}
+                            key={booking.place.id}
                             className="px-2 py-0.5 bg-blue-50 text-[#2563EB] rounded text-xs"
                           >
-                            {seat}
+                            {booking.place.name}
                           </span>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-[#2563EB]">
-                      {booking.amount} ر.س
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs border ${statusBadge.color}`}
-                      >
-                        <StatusIcon className="w-3.5 h-3.5" />
-                        {statusBadge.text}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => setSelectedBooking(booking)}
-                          className="p-2 hover:bg-blue-50 rounded-lg text-[#2563EB] transition-colors"
-                          title="عرض التفاصيل"
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm font-semibold text-[#2563EB]">
+                          {booking.total_price} ر.س
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${statusBadge.color}`}
                         >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button
-                          className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors"
-                          title="تعديل"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </motion.tr>
-                );
-              })}
-            </tbody>
-          </table>
+                          <StatusIcon className="w-3.5 h-3.5" />
+                          {statusBadge.text}
+                        </span>
+                      </td>
+                    </motion.tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col items-center justify-center py-16 px-4"
+            >
+              <div className="bg-gray-50 rounded-full p-6 mb-4">
+                <CalendarX className="w-16 h-16 text-gray-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                لا توجد حجوزات
+              </h3>
+              <p className="text-gray-500 text-center max-w-md">
+                {searchQuery || statusFilter !== "all"
+                  ? "لا توجد نتائج تطابق معايير البحث الحالية. حاول تغيير الفلتر أو البحث."
+                  : "لم يتم العثور على أي حجوزات بعد. ستبدو الحجوزات هنا عند إنشائها."}
+              </p>
+              {(searchQuery || statusFilter !== "all") && (
+                <button
+                  onClick={() => {
+                    setSearchQuery("");
+                    setStatusFilter("all");
+                  }}
+                  className="mt-4 px-4 py-2 text-sm bg-[#2563EB] text-white rounded-lg hover:bg-[#1D4ED8] transition-colors"
+                >
+                  مسح جميع الفلاتر
+                </button>
+              )}
+            </motion.div>
+          )}
         </div>
       </div>
-
-      {/* Booking Details Modal */}
-      {selectedBooking && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6"
-          onClick={() => setSelectedBooking(null)}
-        >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-          >
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-              <h2 className="text-2xl text-gray-900">
-                تفاصيل الحجز #{selectedBooking.id}
-              </h2>
-              <button
-                onClick={() => setSelectedBooking(null)}
-                className="w-10 h-10 rounded-xl hover:bg-gray-100 flex items-center justify-center transition-colors"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="p-6 space-y-6">
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">المستخدم</p>
-                  <p className="text-base text-gray-900">
-                    {selectedBooking.user}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">
-                    البريد الإلكتروني
-                  </p>
-                  <p className="text-base text-gray-900">
-                    {selectedBooking.email}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">رقم الجوال</p>
-                  <p className="text-base text-gray-900">
-                    {selectedBooking.phone}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">القاعة</p>
-                  <p className="text-base text-gray-900">
-                    {selectedBooking.room}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">التاريخ</p>
-                  <p className="text-base text-gray-900">
-                    {selectedBooking.date}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">الوقت</p>
-                  <p className="text-base text-gray-900">
-                    {selectedBooking.time}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">طريقة الدفع</p>
-                  <p className="text-base text-gray-900">
-                    {selectedBooking.paymentMethod}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">المبلغ الإجمالي</p>
-                  <p className="text-base text-[#2563EB]">
-                    {selectedBooking.amount} ر.س
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-3">
-                <Button variant="outline" className="flex-1">
-                  تعديل الحجز
-                </Button>
-                <Button variant="danger" className="flex-1">
-                  إلغاء الحجز
-                </Button>
-              </div>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
     </div>
   );
 }

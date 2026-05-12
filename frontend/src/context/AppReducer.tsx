@@ -1,7 +1,9 @@
 import React from "react";
 import { Room } from "../APIMethod/rooms";
 import { Table } from "../APIMethod/tables";
-import { Packages } from "../APIMethod/packages";
+import { AdminPackages } from "../APIMethod/packages";
+import { BookingDetails } from "../APIMethod/bookings";
+import { ReceptionPackages } from "../APIMethod/packages";
 
 //typescript
 export interface User {
@@ -15,7 +17,9 @@ export interface AuthState {
   user: User | null;
   rooms: Room[];
   tables: Table[];
-  packages: Packages[];
+  AdminPackages: AdminPackages[];
+  ReceptionPackages: ReceptionPackages[];
+  bookingDetails: BookingDetails[];
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
@@ -34,7 +38,9 @@ export const initialState: AuthState = {
   user: initialUser,
   rooms: [],
   tables: [],
-  packages: [],
+  AdminPackages: [],
+  ReceptionPackages: [],
+  bookingDetails: [],
   isAuthenticated: !!initialUser,
   loading: false,
   error: null,
@@ -59,6 +65,9 @@ export enum ActionTypes {
   ADD_PACKAGE = "ADD_PACKAGE",
   UPDATE_PACKAGE = "UPDATE_PACKAGE",
   DELETE_PACKAGE = "DELETE_PACKAGE",
+  SET_BOOKINGDETAILS = "SET_BOOKINGDETAILS",
+  SET_RECEPTION_PACKAGE = "SET_RECEPTION_PACKAGE",
+  UPDATE_RECEPTION_PACKAGE = "UPDATE_RECEPTION_PACKAGE",
 }
 
 const AppReducer = (
@@ -160,26 +169,46 @@ const AppReducer = (
     case ActionTypes.SET_PACKAGE:
       return {
         ...state,
-        packages: action.payload,
+        AdminPackages: action.payload,
       };
 
     case ActionTypes.DELETE_PACKAGE:
       return {
         ...state,
-        packages: state.packages.filter(
+        AdminPackages: state.AdminPackages.filter(
           (packages) => packages.id !== action.payload,
         ),
       };
     case ActionTypes.ADD_PACKAGE:
       return {
         ...state,
-        packages: [action.payload, ...state.packages],
+        AdminPackages: [action.payload, ...state.AdminPackages],
       };
 
     case ActionTypes.UPDATE_PACKAGE:
       return {
         ...state,
-        packages: state.packages.map((packages) =>
+        AdminPackages: state.AdminPackages.map((packages) =>
+          packages.id === action.payload.id ? action.payload : packages,
+        ),
+      };
+
+    case ActionTypes.SET_BOOKINGDETAILS:
+      return {
+        ...state,
+        bookingDetails: action.payload,
+      };
+
+    case ActionTypes.SET_RECEPTION_PACKAGE:
+      return {
+        ...state,
+        ReceptionPackages: action.payload,
+      };
+
+    case ActionTypes.UPDATE_RECEPTION_PACKAGE:
+      return {
+        ...state,
+        ReceptionPackages: state.ReceptionPackages.map((packages) =>
           packages.id === action.payload.id ? action.payload : packages,
         ),
       };

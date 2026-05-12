@@ -65,7 +65,6 @@ export function ReceptionTablesManagement() {
     fetchRooms();
   }, [dispatch]);
 
-  // ========== الخطوة 2: جلب الطاولات فقط عند اختيار قاعة ==========
   const fetchTablesForRoom = useCallback(
     async (roomId: number) => {
       try {
@@ -107,7 +106,6 @@ export function ReceptionTablesManagement() {
     [dispatch, state.tables],
   );
 
-  // ========== الخطوة 3: عند اختيار قاعة، جلب طاولاتها ==========
   const handleRoomSelect = useCallback(
     async (roomId: number) => {
       setSelectedRoomId(roomId);
