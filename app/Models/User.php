@@ -29,7 +29,7 @@ class User extends Authenticatable implements MustVerifyEmail,AuthCanResetPasswo
         'password',
         'phone',
         'status',
-        
+
     ];
 
     /**
@@ -62,6 +62,10 @@ class User extends Authenticatable implements MustVerifyEmail,AuthCanResetPasswo
     public function consumptionPackage()
     {
         return $this->hasOne(ConsumptionPackage::class);
+    }
+
+    public function luckyWheel(){
+        return $this->hasMany(LuckyWheel::class);
     }
 
 

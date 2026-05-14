@@ -65,12 +65,13 @@ class ConsumptionPackageController extends Controller
     }
     public function pending(){
         $package=ConsumptionPackage::with(['user','package'])
-        ->where('status','pending')
+        ->whereIn('status',['pending','active'])
         ->latest()
         ->get();
         return $this->success(
             EmployeePackageResource::collection($package)
         );
+
     }
     public function activeStatus($id){
         $package=ConsumptionPackage::find($id);

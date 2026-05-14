@@ -29,6 +29,7 @@ class BookingService
         $userId, $tableId, $roomId, $scheduledStart, $scheduledEnd
     ) {
 
+
         // =========================
         // Guard: اختيار واحد فقط
         // =========================
@@ -47,12 +48,53 @@ class BookingService
         $end   = Carbon::parse($scheduledEnd);
 
         if ($start->isPast()) {
-            throw new \Exception('لا يمكن الحجز في وقت ماضٍ.');
+            abort(422,'لا يمكن الحجز في وقت ماضٍ.');
         }
 
         if ($end->lte($start)) {
             throw new \Exception('وقت الانتهاء يجب أن يكون بعد البداية.');
         }
+        $start = Carbon::parse($scheduledStart);
+$end   = Carbon::parse($scheduledEnd);
+
+// =========================
+// 1. منع الحجز في الماضي
+// =========================
+if ($start->isPast()) {
+    throw new \Exception('لا يمكن الحجز في وقت ماضٍ.');
+}
+
+// =========================
+// 2. منع يوم الجمعة
+// =========================
+if ($start->dayOfWeek === Carbon::FRIDAY) {
+    throw new \Exception('لا يمكن الحجز يوم الجمعة.');
+}
+
+// =========================
+// 3. نطاق الوقت (09:00 - 20:00)
+// =========================
+$open  = Carbon::createFromTime(9, 0, 0, $start->timezone);
+$close = Carbon::createFromTime(20, 0, 0, $start->timezone);
+
+// البداية لازم تكون داخل الدوام
+if ($start->lt($open) || $start->gte($close)) {
+    throw new \Exception('الحجز مسموح فقط من 09:00 إلى 20:00.');
+}
+
+// النهاية لازم تكون داخل الدوام
+if ($end->gt($close) || $end->lte($open)) {
+    throw new \Exception('وقت انتهاء الحجز يجب أن يكون قبل 20:00.');
+}
+
+// =========================
+// 4. منع أي حجز يمتد خارج الدوام (الأهم)
+// =========================
+if ($start->copy()->startOfDay()->addHours(9)->gt($start) ||
+    $end->copy()->startOfDay()->addHours(20)->lt($end)) {
+    throw new \Exception('لا يمكن أن يمتد الحجز خارج أوقات العمل.');
+}
+
 
         // =========================
         // User conflict (مهم جداً)
@@ -137,16 +179,19 @@ class BookingService
 // =========================
         // Discount (optional)
         // =========================
-        $discount = LuckyWheel::where('user_id', $userId)
-            ->where('prize_type', 'discount')
+        $wheel = LuckyWheel::where('user_id', $userId)
+            ->where('name', 'discount')
             ->where('is_used', false)
             ->lockForUpdate()
-            ->value('discount_percent') ?? 0;
+            ->latest()
+            ->first();
+
+        $discount = $wheel ? (float) $wheel->value : 0;
 
         // =========================
         // Create booking
         // =========================
-        return Booking::create([
+        $booking= Booking::create([
             'user_id'          => $userId,
             'table_id'         => $tableId,
             'room_id'          => $roomId,
@@ -155,6 +200,17 @@ class BookingService
             'discount_percent' => $discount,
             'status'           => 'pending',
         ]);
+            if ($discount > 0) {
+            LuckyWheel::where('user_id', $userId)
+                ->where('name', 'discount')
+                ->where('is_used', false)
+                ->update([
+                    'is_used'            => true,
+                    'used_in_booking_id' => $booking->id,
+                ]);
+        }
+        return $booking;
+
     });
 }
 //     // =========================================================
@@ -215,13 +271,15 @@ class BookingService
             // =========================
             // (ب) Walk-in فوري — بدون تحديد مكان
             // =========================
-            $discount = LuckyWheel::where('user_id', $userId)
-                ->where('prize_type', 'discount')
+            $wheel= LuckyWheel::where('user_id', $userId)
+                ->where('name', 'discount')
                 ->where('is_used', false)
                 ->lockForUpdate()
-                ->value('discount_percent') ?? 0;
+                ->first();
 
-            return Booking::create([
+            $discount = $wheel ? (float) $wheel->value : 0;
+
+            $booking= Booking::create([
                 'user_id'          => $userId,
                 'table_id'         => null,
                 'room_id'          => null,
@@ -231,6 +289,16 @@ class BookingService
                 'discount_percent' => $discount,
                 'status'           => 'active',
             ]);
+            if ($discount > 0) {
+            LuckyWheel::where('user_id', $userId)
+                ->where('name', 'discount')
+                ->where('is_used', false)
+                ->update([
+                    'is_used'            => true,
+                    'used_in_booking_id' => $booking->id,
+                ]);
+        }
+        return $booking;
         });
     }
 
@@ -472,7 +540,7 @@ private static function deductFromSubscription(
         'completed' => $status['completed'] ?? 0,
         'cancelled' => $status['cancelled'] ?? 0,
         'pending'   => $status['pending'] ?? 0,
-        'no_show'   => $stats['no_show'] ?? 0,
+        'no_show'   => $status['no_show'] ?? 0,
     ];
 }
 

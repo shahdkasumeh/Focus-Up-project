@@ -3,6 +3,8 @@
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ConsumptionPackageController;
 use App\Http\Controllers\CrowdingController;
+use App\Http\Controllers\LuckyWheelAdminController;
+use App\Http\Controllers\LuckyWheelController;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\TableController;
@@ -93,6 +95,24 @@ Route::middleware('auth:sanctum')->group(function (){
         Route::get('/myPackage', [ConsumptionPackageController::class, 'index']);
         Route::post('/buy', [ConsumptionPackageController::class, 'store']);
         Route::get('/active', [ConsumptionPackageController::class, 'active']);
+
+        //العجلة للمدير
+        Route::post('/createLuckyWheel',[LuckyWheelAdminController::class,'store']);
+        Route::get('/getAllPrize',[LuckyWheelAdminController::class,'index']);
+        Route::get('/getPrizeById/{luckyWheelAdmin}',[LuckyWheelAdminController::class,'show']);
+        Route::put('/updatePrize/{luckyWheelAdmin}',[LuckyWheelAdminController::class,'update']);
+        Route::delete('/deletePrize/{luckyWh}',[LuckyWheelAdminController::class,'destroy']);
+
+
+
+
+   Route::get('/can-spin', [LuckyWheelController::class, 'canSpin']);
+    Route::get('/prizes', [LuckyWheelController::class, 'prizes']);
+    Route::post('/spin', [LuckyWheelController::class, 'spin']);
+    Route::get('/wheel/my-prizesCurrent', [LuckyWheelController::class, 'myPrizesCurrent']);
+    Route::get('/wheel/my-prizes', [LuckyWheelController::class, 'myPrizes']);
+    Route::put('/claim-gift/{id}',[LuckyWheelController::class, 'claimGift']);
+    Route::get('/wheel/gifts', [LuckyWheelController::class, 'gifts']);
 
 });
 

@@ -14,10 +14,11 @@ return new class extends Migration
         Schema::create('lucky_wheels', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('lucky_wheel_admin_id')->constrained()->cascadeOnDelete();
 
-            $table->enum('prize_type', ['discount', 'motivational']);
-            $table->decimal('discount_percent', 5, 2)->nullable();
-            $table->string('message')->nullable();
+            $table->string('name');
+            $table->string("value");
+
 
             $table->boolean('is_used')->default(false);
 
@@ -25,6 +26,9 @@ return new class extends Migration
             ->nullable()
             ->constrained('bookings')
             ->nullOnDelete();
+            $table->timestamp('spun_at');
+            $table->date('eligible_week_start');
+            $table->timestamps();
         });
     }
 
