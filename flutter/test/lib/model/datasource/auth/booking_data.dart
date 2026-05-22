@@ -7,9 +7,11 @@ class BookingData {
 
   BookingData(this.crud);
 
-  // =========================
-  // 🟢 CREATE BOOKING
-  // =========================
+  String formatDateTime(DateTime dt) {
+    return "${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} "
+        "${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}:00";
+  }
+
   Future<Either<Failure, Map<String, dynamic>>> createBooking({
     required int tableId,
     required DateTime start,
@@ -17,12 +19,11 @@ class BookingData {
   }) async {
     return await crud.postData(AppLink.bookings, {
       "table_id": tableId,
-      "scheduled_start": start.toIso8601String(),
-      "scheduled_end": end.toIso8601String(),
+      "scheduled_start": formatDateTime(start),
+      "scheduled_end": formatDateTime(end),
     });
   }
 
-  //==========================cancel booking===========================
   Future<Either<Failure, Map<String, dynamic>>> cancelBooking(
     int bookingId,
   ) async {

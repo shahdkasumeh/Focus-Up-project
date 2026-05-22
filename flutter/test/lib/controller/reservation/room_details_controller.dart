@@ -28,9 +28,7 @@ class RoomDetailsController extends GetxController {
     fetchTables();
   }
 
-  // =======================
-  // 📥 GET ROOM + TABLES
-  // =======================
+
   fetchTables() async {
     isLoading.value = true;
 
@@ -56,9 +54,7 @@ class RoomDetailsController extends GetxController {
     isLoading.value = false;
   }
 
-  // =======================
-  // 🪑 SELECT TABLE
-  // =======================
+
   void selectTable(TableModel table) {
     if (table.isOccupied == 1) {
       Get.snackbar("خطأ", "الطاولة مشغولة");

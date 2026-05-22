@@ -29,8 +29,9 @@ class Crud {
       "Accept": "application/json",
     };
 
-    if (_token != null && _token!.isNotEmpty) {
-      headers["Authorization"] = "Bearer $_token";
+    final token = _token;
+    if (token != null && token.isNotEmpty) {
+      headers["Authorization"] = "Bearer $token";
     }
 
     if (extra != null) {
@@ -154,50 +155,41 @@ class Crud {
       return Left(Failure("Unexpected error"));
     }
   }
+
   // =========================
-// 🖼 UPLOAD IMAGE
-// =========================
-Future<Either<Failure, Map<String, dynamic>>> uploadFile(
-  String url,
-  String filePath, {
-  String fieldName = "image",
-}) async {
-  try {
-    print("🚀 UPLOAD => $url");
-    print("📂 FILE => $filePath");
+  // 🖼 UPLOAD IMAGE
+  // =========================
+  Future<Either<Failure, Map<String, dynamic>>> uploadFile(
+    String url,
+    String filePath, {
+    String fieldName = "image",
+  }) async {
+    try {
+      print("🚀 UPLOAD => $url");
+      print("📂 FILE => $filePath");
 
-    final request = http.MultipartRequest(
-      "POST",
-      Uri.parse(url),
-    );
+      final request = http.MultipartRequest("POST", Uri.parse(url));
 
-    /// TOKEN
-    if (_token != null && _token!.isNotEmpty) {
-      request.headers["Authorization"] = "Bearer $_token";
+      /// TOKEN
+      if (_token != null && _token!.isNotEmpty) {
+        request.headers["Authorization"] = "Bearer $_token";
+      }
+
+      request.headers["Accept"] = "application/json";
+
+      /// FILE
+      request.files.add(await http.MultipartFile.fromPath(fieldName, filePath));
+
+      final streamedResponse = await request.send();
+
+      final response = await http.Response.fromStream(streamedResponse);
+
+      return _handleResponse(response);
+    } catch (e) {
+      print("❌ UPLOAD ERROR => $e");
+      return Left(Failure("Upload failed"));
     }
-
-    request.headers["Accept"] = "application/json";
-
-    /// FILE
-    request.files.add(
-      await http.MultipartFile.fromPath(
-        fieldName,
-        filePath,
-      ),
-    );
-
-    final streamedResponse = await request.send();
-
-    final response = await http.Response.fromStream(
-      streamedResponse,
-    );
-
-    return _handleResponse(response);
-  } catch (e) {
-    print("❌ UPLOAD ERROR => $e");
-    return Left(Failure("Upload failed"));
   }
-}
 
   // =========================
   // 🧠 RESPONSE HANDLER

@@ -1,9 +1,9 @@
-// import 'package:get/get.dart';
-// import 'package:test/controller/home/luckywheel_controller.dart';
+import 'package:get/get.dart';
+import 'package:test/controller/home/luckywheel_controller.dart';
 
-// class Luckywheel extends Bindings {
-//   @override
-//   void dependencies() {
-// //Get.lazyPut(() => LuckyWheelControllerImp());
-//   }
-// }
+class Luckywheel extends Bindings {
+  @override
+  void dependencies() {
+    Get.put(LuckyWheelControllerImp());
+  }
+}

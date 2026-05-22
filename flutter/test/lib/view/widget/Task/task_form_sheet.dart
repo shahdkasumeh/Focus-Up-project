@@ -31,10 +31,7 @@ class TaskFormSheet extends GetView<TaskScreenController> {
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
             ),
             const SizedBox(height: 16),
-            field(
-              controller: controller.titleController,
-              hint: "عنوان المهمة",
-            ),
+            field(controller: controller.titleController, hint: "عنوان المهمة"),
             const SizedBox(height: 12),
             field(
               controller: controller.descriptionController,
@@ -52,8 +49,7 @@ class TaskFormSheet extends GetView<TaskScreenController> {
               decoration: InputDecoration(
                 hintText: "تاريخ المهمة",
                 filled: true,
-                fillColor: Colors.white.withOpacity(0.08),
-
+                fillColor: Colors.white.withValues(alpha: 0.08),
                 suffixIcon: const Icon(Icons.calendar_month),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(18),
@@ -98,6 +94,7 @@ class TaskFormSheet extends GetView<TaskScreenController> {
       ),
     );
   }
+
   Widget field({
     required TextEditingController controller,
     required String hint,
@@ -111,9 +108,9 @@ class TaskFormSheet extends GetView<TaskScreenController> {
         style: const TextStyle(color: Colors.black),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: TextStyle(color: Colors.grey.withOpacity(0.5)),
+          hintStyle: TextStyle(color: Colors.grey.withValues(alpha: 0.5)),
           filled: true,
-          fillColor: Colors.white.withOpacity(0.08),
+          fillColor: Colors.white.withValues(alpha: 0.08),
           contentPadding: const EdgeInsets.all(18),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(18),

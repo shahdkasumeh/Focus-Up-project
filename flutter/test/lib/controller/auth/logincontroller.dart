@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:test/core/class/constant/routes.dart';
-import 'package:test/core/class/constant/storagehandler.dart';
 import 'package:test/core/class/crud.dart';
 import 'package:test/core/class/statusrequest.dart';
 import 'package:test/model/datasource/auth/login_data.dart';
 import 'package:test/model/static/auth_model.dart';
+import 'package:test/core/class/constant/storagehandler.dart';
 
 abstract class LoginController extends GetxController {
   signIn();
@@ -24,11 +24,6 @@ class LoginControllerImp extends LoginController {
   bool isPasswordHidden = true;
   StatusRequest statusRequest = StatusRequest.none;
 
-  void togglePassword() {
-    isPasswordHidden = !isPasswordHidden;
-    update();
-  }
-
   @override
   void onInit() {
     email = TextEditingController();
@@ -43,6 +38,40 @@ class LoginControllerImp extends LoginController {
     super.dispose();
   }
 
+  void togglePassword() {
+    isPasswordHidden = !isPasswordHidden;
+    update();
+  }
+
+  // =========================
+  // 🔥 ERROR HANDLER
+  // =========================
+  String mapLoginError(dynamic data) {
+    final message = (data["message"] ?? "").toString().toLowerCase();
+
+    if (message.contains("password")) {
+      return "Incorrect password. Please try again.";
+    }
+
+    if (message.contains("email")) {
+      return "Email address is not correct.";
+    }
+
+    if (message.contains("user")) {
+      return "No account found with this email.";
+    }
+
+    if (message.contains("invalid")) {
+      return "Invalid login credentials.";
+    }
+
+    if (message.contains("network") || message.contains("socket")) {
+      return "Network error. Check your internet connection.";
+    }
+
+    return "Something went wrong. Please try again later.";
+  }
+
   // =========================
   // 🚀 LOGIN
   // =========================
@@ -54,51 +83,55 @@ class LoginControllerImp extends LoginController {
     update();
 
     final response = await loginData.postData({
-      "email": email.text,
-      "password": password.text,
+      "email": email.text.trim(),
+      "password": password.text.trim(),
     });
-
-    print("🔵 LOGIN RESPONSE => $response");
 
     response.fold(
       (failure) {
         statusRequest = StatusRequest.failure;
         update();
 
-        Get.defaultDialog(title: "Error", middleText: failure.message);
+        Get.snackbar(
+          "Login Failed",
+          failure.message,
+          backgroundColor: Colors.red.withValues(alpha: 0.9),
+          colorText: Colors.white,
+        );
       },
       (data) async {
-        print("📦 DATA => $data");
+        print("LOGIN RESPONSE => $data");
 
-       if (data["token"] != null) {
-  final token = data["token"];
+        if (data["token"] != null) {
+          final token = data["token"];
 
-  print("✅ TOKEN DIRECT => $token");
+          await StorageHandler().setToken(token);
 
-  await StorageHandler().setToken(token);
+          final auth = AuthModel.fromJson(data);
 
-  print("🔥 TOKEN SAVED => ${StorageHandler().token}");
+          await StorageHandler().setUserId(auth.user.id);
+          await StorageHandler().setQrCode(auth.user.fullName);
 
-  final auth = AuthModel.fromJson(data);
+          statusRequest = StatusRequest.success;
+          update();
 
-  await StorageHandler().setUserId(auth.user.id);
+          Get.snackbar(
+            "Welcome",
+            "Login successful 🎉",
+            backgroundColor: Colors.green.withValues(alpha: 0.9),
+            colorText: Colors.white,
+          );
 
-  print("USER ID SAVED => ${StorageHandler().userId}");
-
-  await StorageHandler().setQrCode(auth.user.fullName);
-
-  statusRequest = StatusRequest.success;
-  update();
-
-  Get.offAllNamed(AppRoutes.homepagescreen);
-}
-        else {
+          Get.offAllNamed(AppRoutes.homepagescreen);
+        } else {
           statusRequest = StatusRequest.failure;
           update();
 
-          Get.defaultDialog(
-            title: "Error",
-            middleText: data["message"] ?? "Login failed",
+          Get.snackbar(
+            "Login Failed",
+            mapLoginError(data),
+            backgroundColor: Colors.red.withValues(alpha: 0.9),
+            colorText: Colors.white,
           );
         }
       },
@@ -108,6 +141,9 @@ class LoginControllerImp extends LoginController {
     update();
   }
 
+  // =========================
+  // NAVIGATION
+  // =========================
   @override
   goToSignup() {
     Get.offNamed(AppRoutes.signUp);

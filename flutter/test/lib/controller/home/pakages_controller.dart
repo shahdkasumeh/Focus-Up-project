@@ -25,18 +25,18 @@ class PackagesController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    getCurrentPackage();
+    getMyPackages();
   }
 
   void changeTab(int index) {
     selectedTab.value = index;
 
     if (index == 0) {
-      getCurrentPackage(); // الحالية
+      getMyPackages(); // الشخصية
     } else if (index == 1) {
       getPackagesToBuy(); // الاشتراك
-    } else {
-      getMyPackages(); // الشخصية
+    } else if (index == 2) {
+      getCurrentPackage(); // الحالية
     }
   }
 

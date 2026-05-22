@@ -17,86 +17,109 @@ class Loginscreen extends GetView<LoginControllerImp> {
     Get.put(LoginControllerImp());
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(toolbarHeight: 30.0, backgroundColor: Appcolor.scondary),
+      backgroundColor: const Color(0xffF5F7FA),
+
+      appBar: AppBar(
+        toolbarHeight: 30,
+        backgroundColor: Appcolor.scondary,
+        elevation: 0,
+      ),
+
       body: GetBuilder<LoginControllerImp>(
         builder: (controller) => WillPopScope(
           onWillPop: alertExitApp,
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-            child: Form(
-              key: controller.formstate,
-              child: ListView(
-                children: [
-                  const SizedBox(height: 20),
-                  Buildlogoscreen(),
-                  const SizedBox(height: 30),
+          child: SafeArea(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 25,
+                  vertical: 20,
+                ),
 
-                  // EMAIL
-                  Customtextformauth(
-                    valid: (val) {
-                      return validInput(val!, 5, 50, "email");
-                    },
-                    isNumber: false,
-                    mycontroller: controller.email,
-                    hinttext: "Enter Your Email",
-                    iconData: Icons.email_outlined,
-                    labeltext: "Email",
-                  ),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(25),
 
-                  const SizedBox(height: 20),
-
-                  // PASSWORD
-                  Customtextformauth(
-                    valid: (val) => validInput(val!, 6, 20, "password"),
-                    isNumber: false,
-                    mycontroller: controller.password,
-                    hinttext: "Enter Password",
-                    labeltext: "Password",
-                    obscureText: controller.isPasswordHidden,
-                    iconData: controller.isPasswordHidden
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility_outlined,
-                    onTapIcon: () {
-                      controller.togglePassword();
-                    },
-                  ),
-
-                  // FORGET PASSWORD
-                  InkWell(
-                    onTap: () {
-                      controller.goToForgetPassword();
-                    },
-                    child: Text(
-                      "Forget Password ?",
-                      textAlign: TextAlign.end,
-                      style: TextStyle(
-                        color: Appcolor.scondary,
-                        fontWeight: FontWeight.bold,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.15),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
                       ),
+                    ],
+                  ),
+
+                  child: Form(
+                    key: controller.formstate,
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: [
+                        const SizedBox(height: 10),
+                        const Buildlogoscreen(),
+                        const SizedBox(height: 25),
+
+                        Customtextformauth(
+                          valid: (val) => validInput(val!, 5, 50, "email"),
+                          isNumber: false,
+                          mycontroller: controller.email,
+                          hinttext: "Enter Your Email",
+                          iconData: Icons.email_outlined,
+                          labeltext: "Email",
+                        ),
+
+                        const SizedBox(height: 15),
+
+                        Customtextformauth(
+                          valid: (val) => validInput(val!, 6, 20, "password"),
+                          isNumber: false,
+                          mycontroller: controller.password,
+                          hinttext: "Enter Password",
+                          labeltext: "Password",
+                          obscureText: controller.isPasswordHidden,
+                          iconData: controller.isPasswordHidden
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          onTapIcon: () => controller.togglePassword(),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: InkWell(
+                            onTap: () => controller.goToForgetPassword(),
+                            child: Text(
+                              "Forget Password ?",
+                              style: TextStyle(
+                                color: Appcolor.scondary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 25),
+                        Custombuttonauth(
+                          onPressed: () {
+                            controller.signIn();
+                          },
+                          text: "Sign In",
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        Textsignup(
+                          textone: "Don't Have An Account ?",
+                          texttwo: " Sign Up",
+                          onTap: () => controller.goToSignup(),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 20),
-
-                  // BUTTON
-                  Custombuttonauth(
-                    onPressed: () {
-                      controller.signIn();
-                    },
-                    text: "Sign In",
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  // SIGNUP
-                  Textsignup(
-                    textone: "Don't have an account ?",
-                    texttwo: " SignUP",
-                    onTap: () {
-                      controller.goToSignup();
-                    },
-                  ),
-                ],
+                ),
               ),
             ),
           ),

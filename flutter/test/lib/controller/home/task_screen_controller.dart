@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:test/core/class/constant/appcolor.dart';
 import 'package:test/core/class/crud.dart';
 import 'package:test/model/datasource/Task/task_data.dart';
 import 'package:test/model/static/Task/task_model.dart';
@@ -232,6 +233,17 @@ class TaskScreenController extends GetxController {
       firstDate: DateTime(2024),
       lastDate: DateTime(2030),
       initialDate: DateTime.tryParse(selectedDate.value) ?? DateTime.now(),
+
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: Theme.of(context).colorScheme.copyWith(
+              primary: Appcolor.scondary, // اللون الثانوي
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
 
     if (date != null) {

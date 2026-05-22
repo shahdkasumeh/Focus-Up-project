@@ -28,26 +28,74 @@ class ForgetPasswordControllerImp extends ForgetPasswordController {
     super.dispose();
   }
 
+  // =========================
+  // 🔥 EMAIL ERROR HANDLER
+  // =========================
+  String mapEmailError(dynamic response) {
+    final message = (response["message"] ?? "").toString().toLowerCase();
+
+    if (message.contains("not found") ||
+        message.contains("doesn't exist") ||
+        message.contains("invalid email")) {
+      return "No account found with this email.";
+    }
+
+    if (message.contains("network") || message.contains("socket")) {
+      return "Network error. Please check your connection.";
+    }
+
+    return "Unable to process request. Try again later.";
+  }
+
+  // =========================
+  // 🚀 CHECK EMAIL
+  // =========================
   @override
   checkEmail() async {
-    if (!formstate.currentState!.validate()) {
-      return;
-    }
+    if (!formstate.currentState!.validate()) return;
+
+    final emailText = email.text.trim();
 
     final res = await emailverificationData.resendVerification();
 
     res.fold(
       (failure) {
-        Get.snackbar("Error", failure.message);
+        Get.snackbar(
+          "Error",
+          failure.message,
+          backgroundColor: Colors.red.withValues(alpha: 0.9),
+          colorText: Colors.white,
+        );
       },
       (response) {
-        Get.snackbar("Success", response["message"] ?? "Check your email");
+        final message = (response["message"] ?? "").toString().toLowerCase();
 
-        // 🔥 الانتقال لصفحة reset password
-        Get.offAllNamed(
-          AppRoutes.resetpassword,
-          arguments: {"email": email.text},
-        );
+        final bool isSuccess =
+            response["success"] == true ||
+            response["status"] == true ||
+            message.contains("sent") ||
+            message.contains("success");
+
+        if (isSuccess) {
+          Get.snackbar(
+            "Success",
+            "Verification email sent 📩",
+            backgroundColor: Colors.green.withValues(alpha: 0.9),
+            colorText: Colors.white,
+          );
+
+          Get.offAllNamed(
+            AppRoutes.resetpassword,
+            arguments: {"email": emailText},
+          );
+        } else {
+          Get.snackbar(
+            "Error",
+            mapEmailError(response),
+            backgroundColor: Colors.red.withValues(alpha: 0.9),
+            colorText: Colors.white,
+          );
+        }
       },
     );
   }
