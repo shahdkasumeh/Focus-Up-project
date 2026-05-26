@@ -106,7 +106,7 @@ Route::middleware('auth:sanctum')->group(function (){
 
 
 
-   Route::get('/can-spin', [LuckyWheelController::class, 'canSpin']);
+    Route::get('/can-spin', [LuckyWheelController::class, 'canSpin']);
     Route::get('/prizes', [LuckyWheelController::class, 'prizes']);
     Route::post('/spin', [LuckyWheelController::class, 'spin']);
     Route::get('/wheel/my-prizesCurrent', [LuckyWheelController::class, 'myPrizesCurrent']);

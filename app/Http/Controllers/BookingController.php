@@ -8,6 +8,7 @@ use App\Http\Resources\ManagmentBookingResource;
 use App\Models\Booking;
 use App\Services\BookingService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 
 class BookingController extends Controller
 {
@@ -73,26 +74,34 @@ class BookingController extends Controller
     // =========================================================
     // 4. QR Check-in (scheduled booking)
     // =========================================================
-    public function checkIn()
-    {
-        $booking = BookingService::checkIn(Auth::id());
+    public function checkIn(Request $request)
+{
+    return $this->success(
+        BookingResource::make(
+            BookingService::checkIn(
+                Auth::id(),
+                $request->input('booking_id')
+            )
+        )
+    );
+}
 
-        return $this->success(
-            BookingResource::make($booking)
-        );
-    }
+
 
     // =========================================================
     // 5. QR Check-out (end session)
     // =========================================================
-    public function checkOut()
-    {
-        $booking = BookingService::checkOut(Auth::id());
-
-        return $this->success(
-            BookingResource::make($booking)
-        );
-    }
+    public function checkOut(Request $request)
+{
+    return $this->success(
+        BookingResource::make(
+            BookingService::checkOut(
+                Auth::id(),
+                $request->input('booking_id')
+            )
+        )
+    );
+}
 
     // =========================================================
     // 6. Cancel booking
@@ -110,27 +119,6 @@ class BookingController extends Controller
             BookingResource::make($booking)
         );
     }
-
-    // =========================================================
-    // 7. Walk-in (QR direct entry)
-    // =========================================================
-    // public function walkIn()
-    // {
-    //     // إذا QR واحد فقط → المستخدم يختار من الفرونت أو من QR payload
-    //     $booking = BookingService::walkIn(
-    //         Auth::id(),
-    //         request('table_id'),
-    //         request('room_id')
-    //     );
-
-    //     return $this->success(
-    //         BookingResource::make($booking)
-    //     );
-    // }
-
-    // =========================================================
-    // Authorization helper
-    // =========================================================
     private function authorizeBooking(Booking $booking): void
     {
         if ($booking->user_id !== Auth::id()) {
@@ -151,6 +139,5 @@ public function lastWeekStats()
         'revenue'  => BookingService::lastWeekRevenue(),
     ]);
 }
-
 
 }
