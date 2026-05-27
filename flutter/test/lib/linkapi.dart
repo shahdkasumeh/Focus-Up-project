@@ -15,15 +15,16 @@ class AppLink {
   static const String myPackage = "$server/myPackage";
   static const String activePackage = "$server/active";
   static const String posts = "$server/posts";
-  static const String addcomments = "posts/{id}/comments";
-  //static const String comments = "$server/posts/{postId}/comments/{commentId}";
+  static const String addcomments = "$server/posts/{id}/comments";
+  static const String toggleLike = "$server/posts";
   static const String tasks = "$server/tasks";
   static const String profile = "$server/profile";
   static const String uploadProfileImage = "$server/profile/image";
   static const String forgetPassword = "$server/forgot-password";
+  static const String resetPassword = "$server/reset-password";
   static const String prizes = "$server/prizes";
-static const String canSpin = "$server/can-spin";
-static const String spin = "$server/spin";
-static const String myPrizes = "$server/wheel/my-prizes";
-static const String currentPrize = "$server/wheel/my-prizesCurrent";
+  static const String canSpin = "$server/can-spin";
+  static const String spin = "$server/spin";
+  static const String myPrizes = "$server/wheel/my-prizes";
+  static const String currentPrize = "$server/wheel/my-prizesCurrent";
 }

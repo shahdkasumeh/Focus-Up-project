@@ -1,4 +1,5 @@
 class AttendanceModel {
+  final int id;
   final String status;
   final String actualStart;
   final String? actualEnd;
@@ -8,6 +9,7 @@ class AttendanceModel {
   final String? discountAmount;
 
   AttendanceModel({
+    required this.id,
     required this.status,
     required this.actualStart,
     this.actualEnd,
@@ -19,6 +21,7 @@ class AttendanceModel {
 
   factory AttendanceModel.fromJson(Map<String, dynamic> json) {
     return AttendanceModel(
+      id: json["id"] ?? 0,
       status: json["status"] ?? "",
       actualStart: json["actual_start"] ?? "",
       actualEnd: json["actual_end"],

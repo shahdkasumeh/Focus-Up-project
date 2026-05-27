@@ -6,6 +6,6 @@ import 'package:test/controller/home/qrcodecontroller.dart';
 class QrBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut(() => QrcodecontrollerImp());
+    Get.put(QrcodecontrollerImp());
   }
 }

@@ -11,92 +11,94 @@ class CommentInput extends GetView<StudyCompanionController> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(
-        left: 14,
-        right: 14,
-        top: 12,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 12,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(.06),
-            blurRadius: 12,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          /// SEND
-          Obx(
-            () => InkWell(
-              onTap: controller.isCommenting.value
-                  ? null
-                  : () {
-                      controller.addOrUpdateComment(postId);
-                    },
-
-              borderRadius: BorderRadius.circular(16),
-
-              child: Container(
-                width: 52,
-                height: 52,
-
-                decoration: BoxDecoration(
-                  color: Appcolor.scondary,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-
-                child: controller.isCommenting.value
-                    ? const Padding(
-                        padding: EdgeInsets.all(14),
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Icon(Icons.send_rounded, color: Colors.white),
-              ),
+    return SafeArea(
+      top: false,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 12,
+              offset: const Offset(0, -4),
             ),
-          ),
-
-          const SizedBox(width: 10),
-
-          /// INPUT
-          Expanded(
-            child: Obx(
-              () => TextField(
-                controller: controller.commentController,
-
-                textAlign: TextAlign.right,
-                minLines: 1,
-                maxLines: 4,
-
-                decoration: InputDecoration(
-                  hintText: controller.editingCommentId.value == 0
-                      ? 'اكتبي تعليق...'
-                      : 'عدّلي التعليق...',
-
-                  filled: true,
-                  fillColor: const Color(0xFFF5F5F7),
-
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
-
-                  border: OutlineInputBorder(
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Obx(
+              () => InkWell(
+                onTap: controller.isCommenting.value
+                    ? null
+                    : () {
+                        FocusScope.of(context).unfocus();
+                        controller.addOrUpdateComment(postId);
+                      },
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: Appcolor.scondary,
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide.none,
+                  ),
+                  child: controller.isCommenting.value
+                      ? const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.send_rounded,
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 10),
+
+            Expanded(
+              child: Obx(
+                () => ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    minHeight: 46,
+                    maxHeight: 110,
+                  ),
+                  child: TextField(
+                    controller: controller.commentController,
+                    textAlign: TextAlign.right,
+                    textDirection: TextDirection.rtl,
+                    minLines: 1,
+                    maxLines: 4,
+                    keyboardType: TextInputType.multiline,
+                    decoration: InputDecoration(
+                      hintText: controller.editingCommentId.value == 0
+                          ? 'اكتبي تعليق...'
+                          : 'عدّلي التعليق...',
+                      filled: true,
+                      fillColor: const Color(0xFFF5F5F7),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 13,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

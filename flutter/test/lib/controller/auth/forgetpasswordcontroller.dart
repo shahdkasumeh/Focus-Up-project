@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:test/core/class/constant/routes.dart';
-import 'package:test/model/datasource/auth/email_verification_data.dart';
+import 'package:test/model/datasource/auth/forget_password_data.dart';
+import 'package:test/core/class/crud.dart';
 
 abstract class ForgetPasswordController extends GetxController {
   checkEmail();
@@ -9,16 +10,16 @@ abstract class ForgetPasswordController extends GetxController {
 
 class ForgetPasswordControllerImp extends ForgetPasswordController {
   GlobalKey<FormState> formstate = GlobalKey<FormState>();
+  final ForgetPasswordData forgetPasswordData = ForgetPasswordData(Crud());
 
   late TextEditingController email;
 
-  EmailVerificationData emailverificationData = EmailVerificationData(
-    Get.find(),
-  );
+  RxBool isLoading = false.obs;
 
   @override
   void onInit() {
     email = TextEditingController();
+
     super.onInit();
   }
 
@@ -31,6 +32,7 @@ class ForgetPasswordControllerImp extends ForgetPasswordController {
   // =========================
   // 🔥 EMAIL ERROR HANDLER
   // =========================
+
   String mapEmailError(dynamic response) {
     final message = (response["message"] ?? "").toString().toLowerCase();
 
@@ -50,13 +52,18 @@ class ForgetPasswordControllerImp extends ForgetPasswordController {
   // =========================
   // 🚀 CHECK EMAIL
   // =========================
+
   @override
   checkEmail() async {
     if (!formstate.currentState!.validate()) return;
 
+    isLoading.value = true;
+
     final emailText = email.text.trim();
 
-    final res = await emailverificationData.resendVerification();
+    final res = await forgetPasswordData.sendEmail(emailText);
+
+    isLoading.value = false;
 
     res.fold(
       (failure) {
@@ -68,18 +75,21 @@ class ForgetPasswordControllerImp extends ForgetPasswordController {
         );
       },
       (response) {
-        final message = (response["message"] ?? "").toString().toLowerCase();
+        final message = (response["message"] ?? response["status"] ?? "")
+            .toString()
+            .toLowerCase();
 
         final bool isSuccess =
             response["success"] == true ||
             response["status"] == true ||
             message.contains("sent") ||
+            message.contains("emailed") ||
             message.contains("success");
 
         if (isSuccess) {
           Get.snackbar(
             "Success",
-            "Verification email sent 📩",
+            "Password reset link sent 📩",
             backgroundColor: Colors.green.withValues(alpha: 0.9),
             colorText: Colors.white,
           );

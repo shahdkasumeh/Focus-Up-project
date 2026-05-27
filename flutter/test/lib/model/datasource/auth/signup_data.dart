@@ -23,7 +23,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:test/core/class/crud.dart';
 import 'package:test/linkapi.dart';
-import 'package:test/model/static/signup_model.dart';
+import 'package:test/model/static/auth/signup_model.dart';
 
 class SignupData {
   final Crud crud;

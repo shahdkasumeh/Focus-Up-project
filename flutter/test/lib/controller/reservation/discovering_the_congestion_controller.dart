@@ -5,8 +5,8 @@ import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:get/get_rx/src/rx_types/rx_types.dart';
 import 'package:get/get_state_manager/src/simple/get_controllers.dart';
 import 'package:test/core/class/constant/routes.dart';
-import 'package:test/model/datasource/auth/room_data.dart';
-import 'package:test/model/static/crowd_room_model.dart';
+import 'package:test/model/datasource/home/room_data.dart';
+import 'package:test/model/static/crowding/crowd_room_model.dart';
 
 abstract class DiscoveringTheCongestionController extends GetxController {}
 
@@ -64,13 +64,28 @@ class DiscoveringTheCongestionControllerImp
 
   /// 🎨 تحويل لون الباك إلى Color
   Color getColorFromString(String color) {
-    switch (color.toLowerCase()) {
+    final value = color.trim().toLowerCase();
+
+    print("COLOR => $value");
+
+    switch (value) {
       case "green":
+      case "low":
         return const Color(0xFF52AF74);
+
       case "orange":
+      case "yellow":
+      case "medium":
         return const Color(0xFFF59E0B);
+
       case "red":
+      case "high":
         return const Color(0xFFEF4444);
+
+      case "grey":
+      case "gray":
+        return Colors.grey;
+
       default:
         return Colors.grey;
     }
@@ -85,17 +100,18 @@ class DiscoveringTheCongestionControllerImp
       return const Color(0xFFEF4444); // أحمر
     }
   }
-
-  Color getColorFromStatus(String status) {
-    switch (status) {
-      case "low":
-        return const Color(0xFF52AF74);
-      case "medium":
-        return const Color(0xFFF59E0B);
-      case "high":
-        return const Color(0xFFEF4444);
-      default:
-        return Colors.grey;
-    }
-  }
 }
+
+//   Color getColorFromStatus(String status) {
+//     switch (status) {
+//       case "low":
+//         return const Color(0xFF52AF74);
+//       case "medium":
+//         return const Color(0xFFF59E0B);
+//       case "high":
+//         return const Color(0xFFEF4444);
+//       default:
+//         return Colors.grey;
+//     }
+//   }
+// }

@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:test/core/class/crud.dart';
-import 'package:test/model/datasource/study_companion_data.dart';
+import 'package:test/model/datasource/home/study_companion_data.dart';
 import 'package:test/model/static/studycompanion/comment_model.dart';
 import 'package:test/model/static/studycompanion/post_model.dart';
 import 'package:test/view/widget/studycompanion/comment_bottom_sheet.dart';
@@ -425,23 +425,47 @@ class StudyCompanionController extends GetxController {
     );
   }
 
-  void toggleLike(int postId) {
+  Future<void> toggleLike(int postId) async {
     final index = posts.indexWhere((p) => p.id == postId);
-
     if (index == -1) return;
 
     final post = posts[index];
 
-    if (post.isLiked) {
-      post.isLiked = false;
-      post.likesCount--;
-    } else {
-      post.isLiked = true;
-      post.likesCount++;
-    }
+    final oldIsLiked = post.isLiked;
+    final oldLikesCount = post.likesCount;
+
+    // تغيير فوري بالواجهة
+    post.isLiked = !post.isLiked;
+    post.likesCount += post.isLiked ? 1 : -1;
+
+    if (post.likesCount < 0) post.likesCount = 0;
 
     posts[index] = post;
     posts.refresh();
+
+    final response = await studyCompanionData.toggleLike(postId: postId);
+
+    response.fold(
+      (failure) {
+        // رجعي القديم إذا فشل الطلب
+        post.isLiked = oldIsLiked;
+        post.likesCount = oldLikesCount;
+
+        posts[index] = post;
+        posts.refresh();
+
+        Get.snackbar("خطأ", failure.message);
+      },
+      (success) {
+        // إذا الباك رجع data منحدث منها
+        final data = success["data"];
+
+        if (data != null && data is Map<String, dynamic>) {
+          posts[index] = PostModel.fromJson(data);
+          posts.refresh();
+        }
+      },
+    );
   }
 
   void toggleComments(int postId) {

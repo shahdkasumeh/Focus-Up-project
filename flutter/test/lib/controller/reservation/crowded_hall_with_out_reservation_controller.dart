@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:test/core/class/crud.dart';
-import 'package:test/model/datasource/auth/walk_in_data.dart';
+import 'package:test/model/datasource/home/walk_in_data.dart';
 import 'package:test/model/static/walk_in_crowding_model.dart';
 
 abstract class CrowdedHallWithOutReservationController extends GetxController {}

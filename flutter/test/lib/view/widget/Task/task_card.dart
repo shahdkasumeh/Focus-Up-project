@@ -7,10 +7,7 @@ import 'package:test/model/static/Task/task_model.dart';
 class TaskCard extends GetView<TaskScreenController> {
   final TaskModel task;
 
-  const TaskCard({
-    super.key,
-    required this.task,
-  });
+  const TaskCard({super.key, required this.task});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +27,7 @@ class TaskCard extends GetView<TaskScreenController> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(.04),
+            color: Colors.black.withValues(alpha: .04),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
@@ -50,14 +47,8 @@ class TaskCard extends GetView<TaskScreenController> {
               }
             },
             itemBuilder: (context) => const [
-              PopupMenuItem(
-                value: 'edit',
-                child: Text('تعديل المهمة'),
-              ),
-              PopupMenuItem(
-                value: 'delete',
-                child: Text('حذف المهمة'),
-              ),
+              PopupMenuItem(value: 'edit', child: Text('تعديل المهمة')),
+              PopupMenuItem(value: 'delete', child: Text('حذف المهمة')),
             ],
           ),
 
@@ -115,11 +106,7 @@ class TaskCard extends GetView<TaskScreenController> {
                 ),
               ),
               child: done
-                  ? const Icon(
-                      Icons.check,
-                      color: Colors.white,
-                      size: 20,
-                    )
+                  ? const Icon(Icons.check, color: Colors.white, size: 20)
                   : null,
             ),
           ),

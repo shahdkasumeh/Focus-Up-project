@@ -2,44 +2,39 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:test/controller/home/pakages_controller.dart';
 import 'package:test/core/class/constant/appcolor.dart';
-import 'package:test/view/widget/pakages/date_row.dart' show DateRow;
+import 'package:test/view/widget/pakages/date_row.dart';
 import 'package:test/view/widget/pakages/empty_package.dart';
 import 'package:test/view/widget/pakages/info_box.dart';
 
-class MyCurrentPackageView extends GetView<PackagesController> {
-  const MyCurrentPackageView({super.key});
+class MyPackagesView extends GetView<PackagesController> {
+  const MyPackagesView({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      if (controller.isCurrentPackageLoading.value) {
-        return const Center(
-          child: CircularProgressIndicator(color: Appcolor.accentPurpleColor),
-        );
-      }
-
-      final currentPackage = controller.currentPackage.value;
-
-      if (currentPackage == null) {
-        return const EmptyPackage(
-          subtitle: 'لا توجد باقة حالية',
+      if (controller.myPackages.isEmpty) {
+        return EmptyPackage(
+          subtitle: 'لا توجد باقات شخصية',
           text1: 'عند شراء باقة ستظهر هنا مباشرة',
         );
       }
-      final color = statusColor(currentPackage.status);
       return RefreshIndicator(
         color: Appcolor.scondary,
-        onRefresh: controller.getCurrentPackage,
-        child: ListView(
+        onRefresh: controller.getMyPackages,
+        child: ListView.builder(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-          children: [
-            Container(
+          itemCount: controller.myPackages.length,
+          itemBuilder: (context, index) {
+            final package = controller.myPackages[index];
+            final color = statusColor(package.status);
+
+            return Container(
               margin: const EdgeInsets.only(bottom: 18),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(26),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
+                    color: Colors.black.withValues(alpha: 0.08),
                     blurRadius: 18,
                     offset: const Offset(0, 8),
                   ),
@@ -51,7 +46,7 @@ class MyCurrentPackageView extends GetView<PackagesController> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     border: Border.all(
-                      color: color.withOpacity(0.25),
+                      color: color.withValues(alpha: 0.25),
                       width: 1.2,
                     ),
                   ),
@@ -62,8 +57,8 @@ class MyCurrentPackageView extends GetView<PackagesController> {
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              color.withOpacity(0.95),
-                              color.withOpacity(0.65),
+                              color.withValues(alpha: 0.95),
+                              color.withValues(alpha: 0.65),
                             ],
                             begin: Alignment.topRight,
                             end: Alignment.bottomLeft,
@@ -75,7 +70,7 @@ class MyCurrentPackageView extends GetView<PackagesController> {
                               width: 52,
                               height: 52,
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.22),
+                                color: Colors.white.withValues(alpha: 0.22),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
@@ -85,23 +80,26 @@ class MyCurrentPackageView extends GetView<PackagesController> {
                               ),
                             ),
                             const SizedBox(width: 14),
+
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const Text(
-                                    'باقتي الحالية',
+                                    'My Package',
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w900,
+                                      fontSize: 19,
+                                      fontWeight: FontWeight.w800,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    'Package #${currentPackage.id}',
+                                    'Package #${package.id}',
                                     style: TextStyle(
-                                      color: Colors.white.withOpacity(0.9),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.9,
+                                      ),
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -109,6 +107,7 @@ class MyCurrentPackageView extends GetView<PackagesController> {
                                 ],
                               ),
                             ),
+
                             Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
@@ -119,7 +118,7 @@ class MyCurrentPackageView extends GetView<PackagesController> {
                                 borderRadius: BorderRadius.circular(30),
                               ),
                               child: Text(
-                                currentPackage.status,
+                                package.status,
                                 style: TextStyle(
                                   color: color,
                                   fontSize: 12,
@@ -140,7 +139,7 @@ class MyCurrentPackageView extends GetView<PackagesController> {
                                 Expanded(
                                   child: InfoBox(
                                     title: 'Total Price',
-                                    value: '${currentPackage.totalPrice} ل.س',
+                                    value: '${package.totalPrice} ل.س',
                                     icon: Icons.payments_rounded,
                                   ),
                                 ),
@@ -148,8 +147,7 @@ class MyCurrentPackageView extends GetView<PackagesController> {
                                 Expanded(
                                   child: InfoBox(
                                     title: 'Remaining Price',
-                                    value:
-                                        '${currentPackage.remainingPrice} ل.س',
+                                    value: '${package.remainingPrice} ل.س',
                                     icon: Icons.account_balance_wallet_rounded,
                                   ),
                                 ),
@@ -163,7 +161,7 @@ class MyCurrentPackageView extends GetView<PackagesController> {
                                 Expanded(
                                   child: InfoBox(
                                     title: 'Total Hours',
-                                    value: '${currentPackage.totalHours} ساعة',
+                                    value: '${package.totalHours} ساعة',
                                     icon: Icons.access_time_filled_rounded,
                                   ),
                                 ),
@@ -171,8 +169,7 @@ class MyCurrentPackageView extends GetView<PackagesController> {
                                 Expanded(
                                   child: InfoBox(
                                     title: 'Remaining Hours',
-                                    value:
-                                        '${currentPackage.remainingHours} ساعة',
+                                    value: '${package.remainingHours} ساعة',
                                     icon: Icons.hourglass_bottom_rounded,
                                   ),
                                 ),
@@ -186,7 +183,7 @@ class MyCurrentPackageView extends GetView<PackagesController> {
                                 Expanded(
                                   child: InfoBox(
                                     title: 'Used Hours',
-                                    value: '${currentPackage.usedHours} ساعة',
+                                    value: '${package.usedHours} ساعة',
                                     icon: Icons.timer_off_rounded,
                                   ),
                                 ),
@@ -194,7 +191,7 @@ class MyCurrentPackageView extends GetView<PackagesController> {
                                 Expanded(
                                   child: InfoBox(
                                     title: 'Status',
-                                    value: currentPackage.status,
+                                    value: package.status,
                                     icon: Icons.verified_rounded,
                                   ),
                                 ),
@@ -206,21 +203,28 @@ class MyCurrentPackageView extends GetView<PackagesController> {
                             DateRow(
                               icon: Icons.play_circle_fill_rounded,
                               title: 'Starts At',
-                              value: currentPackage.startsAt,
+                              value: package.startsAt,
                             ),
                             const SizedBox(height: 10),
 
                             DateRow(
                               icon: Icons.event_busy_rounded,
                               title: 'Expires At',
-                              value: currentPackage.expiresAt,
+                              value: package.expiresAt,
+                            ),
+                            const SizedBox(height: 10),
+
+                            DateRow(
+                              icon: Icons.add_circle_rounded,
+                              title: 'Created At',
+                              value: package.createdAt,
                             ),
                             const SizedBox(height: 10),
 
                             DateRow(
                               icon: Icons.confirmation_number_rounded,
                               title: 'Package ID',
-                              value: '#${currentPackage.id}',
+                              value: '#${package.id}',
                             ),
                           ],
                         ),
@@ -229,8 +233,8 @@ class MyCurrentPackageView extends GetView<PackagesController> {
                   ),
                 ),
               ),
-            ),
-          ],
+            );
+          },
         ),
       );
     });

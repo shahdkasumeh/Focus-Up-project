@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:test/core/class/constant/routes.dart';
@@ -6,8 +5,8 @@ import 'package:test/core/class/constant/storagehandler.dart';
 import 'package:test/core/class/crud.dart';
 import 'package:test/core/class/statusrequest.dart';
 import 'package:test/model/datasource/auth/signup_data.dart';
-import 'package:test/model/static/auth_model.dart';
-import 'package:test/model/static/signup_model.dart';
+import 'package:test/model/static/auth/auth_model.dart';
+import 'package:test/model/static/auth/signup_model.dart';
 
 abstract class SignUpController extends GetxController {
   void signUP();
@@ -153,7 +152,7 @@ class SignUpControllerImp extends SignUpController {
 
         final auth = AuthModel.fromJson(data);
 
-        await StorageHandler().setQrCode(jsonEncode({"user_id": auth.user.id}));
+        await StorageHandler().setUserId(auth.user.id);
 
         statusRequest = StatusRequest.success;
         update();

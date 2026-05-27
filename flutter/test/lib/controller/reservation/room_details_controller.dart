@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:test/core/class/constant/storagehandler.dart';
-import 'package:test/model/datasource/auth/room_details_data.dart';
-import 'package:test/model/static/table_model.dart';
+import 'package:test/model/datasource/home/room_details_data.dart';
+import 'package:test/model/static/booking/table_model.dart';
 
 class RoomDetailsController extends GetxController {
   RoomDetailsData roomData = RoomDetailsData(Get.find());

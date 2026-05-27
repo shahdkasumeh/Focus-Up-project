@@ -5,102 +5,151 @@ class Buildbookingcard extends StatelessWidget {
   final String text2;
   final String text3;
   final Color? color;
-
   final IconData icon;
   final void Function()? onPressed;
   final Color? backgroundColor;
+
   const Buildbookingcard({
     super.key,
     required this.text,
     required this.icon,
-    this.onPressed,
-    this.backgroundColor,
     required this.text2,
     required this.text3,
     this.color,
+    this.onPressed,
+    this.backgroundColor,
   });
 
   @override
   Widget build(BuildContext context) {
+    const Color navyColor = Color(0xFF172F4F);
+    const Color yellowColor = Color(0xFFF4B942);
+    const Color descriptionColor = Color(0xFF7A8699);
+
+    final Color iconColor = color ?? yellowColor;
+    final Color buttonColor = backgroundColor ?? navyColor;
+
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 18),
-      padding: const EdgeInsets.fromLTRB(22, 22, 22, 28),
+      margin: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(26),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: navyColor.withValues(alpha: 0.06)),
+        boxShadow: [
+          BoxShadow(
+            color: navyColor.withValues(alpha: 0.08),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+      child: Stack(
         children: [
-          Align(
-            alignment: Alignment.centerRight,
+          Positioned(
+            top: 0,
+            right: 0,
             child: Container(
-              width: 88,
-              height: 88,
+              width: 95,
+              height: 95,
               decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.12),
-                    blurRadius: 14,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: Icon(icon, color: Colors.white, size: 42),
-            ),
-          ),
-          const SizedBox(height: 28),
-
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Color(0xff555555),
-            ),
-          ),
-
-          const SizedBox(height: 18),
-
-          Text(
-            text2,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              height: 1.9,
-              color: Color(0xff555555),
-            ),
-          ),
-
-          const SizedBox(height: 50),
-          SizedBox(
-            width: double.infinity,
-            height: 68,
-            child: ElevatedButton(
-              onPressed: onPressed,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: backgroundColor,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                color: yellowColor.withValues(alpha: 0.10),
+                borderRadius: const BorderRadius.only(
+                  topRight: Radius.circular(28),
+                  bottomLeft: Radius.circular(80),
                 ),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(width: 10),
-                  Text(
-                    text3,
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Row(
+                  textDirection: TextDirection.rtl,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 68,
+                      height: 68,
+                      decoration: BoxDecoration(
+                        color: iconColor.withValues(alpha: 0.14),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Icon(icon, color: iconColor, size: 34),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            text,
+                            textAlign: TextAlign.right,
+                            style: const TextStyle(
+                              fontSize: 21,
+                              fontWeight: FontWeight.w700,
+                              color: navyColor,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Container(
+                            width: 38,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: yellowColor,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 22),
+                Text(
+                  text2,
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(
+                    fontSize: 14.5,
+                    height: 1.7,
+                    fontWeight: FontWeight.w400,
+                    color: descriptionColor,
+                  ),
+                ),
+                const SizedBox(height: 26),
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: onPressed,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: buttonColor,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 18),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      textDirection: TextDirection.rtl,
+                      children: [
+                        Text(
+                          text3,
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        const Icon(Icons.arrow_back_ios_new_rounded, size: 17),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],

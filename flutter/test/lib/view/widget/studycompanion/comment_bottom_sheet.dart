@@ -1,4 +1,3 @@
-// import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:test/controller/home/study_companion_controller.dart';
@@ -14,248 +13,203 @@ class CommentBottomSheet extends StatelessWidget {
     required this.postId,
     required this.controller,
   });
+
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: DraggableScrollableSheet(
-        initialChildSize: 0.72,
-        minChildSize: 0.45,
-        maxChildSize: 0.92,
-        expand: false,
-        builder: (context, scrollController) {
-          return Container(
-            decoration: const BoxDecoration(
-              color: Color(0xFFF8F8FB),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-            ),
-            child: Column(
-              children: [
-                const SizedBox(height: 10),
+    final media = MediaQuery.of(context);
+    final keyboard = media.viewInsets.bottom;
+    final screenHeight = media.size.height;
 
-                Container(
-                  width: 44,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
+    final sheetHeight = keyboard > 0
+        ? screenHeight * 0.55
+        : screenHeight * 0.72;
+
+    return AnimatedPadding(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOut,
+      padding: EdgeInsets.only(bottom: keyboard),
+      child: SafeArea(
+        top: false,
+        bottom: false ,
+        child: Container(
+          height: sheetHeight,
+          decoration: const BoxDecoration(
+            color: Color(0xFFF8F8FB),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 8),
+
+              Container(
+                width: 44,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(20),
                 ),
+              ),
 
-                const SizedBox(height: 18),
+              const SizedBox(height: 12),
 
-                const Text(
-                  'التعليقات',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    color: Appcolor.black,
-                  ),
+              const Text(
+                'التعليقات',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: Appcolor.black,
                 ),
+              ),
 
-                const SizedBox(height: 16),
+              const SizedBox(height: 10),
 
-                Expanded(
-                  child: Obx(() {
-                    if (controller.commentsLoading.value) {
-                      return const Center(
-                        child: CircularProgressIndicator(
-                          color: Appcolor.scondary,
-                        ),
-                      );
-                    }
-                    final comments = controller.commentsMap[postId] ?? [];
-                    if (comments.isEmpty) {
-                      return const Center(
-                        child: Text(
-                          'لا توجد تعليقات بعد',
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      );
-                    }
-                    return ListView.builder(
-                      controller: scrollController,
-                      padding: const EdgeInsets.symmetric(horizontal: 18),
-                      itemCount: comments.length,
-                      itemBuilder: (context, index) {
-                        final comment = comments[index];
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(18),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(.04),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              /// TOP
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  /// LEFT
-                                  Row(
-                                    children: [
-                                      Text(
-                                        comment.createdAt,
-                                        style: const TextStyle(
-                                          fontSize: 11,
-                                          color: Colors.grey,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-
-                                      if (comment.isOwner) ...[
-                                        const SizedBox(width: 6),
-
-                                        PopupMenuButton<String>(
-                                          icon: const Icon(
-                                            Icons.more_horiz,
-                                            color: Colors.grey,
-                                          ),
-
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              14,
-                                            ),
-                                          ),
-
-                                          onSelected: (value) {
-                                            if (value == 'edit') {
-                                              controller.startEditComment(
-                                                comment,
-                                              );
-                                            }
-                                            if (value == 'delete') {
-                                              controller.deleteComment(
-                                                postId,
-                                                comment.id,
-                                              );
-                                            }
-                                          },
-                                          itemBuilder: (context) => const [
-                                            PopupMenuItem(
-                                              value: 'edit',
-
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.end,
-                                                children: [
-                                                  Text('تعديل التعليق'),
-
-                                                  SizedBox(width: 10),
-
-                                                  Icon(
-                                                    Icons.edit_outlined,
-                                                    color: Colors.blue,
-                                                    size: 20,
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-
-                                            PopupMenuItem(
-                                              value: 'delete',
-
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.end,
-                                                children: [
-                                                  Text(
-                                                    'حذف التعليق',
-
-                                                    style: TextStyle(
-                                                      color: Colors.red,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                    ),
-                                                  ),
-
-                                                  SizedBox(width: 10),
-
-                                                  Icon(
-                                                    Icons.delete_outline,
-                                                    color: Colors.red,
-                                                    size: 20,
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-
-                                  /// USER
-                                  Row(
-                                    children: [
-                                      Text(
-                                        comment.userName,
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w800,
-                                          color: Appcolor.scondary,
-                                        ),
-                                      ),
-
-                                      const SizedBox(width: 8),
-                                      CircleAvatar(
-                                        radius: 16,
-
-                                        backgroundColor: Appcolor.scondary
-                                            .withOpacity(.12),
-
-                                        child: Text(
-                                          comment.userName.isNotEmpty
-                                              ? comment.userName[0]
-                                              : '?',
-
-                                          style: const TextStyle(
-                                            color: Appcolor.scondary,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 10),
-
-                              /// CONTENT
-                              Text(
-                                comment.content,
-                                textAlign: TextAlign.right,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  height: 1.5,
-                                  color: Color(0xFF555555),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+              Expanded(
+                child: Obx(() {
+                  if (controller.commentsLoading.value) {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        color: Appcolor.scondary,
+                      ),
                     );
-                  }),
-                ),
-                CommentInput(postId: postId),
-              ],
-            ),
-          );
-        },
+                  }
+
+                  final comments = controller.commentsMap[postId] ?? [];
+
+                  if (comments.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        'لا توجد تعليقات بعد',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                    padding: const EdgeInsets.symmetric(horizontal: 18),
+                    itemCount: comments.length,
+                    itemBuilder: (context, index) {
+                      final comment = comments[index];
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: .04),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  comment.createdAt,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+
+                                if (comment.isOwner)
+                                  PopupMenuButton<String>(
+                                    icon: const Icon(
+                                      Icons.more_horiz,
+                                      color: Colors.grey,
+                                    ),
+                                    onSelected: (value) {
+                                      if (value == 'edit') {
+                                        controller.startEditComment(comment);
+                                      }
+
+                                      if (value == 'delete') {
+                                        controller.deleteComment(
+                                          postId,
+                                          comment.id,
+                                        );
+                                      }
+                                    },
+                                    itemBuilder: (context) => const [
+                                      PopupMenuItem(
+                                        value: 'edit',
+                                        child: Text('تعديل التعليق'),
+                                      ),
+                                      PopupMenuItem(
+                                        value: 'delete',
+                                        child: Text(
+                                          'حذف التعليق',
+                                          style: TextStyle(color: Colors.red),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+
+                                const Spacer(),
+
+                                Flexible(
+                                  child: Text(
+                                    comment.userName,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.end,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w800,
+                                      color: Appcolor.scondary,
+                                    ),
+                                  ),
+                                ),
+
+                                const SizedBox(width: 8),
+
+                                CircleAvatar(
+                                  radius: 16,
+                                  backgroundColor: Appcolor.scondary
+                                      .withValues(alpha: 0.12),
+                                  child: const Icon(
+                                    Icons.person,
+                                    size: 18,
+                                    color: Appcolor.scondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 10),
+
+                            Text(
+                              comment.content,
+                              textAlign: TextAlign.end,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                height: 1.4,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                }),
+              ),
+
+              CommentInput(postId: postId),
+            ],
+          ),
+        ),
       ),
     );
   }

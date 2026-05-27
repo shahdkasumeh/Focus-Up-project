@@ -35,11 +35,3 @@ class Textsignup extends StatelessWidget {
     );
   }
 }
-//  Container(
-//           width: 500,
-//           height: 400,
-//           decoration: BoxDecoration(
-//             color: Colors.grey.withOpacity(0.3),
-//             borderRadius: BorderRadius.circular(20),
-//           )
-//  )

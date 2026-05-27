@@ -4,6 +4,7 @@ import 'package:test/linkapi.dart';
 
 class QrData {
   final Crud crud;
+
   QrData(this.crud);
 
   // ================= CHECK IN =================

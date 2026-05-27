@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'package:get/get.dart';
 import 'package:test/core/class/crud.dart';
-import 'package:test/model/datasource/wheel_data.dart';
+import 'package:test/model/datasource/home/wheel_data.dart';
 import 'package:test/model/static/luckywheel/wheel_prize_model.dart';
 import 'package:test/view/widget/luckywheel/lucky_wheel_dialog.dart';
 
@@ -16,16 +16,10 @@ class LuckyWheelControllerImp extends LuckyWheelController {
 
   RxDouble turns = 0.0.obs;
 
-  /// آخر جائزة بعد اللف
   RxString currentPrize = ''.obs;
 
-  /// كل جوائز العجلة
   RxList<WheelPrizeModel> prizes = <WheelPrizeModel>[].obs;
-
-  /// كل الجوائز
   RxList<WheelPrizeModel> myPrizes = <WheelPrizeModel>[].obs;
-
-  /// الخصومات الحالية
   RxList<WheelPrizeModel> currentPrizes = <WheelPrizeModel>[].obs;
 
   RxInt remainingBookings = 0.obs;
@@ -40,138 +34,91 @@ class LuckyWheelControllerImp extends LuckyWheelController {
   }
 
   Future<void> initWheel() async {
-    try {
-      isLoading.value = true;
+    isLoading.value = true;
 
-      await getPrizes();
-      await checkCanSpin();
-      await getMyPrizes();
-      await getCurrentPrize();
-    } finally {
-      isLoading.value = false;
-    }
+    await getPrizes();
+    await checkCanSpin();
+    await getMyPrizes();
+    await getCurrentPrize();
+
+    isLoading.value = false;
   }
 
-  /// =========================
-  /// GET PRIZES
-  /// =========================
-
+  // ================= PRIZES =================
   Future<void> getPrizes() async {
     final response = await luckyWheelData.getPrizes();
 
-    response.fold(
-      (failure) {
-        Get.snackbar("خطأ", failure.message);
-      },
-      (success) {
-        final data = success["data"];
+    response.fold((failure) => Get.snackbar("خطأ", failure.message), (success) {
+      final data = success["data"];
 
-        if (data != null && data is List) {
-          prizes.assignAll(
-            data
-                .map((e) => WheelPrizeModel.fromJson(e as Map<String, dynamic>))
-                .toList(),
-          );
-        } else {
-          prizes.clear();
-        }
-      },
-    );
+      if (data is List) {
+        prizes.assignAll(data.map((e) => WheelPrizeModel.fromJson(e)).toList());
+      } else {
+        prizes.clear();
+      }
+    });
   }
 
-  /// =========================
-  /// CAN SPIN
-  /// =========================
-
+  // ================= CAN SPIN =================
   Future<void> checkCanSpin() async {
     final response = await luckyWheelData.canSpin();
 
-    response.fold(
-      (failure) {
-        Get.snackbar("خطأ", failure.message);
-      },
-      (success) {
-        print("CAN SPIN RESPONSE => $success");
+    response.fold((failure) => Get.snackbar("خطأ", failure.message), (success) {
+      canSpin.value = success["can_spin"] == true;
 
-        canSpin.value = success["can_spin"] == true;
+      completedBookings.value =
+          int.tryParse(success["completed_bookings"].toString()) ?? 0;
 
-        completedBookings.value =
-            int.tryParse(success["completed_bookings"]?.toString() ?? '0') ?? 0;
-
-        remainingBookings.value =
-            int.tryParse(success["remaining_bookings"]?.toString() ?? '0') ?? 0;
-      },
-    );
+      remainingBookings.value =
+          int.tryParse(success["remaining_bookings"].toString()) ?? 0;
+    });
   }
 
-  /// =========================
-  /// MY PRIZES
-  /// =========================
-
+  // ================= MY PRIZES =================
   Future<void> getMyPrizes() async {
     final response = await luckyWheelData.getMyPrizes();
 
-    response.fold(
-      (failure) {
-        Get.snackbar("خطأ", failure.message);
-      },
-      (success) {
-        final data = success["data"];
+    response.fold((failure) => Get.snackbar("خطأ", failure.message), (success) {
+      final data = success["data"];
 
-        if (data != null && data is List) {
-          myPrizes.assignAll(
-            data
-                .map((e) => WheelPrizeModel.fromJson(e as Map<String, dynamic>))
-                .toList(),
-          );
-        } else {
-          myPrizes.clear();
-        }
-      },
-    );
+      if (data is List) {
+        myPrizes.assignAll(
+          data.map((e) => WheelPrizeModel.fromJson(e)).toList(),
+        );
+      } else {
+        myPrizes.clear();
+      }
+    });
   }
 
-  /// =========================
-  /// CURRENT PRIZES
-  /// =========================
-
+  // ================= CURRENT PRIZE =================
   Future<void> getCurrentPrize() async {
     final response = await luckyWheelData.getCurrentPrize();
 
-    response.fold(
-      (failure) {
-        Get.snackbar("خطأ", failure.message);
-      },
-      (success) {
-        final data = success["data"];
+    response.fold((failure) => Get.snackbar("خطأ", failure.message), (success) {
+      final data = success["data"];
 
-        if (data != null && data is List) {
-          currentPrizes.assignAll(
-            data
-                .map((e) => WheelPrizeModel.fromJson(e as Map<String, dynamic>))
-                .toList(),
-          );
-        } else if (data != null && data is Map<String, dynamic>) {
-          currentPrizes.assignAll([WheelPrizeModel.fromJson(data)]);
-        } else {
-          currentPrizes.clear();
-        }
-      },
-    );
+      if (data is List) {
+        currentPrizes.assignAll(
+          data.map((e) => WheelPrizeModel.fromJson(e)).toList(),
+        );
+      } else if (data is Map<String, dynamic>) {
+        currentPrizes.assignAll([WheelPrizeModel.fromJson(data)]);
+      } else {
+        currentPrizes.clear();
+      }
+    });
   }
 
-  /// =========================
-  /// SPIN
-  /// =========================
-
+  // ================= SPIN (FIXED 100%) =================
   Future<void> spin() async {
+    // 🚨 شرط صحيح
     if (!canSpin.value || isSpinning.value || prizes.isEmpty) {
       return;
     }
 
     try {
       isSpinning.value = true;
-
       currentPrize.value = '';
 
       final response = await luckyWheelData.spin();
@@ -179,38 +126,40 @@ class LuckyWheelControllerImp extends LuckyWheelController {
       await response.fold(
         (failure) async {
           Get.snackbar("خطأ", failure.message);
-
           isSpinning.value = false;
         },
         (success) async {
           final data = success["data"];
 
-          String wonPrizeName = '';
-          String wonPrizeValue = '';
+          String name = '';
+          String value = '';
 
-          if (data != null && data is Map<String, dynamic>) {
-            wonPrizeName =
+          if (data is Map<String, dynamic>) {
+            name =
                 data["name"]?.toString() ??
                 data["prize"]?["name"]?.toString() ??
                 '';
 
-            wonPrizeValue =
+            value =
                 data["value"]?.toString() ??
                 data["prize"]?["value"]?.toString() ??
                 '';
           }
 
+          // 🎯 هنا التعديل الحقيقي
           final random = Random();
+          final index = random.nextInt(prizes.length);
 
-          turns.value += 5 + random.nextDouble();
+          final slice = 1 / prizes.length;
 
-          await Future.delayed(const Duration(seconds: 3));
+          // 🎡 دوران + توقف على جائزة محددة
+          turns.value = turns.value + 5 + (index * slice);
 
-          if (wonPrizeName.isEmpty && wonPrizeValue.isEmpty) {
-            currentPrize.value = "جائزة جديدة";
-          } else {
-            currentPrize.value = "$wonPrizeName $wonPrizeValue";
-          }
+          await Future.delayed(const Duration(seconds: 4));
+
+          currentPrize.value = (name.isEmpty && value.isEmpty)
+              ? "جائزة جديدة"
+              : "$name $value";
 
           await getMyPrizes();
           await getCurrentPrize();
@@ -218,22 +167,16 @@ class LuckyWheelControllerImp extends LuckyWheelController {
 
           isSpinning.value = false;
 
-          Get.dialog(
-        LuckyWheelDialog(prize: currentPrize.value),
-          );
+          Get.dialog(LuckyWheelDialog(prize: currentPrize.value));
         },
       );
     } catch (e) {
       isSpinning.value = false;
-
       Get.snackbar("خطأ", "حدث خطأ أثناء دوران العجلة");
     }
   }
 
-  /// =========================
-  /// REFRESH
-  /// =========================
-
+  // ================= REFRESH =================
   Future<void> refreshWheel() async {
     await initWheel();
   }

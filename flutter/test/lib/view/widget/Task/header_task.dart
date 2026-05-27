@@ -32,9 +32,11 @@ class HeaderTask extends GetView<TaskScreenController> {
                     width: 46,
                     height: 46,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(.14),
+                      color: Colors.white.withValues(alpha: .14),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white.withOpacity(.25)),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: .25),
+                      ),
                     ),
                     child: const Icon(
                       Icons.arrow_back_ios_new_rounded,
@@ -82,7 +84,7 @@ class HeaderTask extends GetView<TaskScreenController> {
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(.18),
+                  color: Colors.white.withValues(alpha: .18),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Text(

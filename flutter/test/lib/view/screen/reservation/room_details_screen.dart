@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:test/controller/reservation/room_details_controller.dart';
 import 'package:test/controller/reservation/booking_controller.dart';
 import 'package:test/core/class/constant/appcolor.dart';
+import 'package:test/view/widget/typeofbooking/fancy_card.dart';
 
 class RoomDetailsScreen extends StatelessWidget {
   RoomDetailsScreen({super.key});
@@ -51,7 +52,7 @@ class RoomDetailsScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
+                      color: Colors.black.withValues(alpha: 0.14),
                       blurRadius: 10,
                       offset: const Offset(0, 5),
                     ),
@@ -103,9 +104,6 @@ class RoomDetailsScreen extends StatelessWidget {
     );
   }
 
-  // =========================
-  // 🚀 BOOKING SHEET
-  // =========================
   void showBookingSheet(int tableId, int tableNum) {
     Get.bottomSheet(
       Container(
@@ -137,7 +135,7 @@ class RoomDetailsScreen extends StatelessWidget {
               const SizedBox(height: 20),
 
               // DATE
-              _fancyCard(
+              FancyCard(
                 icon: Icons.calendar_today,
                 title: "التاريخ",
                 child: ElevatedButton(
@@ -176,7 +174,7 @@ class RoomDetailsScreen extends StatelessWidget {
               const SizedBox(height: 12),
 
               // TIME
-              _fancyCard(
+              FancyCard(
                 icon: Icons.access_time,
                 title: "الوقت",
                 child: Row(
@@ -223,10 +221,7 @@ class RoomDetailsScreen extends StatelessWidget {
                               return Theme(
                                 data: Theme.of(context).copyWith(
                                   colorScheme: Theme.of(context).colorScheme
-                                      .copyWith(
-                                        primary:
-                                            Appcolor.scondary, // اللون الثانوي
-                                      ),
+                                      .copyWith(primary: Appcolor.scondary),
                                 ),
                                 child: child!,
                               );
@@ -298,34 +293,6 @@ class RoomDetailsScreen extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _fancyCard({
-    required IconData icon,
-    required String title,
-    required Widget child,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 18),
-              const SizedBox(width: 6),
-              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-            ],
-          ),
-          const SizedBox(height: 10),
-          child,
-        ],
       ),
     );
   }

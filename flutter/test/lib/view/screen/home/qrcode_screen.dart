@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
-import 'package:get/get_state_manager/src/simple/get_view.dart';
+import 'package:get/get.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:test/controller/home/qrcodecontroller.dart';
 
@@ -10,9 +9,16 @@ class QrcodeScreen extends GetView<QrcodecontrollerImp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF172F4F),
       appBar: AppBar(
-        backgroundColor: Color(0xFF172F4F),
-        leading: BackButton(color: Colors.white),
+        backgroundColor: const Color(0xFF172F4F),
+        elevation: 0,
+        leading: const BackButton(color: Colors.white),
+        centerTitle: true,
+        title: const Text(
+          "MY QR",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
       ),
       body: Container(
         width: double.infinity,
@@ -24,13 +30,16 @@ class QrcodeScreen extends GetView<QrcodecontrollerImp> {
             end: Alignment.bottomCenter,
           ),
         ),
-
         child: SafeArea(
           child: Obx(() {
-            final qr = controller.qr.value;
-            final data = controller.attendanceData.value;
+            final qrValue = controller.qr.value;
+            final bookingData = controller.bookingData;
 
-            if (qr.isEmpty) {
+            final displayedUserName = controller.userName.value.isEmpty
+                ? "User"
+                : controller.userName.value;
+
+            if (qrValue.isEmpty) {
               return const Center(
                 child: Text(
                   "No QR Found",
@@ -40,98 +49,127 @@ class QrcodeScreen extends GetView<QrcodecontrollerImp> {
             }
 
             return SingleChildScrollView(
-              child: Center(
-                child: Container(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 30,
-                  ),
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(25),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 15,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        "QR Code",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      QrImageView(data: qr, size: 200),
-
-                      const SizedBox(height: 20),
-
-                      Text(
-                        qr,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      // =========================
-                      // 📊 ATTENDANCE DATA
-                      // =========================
-                      if (data != null) ...[
-                        Text("Status: ${data["status"] ?? "-"}"),
-                        Text("Start: ${data["actual_start"] ?? "-"}"),
-
-                        if (data["actual_end"] != null)
-                          Text("End: ${data["actual_end"]}"),
-
-                        if (data["hours"] != null)
-                          Text("Hours: ${data["hours"]}"),
-
-                        if (data["total_price"] != null)
-                          Text("Total: ${data["total_price"]}"),
-
-                        if (data["discount_percent"] != null)
-                          Text("Discount %: ${data["discount_percent"]}"),
-
-                        if (data["discount_amount"] != null)
-                          Text("Discount: ${data["discount_amount"]}"),
-                      ] else ...[
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+              child: Column(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 22,
+                      vertical: 26,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(28),
+                    ),
+                    child: Column(
+                      children: [
                         const Text(
-                          "No attendance data yet",
-                          style: TextStyle(color: Colors.grey),
+                          "Scan this QR",
+                          style: TextStyle(
+                            fontSize: 21,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF172F4F),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        RepaintBoundary(
+                          child: QrImageView(
+                            data: qrValue,
+                            size: 210,
+                            gapless: false,
+                            backgroundColor: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        /// اسم المستخدم فقط ظاهر
+                        Text(
+                          displayedUserName,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF172F4F),
+                          ),
+                        ),
+
+                        const SizedBox(height: 10),
+                        const Text(
+                          "Show this QR to check in",
+                          style: TextStyle(color: Colors.grey, fontSize: 14),
                         ),
                       ],
-                      const SizedBox(height: 20),
-
-                      // =========================
-                      // 🔴 / 🟢 STATUS
-                      Text(
-                        controller.isInside ? "Inside 🟢" : "Outside 🔴",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: controller.isInside
-                              ? Colors.green
-                              : Colors.red,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
+                  if (bookingData != null) ...[
+                    const SizedBox(height: 20),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(22),
+                      ),
+                      child: Column(
+                        children: [
+                          buildInfoRow(
+                            "Status",
+                            bookingData["status"]?.toString() ?? "-",
+                          ),
+                          buildInfoRow(
+                            "Actual Start",
+                            controller.actualStartText,
+                          ),
+                          buildInfoRow("Actual End", controller.actualEndText),
+                          buildInfoRow(
+                            "Hours",
+                            bookingData["hours"]?.toString() ?? "-",
+                          ),
+                          buildInfoRow(
+                            "Total Price",
+                            bookingData["total_price"]?.toString() ?? "-",
+                          ),
+                          buildInfoRow(
+                            "Discount Percent",
+                            bookingData["discount_percent"]?.toString() ??
+                                "0.00",
+                          ),
+                          buildInfoRow(
+                            "Discount Amount",
+                            bookingData["discount_amount"]?.toString() ?? "-",
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
               ),
             );
           }),
         ),
+      ),
+    );
+  }
+
+  Widget buildInfoRow(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(title, style: const TextStyle(color: Colors.grey)),
+          ),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF172F4F),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

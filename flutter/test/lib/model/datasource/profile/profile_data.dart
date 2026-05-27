@@ -7,10 +7,25 @@ class ProfileData {
 
   ProfileData(this.crud);
 
-  Future<Either<Failure, Map<String, dynamic>>> getProfile() async {
-    return await crud.getData(
+  Future<Either<Failure, Map<String, dynamic>>> createProfile({
+    required String address,
+    required String birthDate,
+    required String gender,
+    required String studyLevel,
+  }) async {
+    return await crud.postData(
       AppLink.profile,
+      {
+        "address": address,
+        "birth_date": birthDate,
+        "gender": gender,
+        "study_level": studyLevel,
+      },
     );
+  }
+
+  Future<Either<Failure, Map<String, dynamic>>> getProfile() async {
+    return await crud.getData(AppLink.profile);
   }
 
   Future<Either<Failure, Map<String, dynamic>>> updateProfile({

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:test/controller/home/pakages_controller.dart';
 import 'package:test/core/class/constant/appcolor.dart';
-import 'package:test/view/screen/home/my_current_package_view.dart';
-import 'package:test/view/screen/home/my_packages_view.dart';
+import 'package:test/view/widget/pakages/my_current_package_view.dart';
+import 'package:test/view/widget/pakages/my_packages_view.dart';
 import 'package:test/view/widget/pakages/header.dart';
 import 'package:test/view/widget/pakages/package_card.dart';
 import 'package:test/view/widget/pakages/tabs.dart';
@@ -31,6 +31,7 @@ class PackagesScreen extends GetView<PackagesController> {
                   child: CircularProgressIndicator(color: Appcolor.primary),
                 );
               }
+
               /// الاشتراك
               if (controller.selectedTab.value == 1) {
                 if (controller.packagesToBuy.isEmpty) {
@@ -64,6 +65,7 @@ class PackagesScreen extends GetView<PackagesController> {
                   ),
                 );
               }
+
               /// الحالية
               if (controller.selectedTab.value == 2) {
                 return const MyCurrentPackageView();

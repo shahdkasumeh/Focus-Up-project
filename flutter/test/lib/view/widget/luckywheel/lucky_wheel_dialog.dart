@@ -16,10 +16,10 @@ class LuckyWheelDialog extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(.14),
+          color: Colors.white.withValues(alpha: .14),
           borderRadius: BorderRadius.circular(28),
           border: Border.all(
-            color: Colors.white.withOpacity(.25),
+            color: Colors.white.withValues(alpha: .25),
           ),
         ),
         child: Column(

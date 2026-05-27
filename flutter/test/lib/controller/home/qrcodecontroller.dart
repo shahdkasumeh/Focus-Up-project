@@ -1,69 +1,161 @@
 import 'package:get/get.dart';
-import 'package:test/model/datasource/auth/qr_data.dart';
 import 'package:test/core/class/constant/storagehandler.dart';
+import 'package:test/model/datasource/home/qr_data.dart';
 
 class QrcodecontrollerImp extends GetxController {
-  RxString qr = "".obs;
-  RxInt bookingId = 0.obs;
+  final RxString qr = "".obs;
+  final RxString userName = "".obs;
 
-  Rxn<Map<String, dynamic>> attendanceData = Rxn<Map<String, dynamic>>();
+  /// حجز المستخدم الحالي فقط
+  final RxInt bookingId = 0.obs;
 
-  final StorageHandler storage = StorageHandler();
+  final RxBool isLoading = false.obs;
+
+  final Rxn<Map<String, dynamic>> attendanceData = Rxn<Map<String, dynamic>>();
+
   final QrData data = QrData(Get.find());
+  final StorageHandler storage = StorageHandler();
 
   @override
   void onInit() {
     super.onInit();
-    qr.value = storage.qrCode ?? "";
+    buildUserQr();
   }
+  void buildUserQr() {
+    final token = storage.token ?? "";
+    final currentUserName = storage.userName ?? "";
+    final currentUserId = storage.userId;
+    final currentBookingId = storage.bookingId;
 
-  // ================= استخراج ID =================
-  int extractBookingId(String raw) {
-    if (raw.startsWith("BOOKING:")) {
-      return int.parse(raw.split(":")[1]);
+    userName.value = currentUserName;
+    bookingId.value = currentBookingId;
+
+    if (token.isEmpty || currentUserId == 0) {
+      qr.value = "";
+      return;
     }
 
-    if (raw.contains("/b/")) {
-      final uri = Uri.parse(raw);
-      return int.parse(uri.pathSegments.last);
+    final bookingValue = currentBookingId == 0
+        ? "null"
+        : currentBookingId.toString();
+
+    qr.value = "$token|$currentUserName|$bookingValue";
+
+    print("CURRENT USER ID => $currentUserId");
+    print("CURRENT USER NAME => $currentUserName");
+    print("CURRENT USER BOOKING ID => $bookingValue");
+    print("CURRENT USER QR => ${qr.value}");
+  }
+
+  /// بعد نجاح حجز المستخدم الحالي
+  Future<void> setBookingId(int id) async {
+    final token = storage.token ?? "";
+    final currentUserName = storage.userName ?? "";
+
+    await storage.setBookingId(id);
+    await storage.setUserQr("$token|$currentUserName|$id");
+
+    buildUserQr();
+  }
+
+  /// بعد إلغاء الحجز أو الخروج للمستخدم الحالي فقط
+  Future<void> clearBookingId() async {
+    final token = storage.token ?? "";
+    final currentUserName = storage.userName ?? "";
+
+    await storage.removeBookingId();
+    await storage.setUserQr("$token|$currentUserName|null");
+
+    buildUserQr();
+  }
+
+  void refreshQr() {
+    buildUserQr();
+  }
+
+  Map<String, dynamic>? get bookingData {
+    final value = attendanceData.value;
+
+    if (value == null) return null;
+
+    if (value["data"] is Map<String, dynamic>) {
+      return Map<String, dynamic>.from(value["data"]);
     }
 
-    throw Exception("Invalid QR");
+    return value;
   }
 
-  // ================= عند scan =================
-  void handleQR(String raw) {
-    qr.value = raw;
-    bookingId.value = extractBookingId(raw);
+  String get actualStartText {
+    final value = bookingData?["actual_start"];
+
+    if (value == null || value.toString().isEmpty) {
+      return "-";
+    }
+
+    return value.toString();
   }
 
-  // ================= الحالة =================
-  bool get isInside {
-    if (attendanceData.value == null) return false;
-    return attendanceData.value!["data"]["status"] != "completed";
+  String get actualEndText {
+    final value = bookingData?["actual_end"];
+
+    if (value == null || value.toString().isEmpty) {
+      return "Still Inside";
+    }
+
+    return value.toString();
   }
 
-  // ================= CHECK IN =================
   Future<void> checkIn() async {
-    if (bookingId.value == 0) return;
+    if (bookingId.value == 0) {
+      Get.snackbar("Error", "No active booking");
+      return;
+    }
 
-    final res = await data.checkIn(bookingId.value);
+    isLoading.value = true;
 
-    res.fold((f) => Get.snackbar("Error", f.message), (r) {
-      attendanceData.value = r;
-      Get.snackbar("Success", r["message"] ?? "Checked in");
-    });
+    try {
+      final res = await data.checkIn(bookingId.value);
+
+      res.fold(
+        (failure) {
+          Get.snackbar("Error", failure.message);
+        },
+        (response) {
+          attendanceData.value = Map<String, dynamic>.from(response);
+
+          Get.snackbar("Success", response["message"] ?? "Checked in");
+        },
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 
-  // ================= CHECK OUT =================
   Future<void> checkOut() async {
-    if (bookingId.value == 0) return;
+    if (bookingId.value == 0) {
+      Get.snackbar("Error", "No active booking");
+      return;
+    }
 
-    final res = await data.checkOut(bookingId.value);
+    isLoading.value = true;
 
-    res.fold((f) => Get.snackbar("Error", f.message), (r) {
-      attendanceData.value = r;
-      Get.snackbar("Success", r["message"] ?? "Checked out");
-    });
+    try {
+      final res = await data.checkOut(bookingId.value);
+
+      await res.fold(
+        (failure) async {
+          Get.snackbar("Error", failure.message);
+        },
+        (response) async {
+          attendanceData.value = Map<String, dynamic>.from(response);
+
+          await clearBookingId();
+
+          Get.snackbar("Success", response["message"] ?? "Checked out");
+        },
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 }

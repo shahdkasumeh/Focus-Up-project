@@ -18,4 +18,10 @@ class Appcolor {
   static const Color thirdColor = Color.fromARGB(255, 255, 179, 170);
   static const Color fourthColor = Color(0xff0d3056);
   static const Color gren = Color(0xff2E7D32);
+
+  static const Color primaryColor = Color(0xFF162F50);
+  static const Color secondaryColor = Color(0xFF23486C);
+  static const Color accentColor = Color(0xFFF5C44B);
+  static const Color backgroundColor = Color(0xFFF5F7FB);
+  static const Color inactiveColor = Color(0xFF98A2B3);
 }

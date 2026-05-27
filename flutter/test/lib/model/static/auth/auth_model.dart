@@ -1,4 +1,4 @@
-import 'package:test/model/static/user_model.dart';
+import 'package:test/model/static/auth/user_model.dart';
 
 class AuthModel {
   final UserModel user;

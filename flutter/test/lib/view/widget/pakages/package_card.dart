@@ -152,7 +152,7 @@ class PackageCard extends GetView<PackagesController> {
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(.08),
+            color: Colors.black.withValues(alpha:.08),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -171,7 +171,7 @@ class PackageCard extends GetView<PackagesController> {
                   gradient: LinearGradient(
                     colors: [
                       Appcolor.scondary,
-                      Appcolor.scondary.withOpacity(.72),
+                      Appcolor.scondary.withValues(alpha: .72),
                     ],
                     begin: Alignment.topRight,
                     end: Alignment.bottomLeft,
@@ -183,7 +183,7 @@ class PackageCard extends GetView<PackagesController> {
                       width: 54,
                       height: 54,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(.22),
+                        color: Colors.white.withValues(alpha: .22),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -211,7 +211,7 @@ class PackageCard extends GetView<PackagesController> {
                           Text(
                             package.type,
                             style: TextStyle(
-                              color: Colors.white.withOpacity(.9),
+                              color: Colors.white.withValues(alpha: .9),
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                             ),
@@ -335,7 +335,7 @@ class PackageCard extends GetView<PackagesController> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Appcolor.primary,
                             disabledBackgroundColor: Appcolor.primary
-                                .withOpacity(.45),
+                                .withValues(alpha: .45),
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(

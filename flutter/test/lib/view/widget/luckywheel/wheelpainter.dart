@@ -5,9 +5,7 @@ import 'package:test/model/static/luckywheel/wheel_prize_model.dart';
 class WheelPainter extends CustomPainter {
   final List<WheelPrizeModel> prizes;
 
-  WheelPainter({
-    required this.prizes,
-  });
+  WheelPainter({required this.prizes});
 
   final List<Color> colors = const [
     Color(0xFFF5A623),
@@ -77,10 +75,7 @@ class WheelPainter extends CustomPainter {
 
       canvas.rotate(mid + pi / 2);
 
-      tp.paint(
-        canvas,
-        Offset(-tp.width / 2, -tp.height / 2),
-      );
+      tp.paint(canvas, Offset(-tp.width / 2, -tp.height / 2));
 
       canvas.restore();
     }

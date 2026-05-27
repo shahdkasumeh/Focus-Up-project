@@ -34,11 +34,11 @@ class Header extends StatelessWidget {
               height: 48,
 
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(.12),
+                color: Colors.white.withValues(alpha: .12),
 
                 borderRadius: BorderRadius.circular(14),
 
-                border: Border.all(color: Colors.white.withOpacity(.25)),
+                border: Border.all(color: Colors.white.withValues(alpha: 25)),
               ),
 
               child: const Icon(

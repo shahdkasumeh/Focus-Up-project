@@ -68,4 +68,14 @@ class StudyCompanionData {
       "${AppLink.posts}/$postId/comments/$commentId",
     );
   }
+  Future<Either<Failure, Map<String, dynamic>>> toggleLike({
+    required int postId,
+  }) async {
+    return await crud.postData(
+      "${AppLink.toggleLike}/$postId/like",
+      {},
+    );
+  }
 }
+ 
+

@@ -1,178 +1,60 @@
-// import 'package:get/get.dart';
-// import 'package:flutter/material.dart';
-// import 'package:test/model/datasource/auth/booking_data.dart';
-
-// class BookingController extends GetxController {
-//   BookingData data = BookingData(Get.find());
-
-//   var isLoading = false.obs;
-
-//   var selectedDate = Rxn<DateTime>();
-//   var startTime = Rxn<TimeOfDay>();
-//   var endTime = Rxn<TimeOfDay>();
-
-//   int? bookingId;
-
-//   void setDate(DateTime date) => selectedDate.value = date;
-//   void setStart(TimeOfDay time) => startTime.value = time;
-//   void setEnd(TimeOfDay time) => endTime.value = time;
-
-//   DateTime _buildDateTime(DateTime date, TimeOfDay time) {
-//     return DateTime(
-//       date.year,
-//       date.month,
-//       date.day,
-//       time.hour,
-//       time.minute,
-//     );
-//   }
-
-//   String formatDateTime(DateTime dt) {
-//     return "${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} "
-//         "${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}:00";
-//   }
-
-//   bool _validate() {
-//     if (selectedDate.value == null ||
-//         startTime.value == null ||
-//         endTime.value == null) {
-//       Get.snackbar("خطأ", "كمل كل البيانات");
-//       return false;
-//     }
-
-//     final date = selectedDate.value!;
-//     final start = _buildDateTime(date, startTime.value!);
-//     final end = _buildDateTime(date, endTime.value!);
-
-//     if (!end.isAfter(start)) {
-//       Get.snackbar("خطأ", "وقت النهاية لازم يكون بعد البداية");
-//       return false;
-//     }
-
-//     return true;
-//   }
-
-//   Future<void> createBooking(int tableId) async {
-//     if (!_validate()) return;
-
-//     isLoading.value = true;
-
-//     final date = selectedDate.value!;
-//     final start = _buildDateTime(date, startTime.value!);
-//     final end = _buildDateTime(date, endTime.value!);
-
-//     try {
-//       var res = await data.createBooking(
-//         tableId: tableId,
-//         start: start,
-//         end: end,
-//       );
-
-//       res.fold(
-//         (failure) {
-//           Get.snackbar(
-//             "خطأ",
-//             failure.message,
-//             backgroundColor: Colors.red,
-//             colorText: Colors.white,
-//           );
-//         },
-//         (success) {
-//           Get.snackbar(
-//             "نجاح",
-//             success['message'] ?? "تم الحجز",
-//             backgroundColor: Colors.green,
-//             colorText: Colors.white,
-//           );
-
-//           bookingId = success["data"]?["id"];
-//         },
-//       );
-//     } finally {
-//       isLoading.value = false;
-//     }
-//   }
-
-//   Future<void> cancelBooking() async {
-//     if (bookingId == null) {
-//       Get.snackbar("خطأ", "لا يوجد حجز لإلغائه");
-//       return;
-//     }
-
-//     isLoading.value = true;
-
-//     try {
-//       var res = await data.cancelBooking(bookingId!);
-
-//       res.fold(
-//         (failure) {
-//           Get.snackbar(
-//             "خطأ",
-//             failure.message,
-//             backgroundColor: Colors.red,
-//             colorText: Colors.white,
-//           );
-//         },
-//         (success) {
-//           Get.snackbar(
-//             "تم",
-//             success['message'] ?? "تم إلغاء الحجز",
-//             backgroundColor: Colors.green,
-//             colorText: Colors.white,
-//           );
-
-//           bookingId = null;
-//           selectedDate.value = null;
-//           startTime.value = null;
-//           endTime.value = null;
-//         },
-//       );
-//     } finally {
-//       isLoading.value = false;
-//     }
-//   }
-// }
-import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'package:test/model/datasource/auth/booking_data.dart';
+import 'package:get/get.dart';
+import 'package:test/controller/home/qrcodecontroller.dart';
+import 'package:test/core/class/constant/storagehandler.dart';
+import 'package:test/model/datasource/home/booking_data.dart';
 
 class BookingController extends GetxController {
-  BookingData data = BookingData(Get.find());
+  final BookingData data = BookingData(Get.find());
+  final StorageHandler storage = StorageHandler();
 
-  var isLoading = false.obs;
+  final RxBool isLoading = false.obs;
 
-  var selectedDate = Rxn<DateTime>();
-  var startTime = Rxn<TimeOfDay>();
-  var endTime = Rxn<TimeOfDay>();
+  final Rxn<DateTime> selectedDate = Rxn<DateTime>();
+  final Rxn<TimeOfDay> startTime = Rxn<TimeOfDay>();
+  final Rxn<TimeOfDay> endTime = Rxn<TimeOfDay>();
 
   int? bookingId;
 
-  void setDate(DateTime date) => selectedDate.value = date;
+  @override
+  void onInit() {
+    super.onInit();
 
-  void setStart(TimeOfDay time) => startTime.value = time;
+    /// هون رح يجيب حجز المستخدم المسجل حالياً فقط
+    final savedBookingId = storage.bookingId;
 
-  void setEnd(TimeOfDay time) => endTime.value = time;
+    bookingId = savedBookingId == 0 ? null : savedBookingId;
 
-  DateTime _buildDateTime(DateTime date, TimeOfDay time) {
-    return DateTime(
-      date.year,
-      date.month,
-      date.day,
-      time.hour,
-      time.minute,
-    );
+    print("BOOKING CONTROLLER USER ID => ${storage.userId}");
+    print("BOOKING CONTROLLER SAVED BOOKING => $bookingId");
   }
 
-  String formatDateTime(DateTime dt) {
-    return "${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} "
-        "${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}:00";
+  void setDate(DateTime date) {
+    selectedDate.value = date;
+  }
+
+  void setStart(TimeOfDay time) {
+    startTime.value = time;
+  }
+
+  void setEnd(TimeOfDay time) {
+    endTime.value = time;
+  }
+
+  DateTime _buildDateTime(DateTime date, TimeOfDay time) {
+    return DateTime(date.year, date.month, date.day, time.hour, time.minute);
   }
 
   bool _validate() {
     if (selectedDate.value == null ||
         startTime.value == null ||
         endTime.value == null) {
-      Get.snackbar("خطأ", "كمل كل البيانات");
+      Get.snackbar(
+        "خطأ",
+        "كمل كل البيانات",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
       return false;
     }
 
@@ -180,30 +62,20 @@ class BookingController extends GetxController {
     final start = _buildDateTime(date, startTime.value!);
     final end = _buildDateTime(date, endTime.value!);
 
-    /// النهاية لازم تكون بعد البداية
     if (!end.isAfter(start)) {
-      Get.snackbar("خطأ", "وقت النهاية لازم يكون بعد البداية");
+      Get.snackbar(
+        "خطأ",
+        "وقت النهاية لازم يكون بعد البداية",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
       return false;
     }
 
-    /// أوقات الدوام المسموحة
-    final openTime = DateTime(
-      date.year,
-      date.month,
-      date.day,
-      9,
-      0,
-    );
+    final openTime = DateTime(date.year, date.month, date.day, 9, 0);
 
-    final closeTime = DateTime(
-      date.year,
-      date.month,
-      date.day,
-      20,
-      0,
-    );
+    final closeTime = DateTime(date.year, date.month, date.day, 20, 0);
 
-    /// التحقق من الوقت
     if (start.isBefore(openTime) || end.isAfter(closeTime)) {
       Get.snackbar(
         "خطأ",
@@ -211,14 +83,36 @@ class BookingController extends GetxController {
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
-
       return false;
     }
 
-    print("START => ${formatDateTime(start)}");
-    print("END => ${formatDateTime(end)}");
-
     return true;
+  }
+
+  Future<void> _saveBookingForCurrentUser(int id) async {
+    if (Get.isRegistered<QrcodecontrollerImp>()) {
+      await Get.find<QrcodecontrollerImp>().setBookingId(id);
+      return;
+    }
+
+    final token = storage.token ?? "";
+    final currentUserName = storage.userName ?? "";
+
+    await storage.setBookingId(id);
+    await storage.setUserQr("$token|$currentUserName|$id");
+  }
+
+  Future<void> _removeBookingForCurrentUser() async {
+    if (Get.isRegistered<QrcodecontrollerImp>()) {
+      await Get.find<QrcodecontrollerImp>().clearBookingId();
+      return;
+    }
+
+    final token = storage.token ?? "";
+    final currentUserName = storage.userName ?? "";
+
+    await storage.removeBookingId();
+    await storage.setUserQr("$token|$currentUserName|null");
   }
 
   Future<void> createBooking(int tableId) async {
@@ -227,20 +121,18 @@ class BookingController extends GetxController {
     isLoading.value = true;
 
     final date = selectedDate.value!;
-
     final start = _buildDateTime(date, startTime.value!);
-
     final end = _buildDateTime(date, endTime.value!);
 
     try {
-      var res = await data.createBooking(
+      final res = await data.createBooking(
         tableId: tableId,
         start: start,
         end: end,
       );
 
-      res.fold(
-        (failure) {
+      await res.fold(
+        (failure) async {
           Get.snackbar(
             "خطأ",
             failure.message,
@@ -248,15 +140,34 @@ class BookingController extends GetxController {
             colorText: Colors.white,
           );
         },
-        (success) {
+        (success) async {
+          final dynamic idValue = success["data"]?["id"];
+
+          bookingId = idValue is int
+              ? idValue
+              : int.tryParse(idValue.toString());
+          if (bookingId == null) {
+            Get.snackbar(
+              "خطأ",
+              "ما وصل رقم الحجز",
+              backgroundColor: Colors.red,
+              colorText: Colors.white,
+            );
+            return;
+          }
+
+          /// هون عم ينخزن الرقم للمستخدم الحالي فقط
+          await _saveBookingForCurrentUser(bookingId!);
+
+          print("USER ID => ${storage.userId}");
+          print("NEW BOOKING ID => $bookingId");
+
           Get.snackbar(
             "نجاح",
-            success['message'] ?? "تم الحجز",
+            success["message"] ?? "تم الحجز",
             backgroundColor: Colors.green,
             colorText: Colors.white,
           );
-
-          bookingId = success["data"]?["id"];
         },
       );
     } finally {
@@ -265,18 +176,26 @@ class BookingController extends GetxController {
   }
 
   Future<void> cancelBooking() async {
+    /// بجيب حجز المستخدم الحالي فقط
+    bookingId ??= storage.bookingId == 0 ? null : storage.bookingId;
+
     if (bookingId == null) {
-      Get.snackbar("خطأ", "لا يوجد حجز لإلغائه");
+      Get.snackbar(
+        "خطأ",
+        "لا يوجد حجز لإلغائه",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
       return;
     }
 
     isLoading.value = true;
 
     try {
-      var res = await data.cancelBooking(bookingId!);
+      final res = await data.cancelBooking(bookingId!);
 
-      res.fold(
-        (failure) {
+      await res.fold(
+        (failure) async {
           Get.snackbar(
             "خطأ",
             failure.message,
@@ -284,18 +203,21 @@ class BookingController extends GetxController {
             colorText: Colors.white,
           );
         },
-        (success) {
-          Get.snackbar(
-            "تم",
-            success['message'] ?? "تم إلغاء الحجز",
-            backgroundColor: Colors.green,
-            colorText: Colors.white,
-          );
+        (success) async {
+          /// بيمسح حجز المستخدم الحالي فقط
+          await _removeBookingForCurrentUser();
 
           bookingId = null;
           selectedDate.value = null;
           startTime.value = null;
           endTime.value = null;
+
+          Get.snackbar(
+            "تم",
+            success["message"] ?? "تم إلغاء الحجز",
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+          );
         },
       );
     } finally {

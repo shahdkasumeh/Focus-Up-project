@@ -7,17 +7,7 @@ class ForgetPasswordData {
 
   ForgetPasswordData(this.crud);
 
-  Future<Either<Failure, Map<String, dynamic>>> sendEmail(
-    String email,
-  ) async {
-    return await crud.postData(
-      AppLink.forgetPassword,
-      {
-        "email": email,
-      },
-      headers: {
-        "Accept": "application/json",
-      },
-    );
+  Future<Either<Failure, Map<String, dynamic>>> sendEmail(String email) async {
+    return await crud.postData(AppLink.forgetPassword, {"email": email});
   }
 }

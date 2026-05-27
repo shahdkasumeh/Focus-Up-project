@@ -5,7 +5,6 @@ class PostModel {
   final String createdAt;
   final String userName;
   final bool isOwner;
-
   int likesCount;
   bool isLiked;
   int commentsCount;

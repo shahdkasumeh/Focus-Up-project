@@ -12,7 +12,7 @@ class ComposeBox extends GetView<StudyCompanionController> {
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(.92),
+        color: Colors.white.withValues(alpha: .92),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(

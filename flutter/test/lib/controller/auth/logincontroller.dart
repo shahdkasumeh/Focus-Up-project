@@ -4,7 +4,7 @@ import 'package:test/core/class/constant/routes.dart';
 import 'package:test/core/class/crud.dart';
 import 'package:test/core/class/statusrequest.dart';
 import 'package:test/model/datasource/auth/login_data.dart';
-import 'package:test/model/static/auth_model.dart';
+import 'package:test/model/static/auth/auth_model.dart';
 import 'package:test/core/class/constant/storagehandler.dart';
 
 abstract class LoginController extends GetxController {
@@ -22,6 +22,7 @@ class LoginControllerImp extends LoginController {
   late TextEditingController password;
 
   bool isPasswordHidden = true;
+
   StatusRequest statusRequest = StatusRequest.none;
 
   @override
@@ -46,6 +47,7 @@ class LoginControllerImp extends LoginController {
   // =========================
   // 🔥 ERROR HANDLER
   // =========================
+
   String mapLoginError(dynamic data) {
     final message = (data["message"] ?? "").toString().toLowerCase();
 
@@ -75,6 +77,7 @@ class LoginControllerImp extends LoginController {
   // =========================
   // 🚀 LOGIN
   // =========================
+
   @override
   signIn() async {
     if (!formstate.currentState!.validate()) return;
@@ -105,14 +108,22 @@ class LoginControllerImp extends LoginController {
         if (data["token"] != null) {
           final token = data["token"];
 
-          await StorageHandler().setToken(token);
-
           final auth = AuthModel.fromJson(data);
 
+          /// TOKEN
+          await StorageHandler().setToken(token);
+
+          /// USER ID
           await StorageHandler().setUserId(auth.user.id);
-          await StorageHandler().setQrCode(auth.user.fullName);
+
+          /// USER NAME
+          await StorageHandler().setUserName(auth.user.fullName);
+
+          /// USER QR
+          await StorageHandler().setUserQr("$token|${auth.user.fullName}|null");
 
           statusRequest = StatusRequest.success;
+
           update();
 
           Get.snackbar(
@@ -125,6 +136,7 @@ class LoginControllerImp extends LoginController {
           Get.offAllNamed(AppRoutes.homepagescreen);
         } else {
           statusRequest = StatusRequest.failure;
+
           update();
 
           Get.snackbar(

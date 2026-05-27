@@ -44,26 +44,31 @@ class Crud {
 
   // =========================
   // 📤 POST
-  // =========================
   Future<Either<Failure, Map<String, dynamic>>> postData(
-    String url,
-    Map data, {
-    Map<String, String>? headers,
-  }) async {
+    String linkurl,
+    Map data,
+  ) async {
     try {
-      print("🚀 POST => $url");
-      print("📦 BODY => $data");
+      String? token = StorageHandler().token;
 
       final response = await http.post(
-        Uri.parse(url),
-        headers: _headers(extra: headers),
+        Uri.parse(linkurl),
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+
+          if (token != null && token.isNotEmpty)
+            "Authorization": "Bearer $token",
+        },
+
         body: jsonEncode(data),
       );
 
       return _handleResponse(response);
     } catch (e) {
-      print("❌ ERROR => $e");
-      return Left(Failure("Unexpected error"));
+      print("❌ POST ERROR => $e");
+
+      return Left(Failure("Connection Error"));
     }
   }
 

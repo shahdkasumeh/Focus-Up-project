@@ -20,10 +20,8 @@ class CommentModel {
   });
 
   factory CommentModel.fromJson(Map<String, dynamic> json) {
-    /// 🟣 المستخدم الحالي
     final int currentUserId = StorageHandler().userId;
 
-    /// 🟣 صاحب التعليق
     final int commentUserId =
         int.tryParse(json['user']?['id']?.toString() ?? '0') ?? 0;
 
@@ -36,7 +34,6 @@ class CommentModel {
 
       usersid: commentUserId,
 
-      /// ✅ هل التعليق إلي؟
       isOwner: currentUserId == commentUserId,
 
       userName:
