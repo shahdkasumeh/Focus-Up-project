@@ -16,7 +16,7 @@ class Profile extends Model
         'birth_date',
         'gender',
         'study_level',
-        'has_discount',
+        // 'has_discount',
         'user_id',
     ];
 

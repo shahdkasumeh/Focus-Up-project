@@ -22,7 +22,9 @@ class ProfileController extends Controller
         $profile = $this->profileService->getByUser(
             userId: $request->user()->id,
         );
-
+        if (!$profile) {
+            abort(404, 'Profile not found.');
+        }
         return new ProfileResource($profile);
     }
 

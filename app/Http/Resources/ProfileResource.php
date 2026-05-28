@@ -18,7 +18,7 @@ class ProfileResource extends JsonResource
             'birth_date'   => $this->birth_date,
             'gender'       => $this->gender,
             'study_level'  => $this->study_level,
-            'has_discount' => $this->has_discount,
+            // 'has_discount' => $this->has_discount,
             'user' => [
                 'id'       => $this->user?->id,
                 'fullname' => $this->user?->full_name,

@@ -8,11 +8,12 @@ use Illuminate\Support\Facades\Storage;
 
 class ProfileService
 {
-    public function getByUser(int $userId): Profile
+    public function getByUser(int $userId): ?Profile
     {
         return Profile::with('user')
             ->where('user_id', $userId)
-            ->firstOrFail();
+            // ->firstOrFail();
+            ->first();
     }
 
     public function create(array $data, int $userId): Profile
@@ -28,7 +29,7 @@ class ProfileService
             'birth_date' => $data['birth_date'],
             'gender' => $data['gender'],
             'study_level' => $data['study_level'],
-            'has_discount' => false,
+            // 'has_discount' => false,
             'user_id' => $userId,
         ]);
         return $profile->load('user');

@@ -25,7 +25,7 @@ class CreateRoomRequest extends FormRequest
             'name'=>'required|string|max:255',
             'type'=>'required|in:quiet,social,social_ns,discussion',
             'capacity'=>'required|integer',
-            'is_active'=>'somtimes|boolean'
+            'is_active'=>'sometimes|boolean'
         ];
     }
 }

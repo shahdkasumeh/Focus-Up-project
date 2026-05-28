@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->date('birth_date');
             $table->enum('gender', ['male', 'female']);
             $table->string('study_level');
-            $table->boolean('has_discount')->default(false);
+            // $table->boolean('has_discount')->default(false);
             $table->foreignId('user_id')
                 ->constrained('users')
                 ->onDelete('cascade');
