@@ -1,8 +1,10 @@
+
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:test/core/class/crud.dart';
 import 'package:test/model/datasource/home/walk_in_data.dart';
-import 'package:test/model/static/walk_in_crowding_model.dart';
+import 'package:test/model/static/crowding/walk_in_crowding_model.dart';
 
 abstract class CrowdedHallWithOutReservationController extends GetxController {}
 
@@ -13,18 +15,26 @@ class CrowdedHallWithOutReservationControllerImp
   var rooms = <WalkInCrowdingModel>[].obs;
   var isLoading = false.obs;
 
-  /// 👇 Object واحد
   Rxn<WalkInCrowdingModel> room = Rxn<WalkInCrowdingModel>();
+
+  Timer? refreshTimer;
 
   @override
   void onInit() {
     super.onInit();
+
     fetchRoom();
+
+    refreshTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+      fetchRoom(showLoading: false);
+    });
   }
 
-  Future<void> fetchRoom() async {
+  Future<void> fetchRoom({bool showLoading = true}) async {
     try {
-      isLoading.value = true;
+      if (showLoading) {
+        isLoading.value = true;
+      }
 
       final response = await walkInData.getCrowding();
 
@@ -46,14 +56,22 @@ class CrowdedHallWithOutReservationControllerImp
         },
       );
     } finally {
-      isLoading.value = false;
+      if (showLoading) {
+        isLoading.value = false;
+      }
     }
   }
 
-  /// 🎨 لون حسب النسبة
+
   Color getColor(double percent) {
-    if (percent < 50) return const Color(0xFF52AF74);
-    if (percent < 80) return const Color(0xFFF59E0B);
+    if (percent < 50) {
+      return const Color(0xFF52AF74);
+    }
+
+    if (percent < 80) {
+      return const Color(0xFFF59E0B);
+    }
+
     return const Color(0xFFEF4444);
   }
 
@@ -61,12 +79,21 @@ class CrowdedHallWithOutReservationControllerImp
     switch (status.toLowerCase()) {
       case "low":
         return Colors.green;
+
       case "medium":
         return Colors.orange;
+
       case "high":
         return Colors.red;
+
       default:
         return Colors.grey;
     }
+  }
+
+  @override
+  void onClose() {
+    refreshTimer?.cancel();
+    super.onClose();
   }
 }

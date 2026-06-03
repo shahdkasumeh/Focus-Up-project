@@ -8,6 +8,7 @@ class RoomDetailsController extends GetxController {
 
   var tables = <TableModel>[].obs;
   var isLoading = false.obs;
+  var isRefreshing = false.obs;
 
   late int roomId;
 
@@ -15,54 +16,71 @@ class RoomDetailsController extends GetxController {
   void onInit() {
     super.onInit();
 
-    // 🔥 قراءة ID بشكل آمن
     final arg = Get.arguments;
-
     roomId = (arg is int) ? arg : int.tryParse(arg?.toString() ?? '') ?? 1;
 
     print("🏠 ROOM ID => $roomId");
-
-    // 🔥 debug token (مهم لحل 403)
     print("🔥 TOKEN => ${StorageHandler().token}");
 
     fetchTables();
   }
 
+  bool isTableOccupied(TableModel table) {
+  return table.isOccupied;
+}
 
-  fetchTables() async {
-    isLoading.value = true;
+  Future<void> fetchTables({bool showLoading = true}) async {
+    if (showLoading) {
+      isLoading.value = true;
+    } else {
+      isRefreshing.value = true;
+    }
 
     try {
       var response = await roomData.getRoom(roomId);
 
       response.fold(
         (failure) {
-          print("❌ REQUEST FAILED");
+          print("❌ REQUEST FAILED => ${failure.message}");
         },
         (data) {
           print("📥 RAW DATA => $data");
 
           final List list = data['data']['tables'] ?? [];
 
-          tables.value = list.map((e) => TableModel.fromJson(e)).toList();
+          tables.assignAll(list.map((e) => TableModel.fromJson(e)).toList());
+
+          tables.refresh();
+
+          for (var table in tables) {
+            print(
+              "TABLE ${table.tableNum} => isOccupied ${table.isOccupied} | type: ${table.isOccupied.runtimeType}",
+            );
+          }
         },
       );
     } catch (e) {
       print("❌ CONTROLLER ERROR => $e");
+    } finally {
+      if (showLoading) {
+        isLoading.value = false;
+      } else {
+        isRefreshing.value = false;
+      }
     }
-
-    isLoading.value = false;
   }
 
+  Future<void> refreshTables() async {
+    await fetchTables(showLoading: false);
+  }
 
   void selectTable(TableModel table) {
-    if (table.isOccupied == 1) {
+    if (isTableOccupied(table)) {
       Get.snackbar("خطأ", "الطاولة مشغولة");
       return;
     }
 
     Get.snackbar("تم", "تم اختيار طاولة ${table.tableNum}");
-
     print("🪑 SELECTED TABLE => ${table.id}");
   }
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_state_manager/src/simple/get_view.dart';
+import 'package:get/get.dart';
 import 'package:test/controller/auth/forgetpasswordcontroller.dart';
 import 'package:test/core/class/constant/appcolor.dart';
 import 'package:test/core/function/validinput.dart';
@@ -12,28 +12,26 @@ class Forgetpasswordscreen extends GetView<ForgetPasswordControllerImp> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xffF5F7FA),
-
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Appcolor.scondary,
-        leading: const BackButton(color: Colors.white),
-      ),
+        backgroundColor: Appcolor.primaryColor,
 
+        automaticallyImplyLeading: false,
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
-
             child: Form(
               key: controller.formstate,
-
               child: Container(
-                padding: const EdgeInsets.all(25),
-
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 25,
+                  vertical: 30,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(30),
-
                   boxShadow: [
                     BoxShadow(
                       color: Colors.grey.withValues(alpha: 0.15),
@@ -42,28 +40,27 @@ class Forgetpasswordscreen extends GetView<ForgetPasswordControllerImp> {
                     ),
                   ],
                 ),
-
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    /// ICON
                     Container(
                       height: 110,
                       width: 110,
-
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         gradient: LinearGradient(
                           colors: [
-                            Appcolor.scondary,
+                            Appcolor.primaryColor,
                             Appcolor.scondary.withValues(alpha: 0.7),
                           ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
                       ),
                       child: const Icon(
-                        Icons.lock_reset_rounded,
+                        Icons.mark_email_read_outlined,
                         color: Colors.white,
-                        size: 55,
+                        size: 52,
                       ),
                     ),
 
@@ -81,9 +78,8 @@ class Forgetpasswordscreen extends GetView<ForgetPasswordControllerImp> {
                     const SizedBox(height: 15),
 
                     Text(
-                      "Don't worry! Enter your email address and we'll send you a verification code.",
+                      "Enter your email address and we'll send you a verification code.",
                       textAlign: TextAlign.center,
-
                       style: TextStyle(
                         fontSize: 15,
                         color: Colors.grey.shade600,
@@ -97,7 +93,6 @@ class Forgetpasswordscreen extends GetView<ForgetPasswordControllerImp> {
                       valid: (val) {
                         return validInput(val!, 5, 50, "email");
                       },
-
                       isNumber: false,
                       mycontroller: controller.email,
                       hinttext: "Enter your email",
@@ -106,42 +101,66 @@ class Forgetpasswordscreen extends GetView<ForgetPasswordControllerImp> {
                     ),
 
                     const SizedBox(height: 35),
-
-                    SizedBox(
-                      width: double.infinity,
-                      height: 45,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          controller.checkEmail();
-                        },
-
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Appcolor.primary,
-                          elevation: 5,
-
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                    Obx(
+                      () => SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton(
+                          onPressed: controller.isLoading.value
+                              ? null
+                              : () {
+                                  controller.checkEmail();
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Appcolor.scondary,
+                            disabledBackgroundColor: Appcolor.scondary
+                                .withValues(alpha: 0.55),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
                           ),
-                        ),
-
-                        child: const Text(
-                          "Continue",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Appcolor.scondary,
-                          ),
+                          child: controller.isLoading.value
+                              ? const SizedBox(
+                                  width: 23,
+                                  height: 23,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.4,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "Send Verification Code",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    SizedBox(width: 9),
+                                    Icon(Icons.send_rounded, size: 19),
+                                  ],
+                                ),
                         ),
                       ),
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 22),
 
-                    Text(
-                      "We'll help you recover your account quickly.",
-                      style: TextStyle(
-                        color: Colors.grey.shade500,
-                        fontSize: 13,
+                    TextButton(
+                      onPressed: () {
+                        Get.back();
+                      },
+                      child: Text(
+                        "Back to Login",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],

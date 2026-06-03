@@ -21,7 +21,7 @@ class Loginscreen extends GetView<LoginControllerImp> {
 
       appBar: AppBar(
         toolbarHeight: 30,
-        backgroundColor: Appcolor.scondary,
+        backgroundColor: Appcolor.primaryColor,
         elevation: 0,
       ),
 
@@ -94,7 +94,7 @@ class Loginscreen extends GetView<LoginControllerImp> {
                             child: Text(
                               "Forget Password ?",
                               style: TextStyle(
-                                color: Appcolor.scondary,
+                                color: Appcolor.primaryColor,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),

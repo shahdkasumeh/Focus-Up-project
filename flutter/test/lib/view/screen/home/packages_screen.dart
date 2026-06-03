@@ -32,7 +32,6 @@ class PackagesScreen extends GetView<PackagesController> {
                 );
               }
 
-              /// الاشتراك
               if (controller.selectedTab.value == 1) {
                 if (controller.packagesToBuy.isEmpty) {
                   return const Center(

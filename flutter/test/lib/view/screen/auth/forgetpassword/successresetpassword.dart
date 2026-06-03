@@ -93,7 +93,7 @@ class Successresetpassword extends GetView<SucessResetPasswordControllerImp> {
                     ),
                   ),
 
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 35),
 
                   /// BUTTON
                   SizedBox(

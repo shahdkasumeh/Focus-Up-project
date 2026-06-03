@@ -11,10 +11,6 @@ class HomepageScreen extends GetView<HomePageControllerImp> {
 
   @override
   Widget build(BuildContext context) {
-    final HomePageControllerImp homeController = Get.put(
-      HomePageControllerImp(),
-    );
-
     return Scaffold(
       backgroundColor: Appcolor.backgroundColor,
       bottomNavigationBar: BottomBar(),
@@ -54,9 +50,7 @@ class HomepageScreen extends GetView<HomePageControllerImp> {
               ),
             ],
             flexibleSpace: FlexibleSpaceBar(
-              background: HomeHeader(
-                onBookingTap: homeController.goToTypeBooking,
-              ),
+              background: HomeHeader(onBookingTap: controller.goToTypeBooking),
             ),
           ),
 
@@ -101,7 +95,7 @@ class HomepageScreen extends GetView<HomePageControllerImp> {
                       icon: Icons.event_seat_rounded,
                       iconBackground: const Color(0xFFE8F0FF),
                       iconColor: const Color(0xFF3978F6),
-                      onTap: homeController.goToTypeBooking,
+                      onTap: controller.goToTypeBooking,
                     ),
                     ServiceCard(
                       title: 'رمز الدراسة',
@@ -109,7 +103,7 @@ class HomepageScreen extends GetView<HomePageControllerImp> {
                       icon: Icons.qr_code_scanner_rounded,
                       iconBackground: const Color(0xFFE7F8EF),
                       iconColor: const Color(0xFF18A468),
-                      onTap: homeController.goToQrCode,
+                      onTap: controller.goToQrCode,
                     ),
                     ServiceCard(
                       title: 'رفيق الدراسة',
@@ -117,7 +111,7 @@ class HomepageScreen extends GetView<HomePageControllerImp> {
                       icon: Icons.forum_rounded,
                       iconBackground: const Color(0xFFFFF0E6),
                       iconColor: const Color(0xFFF07A2B),
-                      onTap: homeController.goToStudyCompanion,
+                      onTap: controller.goToStudyCompanion,
                     ),
                     ServiceCard(
                       title: 'عجلة الحظ',
@@ -125,7 +119,7 @@ class HomepageScreen extends GetView<HomePageControllerImp> {
                       icon: Icons.casino_rounded,
                       iconBackground: const Color(0xFFF3EAFE),
                       iconColor: const Color(0xFF9349E7),
-                      onTap: homeController.goToLuckyWheel,
+                      onTap: controller.goToLuckyWheel,
                     ),
                     ServiceCard(
                       title: 'الباقات',
@@ -133,7 +127,7 @@ class HomepageScreen extends GetView<HomePageControllerImp> {
                       icon: Icons.workspace_premium_rounded,
                       iconBackground: const Color(0xFFFFEBEA),
                       iconColor: const Color(0xFFE7524B),
-                      onTap: homeController.goToPackages,
+                      onTap: controller.goToPackages,
                     ),
                     ServiceCard(
                       title: 'المهام',
@@ -141,7 +135,7 @@ class HomepageScreen extends GetView<HomePageControllerImp> {
                       icon: Icons.task_alt_rounded,
                       iconBackground: const Color(0xFFE5F5FC),
                       iconColor: const Color(0xFF129BCB),
-                      onTap: homeController.goToTasks,
+                      onTap: controller.goToTasks,
                     ),
                   ],
                 ),

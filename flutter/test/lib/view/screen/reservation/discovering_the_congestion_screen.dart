@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:test/controller/reservation/discovering_the_congestion_controller.dart';
-import 'package:test/core/class/constant/appcolor.dart';
+import 'package:test/view/widget/reservation/empty_state.dart';
+import 'package:test/view/widget/reservation/header_discovering.dart';
 
 class DiscoveringTheCongestionScreen
     extends GetView<DiscoveringTheCongestionControllerImp> {
@@ -10,120 +11,280 @@ class DiscoveringTheCongestionScreen
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: const BackButton(color: Colors.white),
-        title: const Text(
-          "نسبة الازدحام",
-          style: TextStyle(color: Appcolor.backgroundcolor),
-        ),
-        backgroundColor: const Color(0xff2e3a59),
-      ),
+      backgroundColor: const Color(0xffF5F7FB),
+      body: Column(
+        children: [
+          const HeaderDiscovering(),
+          Expanded(
+            child: Obx(() {
+              if (controller.isLoading.value) {
+                return const Center(
+                  child: CircularProgressIndicator(color: Color(0xff2e3a59)),
+                );
+              }
 
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
-        }
+              if (controller.rooms.isEmpty) {
+                return ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: const [SizedBox(height: 180), EmptyState()],
+                );
+              }
 
-        if (controller.rooms.isEmpty) {
-          return const Center(child: Text("لا توجد بيانات"));
-        }
+              return ListView.builder(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(16, 18, 16, 24),
+                itemCount: controller.rooms.length,
+                itemBuilder: (context, index) {
+                  final room = controller.rooms[index];
+                  final color = controller.getColorFromString(room.color);
+                  final percentage = room.percentage.clamp(0, 100).toDouble();
 
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: controller.rooms.length,
-          itemBuilder: (context, index) {
-            final room = controller.rooms[index];
-
-            /// 🔥 اللون من الباك
-            final color = controller.getColorFromString(room.color);
-
-            return Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: color, width: 1.5),
-                boxShadow: const [
-                  BoxShadow(blurRadius: 6, color: Colors.black12),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  /// اسم القاعة
-                  Text(
-                    room.roomName,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  /// progress bar
-                  LinearProgressIndicator(
-                    value: room.percentage / 100,
+                  return _CongestionCard(
                     color: color,
-                    backgroundColor: Colors.grey.shade300,
-                  ),
+                    roomName: room.roomName,
+                    percentage: percentage,
+                    occupiedTables: room.occupiedTables,
+                    totalTables: room.totalTables,
+                    status: room.status,
+                    message: room.message,
+                    onPressed: () {
+                      controller.goToRoom(room.roomId);
+                    },
+                  );
+                },
+              );
+            }),
+          ),
+        ],
+      ),
+    );
+  }
+}
+class _CongestionCard extends StatelessWidget {
+  final Color color;
+  final String roomName;
+  final double percentage;
+  final int occupiedTables;
+  final int totalTables;
+  final String status;
+  final String message;
+  final VoidCallback onPressed;
 
-                  const SizedBox(height: 8),
+  const _CongestionCard({
+    required this.color,
+    required this.roomName,
+    required this.percentage,
+    required this.occupiedTables,
+    required this.totalTables,
+    required this.status,
+    required this.message,
+    required this.onPressed,
+  });
 
-                  /// نسبة الازدحام
-                  Text("نسبة الازدحام: ${room.percentage.toStringAsFixed(1)}%"),
+  @override
+  Widget build(BuildContext context) {
+    final progressValue = percentage / 100;
 
-                  const SizedBox(height: 6),
-
-                  /// الطاولات
-                  Text(
-                    "الطاولات المشغولة: ${room.occupiedTables} / ${room.totalTables}",
-                  ),
-
-                  const SizedBox(height: 6),
-
-                  /// الحالة
-                  Text(
-                    "الحالة: ${room.status}",
-                    style: TextStyle(fontWeight: FontWeight.bold, color: color),
-                  ),
-
-                  const SizedBox(height: 6),
-
-                  /// الرسالة
-                  Text(
-                    room.message,
-                    style: TextStyle(fontSize: 13, color: color),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  /// زر عرض الطاولات
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: color,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: color.withValues(alpha: 0.22), width: 1.3),
+        boxShadow: [
+          BoxShadow(
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+            color: Colors.black.withValues(alpha: 0.06),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            textDirection: TextDirection.rtl,
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Icon(
+                  Icons.meeting_room_outlined,
+                  color: color,
+                  size: 30,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      roomName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.right,
+                      style: const TextStyle(
+                        color: Color(0xff172F4F),
+                        fontSize: 19,
+                        fontWeight: FontWeight.w900,
                       ),
-                      onPressed: () {
-                        controller.goToRoom(room.roomId);
-                      },
-                      child: const Text(
-                        "عرض الطاولات",
-                        style: TextStyle(color: Colors.white),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      "الطاولات المشغولة: $occupiedTables / $totalTables",
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
                       ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 20),
+
+          Row(
+            textDirection: TextDirection.rtl,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                "${percentage.toStringAsFixed(1)}%",
+                style: TextStyle(
+                  color: color,
+                  fontSize: 34,
+                  height: 1,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(width: 7),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  "ازدحام",
+                  style: TextStyle(
+                    color: Colors.grey.shade500,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.circle, color: color, size: 10),
+                    const SizedBox(width: 7),
+                    Text(
+                      status,
+                      style: TextStyle(
+                        color: color,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 14),
+
+          ClipRRect(
+            borderRadius: BorderRadius.circular(100),
+            child: LinearProgressIndicator(
+              value: progressValue,
+              minHeight: 11,
+              backgroundColor: const Color(0xffE8ECF3),
+              valueColor: AlwaysStoppedAnimation<Color>(color),
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(13),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              textDirection: TextDirection.rtl,
+              children: [
+                Icon(Icons.info_outline_rounded, color: color, size: 20),
+                const SizedBox(width: 9),
+                Expanded(
+                  child: Text(
+                    message,
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                      fontSize: 13,
+                      height: 1.4,
+                      color: color,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: color,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
+              onPressed: onPressed,
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                textDirection: TextDirection.rtl,
+                children: [
+                  Icon(
+                    Icons.table_restaurant_outlined,
+                    color: Colors.white,
+                    size: 21,
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    "عرض الطاولات",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
                 ],
               ),
-            );
-          },
-        );
-      }),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

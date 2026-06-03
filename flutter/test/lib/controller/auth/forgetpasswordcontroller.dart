@@ -1,65 +1,72 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:test/core/class/constant/routes.dart';
-import 'package:test/model/datasource/auth/forget_password_data.dart';
 import 'package:test/core/class/crud.dart';
+import 'package:test/model/datasource/auth/forget_password_data.dart';
 
 abstract class ForgetPasswordController extends GetxController {
-  checkEmail();
+  Future<void> checkEmail();
 }
 
 class ForgetPasswordControllerImp extends ForgetPasswordController {
-  GlobalKey<FormState> formstate = GlobalKey<FormState>();
-  final ForgetPasswordData forgetPasswordData = ForgetPasswordData(Crud());
+  final GlobalKey<FormState> formstate = GlobalKey<FormState>();
+
+  final ForgetPasswordData forgetPasswordData =
+      ForgetPasswordData(Crud());
 
   late TextEditingController email;
 
-  RxBool isLoading = false.obs;
+  final RxBool isLoading = false.obs;
 
   @override
   void onInit() {
-    email = TextEditingController();
-
     super.onInit();
+    email = TextEditingController();
   }
 
   @override
-  void dispose() {
+  void onClose() {
     email.dispose();
-    super.dispose();
+    super.onClose();
   }
 
-  // =========================
-  // 🔥 EMAIL ERROR HANDLER
-  // =========================
-
   String mapEmailError(dynamic response) {
-    final message = (response["message"] ?? "").toString().toLowerCase();
+    final String message =
+        (response["message"] ?? response["status"] ?? "")
+            .toString()
+            .toLowerCase();
 
     if (message.contains("not found") ||
         message.contains("doesn't exist") ||
-        message.contains("invalid email")) {
+        message.contains("invalid email") ||
+        message.contains("selected email is invalid")) {
       return "No account found with this email.";
     }
 
-    if (message.contains("network") || message.contains("socket")) {
+    if (message.contains("too many") ||
+        message.contains("wait") ||
+        message.contains("try again later")) {
+      return "Please wait before requesting another code.";
+    }
+
+    if (message.contains("network") ||
+        message.contains("socket") ||
+        message.contains("connection")) {
       return "Network error. Please check your connection.";
     }
 
-    return "Unable to process request. Try again later.";
+    return "Unable to send verification code. Try again later.";
   }
 
-  // =========================
-  // 🚀 CHECK EMAIL
-  // =========================
-
   @override
-  checkEmail() async {
-    if (!formstate.currentState!.validate()) return;
+  Future<void> checkEmail() async {
+    final bool isValid = formstate.currentState?.validate() ?? false;
+
+    if (!isValid || isLoading.value) return;
+
+    final String emailText = email.text.trim();
 
     isLoading.value = true;
-
-    final emailText = email.text.trim();
 
     final res = await forgetPasswordData.sendEmail(emailText);
 
@@ -70,38 +77,47 @@ class ForgetPasswordControllerImp extends ForgetPasswordController {
         Get.snackbar(
           "Error",
           failure.message,
+          snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.red.withValues(alpha: 0.9),
           colorText: Colors.white,
         );
       },
       (response) {
-        final message = (response["message"] ?? response["status"] ?? "")
-            .toString()
-            .toLowerCase();
+        final String message =
+            (response["message"] ?? "").toString().toLowerCase();
+
+        final String status =
+            (response["status"] ?? "").toString().toLowerCase();
 
         final bool isSuccess =
             response["success"] == true ||
             response["status"] == true ||
-            message.contains("sent") ||
-            message.contains("emailed") ||
+            status == "success" ||
+            message.contains("otp sent") ||
+            message.contains("sent successfully") ||
+            message.contains("sent to your email") ||
             message.contains("success");
 
         if (isSuccess) {
           Get.snackbar(
             "Success",
-            "Password reset link sent 📩",
+            "Verification code sent to your email 📩",
+            snackPosition: SnackPosition.TOP,
             backgroundColor: Colors.green.withValues(alpha: 0.9),
             colorText: Colors.white,
           );
 
-          Get.offAllNamed(
+          Get.toNamed(
             AppRoutes.resetpassword,
-            arguments: {"email": emailText},
+            arguments: {
+              "email": emailText,
+            },
           );
         } else {
           Get.snackbar(
             "Error",
             mapEmailError(response),
+            snackPosition: SnackPosition.TOP,
             backgroundColor: Colors.red.withValues(alpha: 0.9),
             colorText: Colors.white,
           );

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:test/core/class/constant/appcolor.dart';
 
 Future<bool> alertExitApp() async {
   final completer = Completer<bool>();
@@ -17,14 +18,20 @@ Future<bool> alertExitApp() async {
           Get.back();
           exit(0);
         },
-        child: const Text("Confirm"),
+        child: const Text(
+          "Confirm",
+          style: TextStyle(color: Appcolor.primaryColor),
+        ),
       ),
       ElevatedButton(
         onPressed: () {
           completer.complete(false);
           Get.back();
         },
-        child: const Text("Cancel"),
+        child: const Text(
+          "Cancel",
+          style: TextStyle(color: Appcolor.primaryColor),
+        ),
       ),
     ],
   );

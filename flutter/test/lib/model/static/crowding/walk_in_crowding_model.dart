@@ -23,7 +23,6 @@ class WalkInCrowdingModel {
       capacity: json['capacity'] ?? 0,
       currentInside: json['current_inside'] ?? 0,
 
-      // 🔥 مهم التعديل هون
       percentage: (json['crowding_percentage'] as num?)?.toDouble() ?? 0.0,
 
       color: json['color'] ?? 'grey',

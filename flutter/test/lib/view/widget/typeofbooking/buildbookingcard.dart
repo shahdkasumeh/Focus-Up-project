@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:test/core/class/constant/appcolor.dart';
 
 class Buildbookingcard extends StatelessWidget {
   final String text;
@@ -34,7 +35,9 @@ class Buildbookingcard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: navyColor.withValues(alpha: 0.06)),
+        border: Border.all(
+          color: Appcolor.primaryColor.withValues(alpha: 0.06),
+        ),
         boxShadow: [
           BoxShadow(
             color: navyColor.withValues(alpha: 0.08),
@@ -45,21 +48,6 @@ class Buildbookingcard extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          Positioned(
-            top: 0,
-            right: 0,
-            child: Container(
-              width: 95,
-              height: 95,
-              decoration: BoxDecoration(
-                color: yellowColor.withValues(alpha: 0.10),
-                borderRadius: const BorderRadius.only(
-                  topRight: Radius.circular(28),
-                  bottomLeft: Radius.circular(80),
-                ),
-              ),
-            ),
-          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
             child: Column(

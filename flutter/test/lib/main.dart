@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:test/bindings/crowded_hall_without_reservation_binding.dart';
 import 'package:test/bindings/discovering_the_congestion_binding.dart';
 import 'package:test/bindings/forget_password_screen_bindings.dart';
 import 'package:test/bindings/home_page_screen_bindings.dart';
@@ -19,7 +20,6 @@ import 'package:test/bindings/task_screen_bindings.dart';
 import 'package:test/bindings/type_booking_bindings.dart';
 import 'package:test/core/class/constant/storagehandler.dart';
 import 'package:test/core/services/services.dart';
-import 'package:test/localization/transliation.dart';
 import 'package:test/view/screen/auth/forgetpassword/forgetpasswordscreen.dart';
 import 'package:test/view/screen/auth/forgetpassword/successresetpassword.dart';
 import 'package:test/view/screen/auth/loginscreen.dart';
@@ -55,7 +55,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      translations: MyTranslation(),
       debugShowCheckedModeBanner: false,
       initialRoute: "/",
       initialBinding: InitialBindings(),
@@ -130,6 +129,7 @@ class MyApp extends StatelessWidget {
         GetPage(
           name: "/crowdedhallwithoutreservation",
           page: () => CrowdedHallWithoutReservation(),
+          binding: CrowdedHallWithoutReservationBinding(),
         ),
         GetPage(
           name: "/packagesscreen",

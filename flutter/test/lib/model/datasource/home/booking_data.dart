@@ -1,3 +1,4 @@
+
 import 'package:test/core/class/crud.dart';
 import 'package:test/linkapi.dart';
 import 'package:dartz/dartz.dart';
@@ -23,6 +24,10 @@ class BookingData {
       "scheduled_end": formatDateTime(end),
     });
   }
+ Future<Either<Failure, Map<String, dynamic>>> getBookings() async {
+    return await crud.getData(AppLink.bookings);
+  }
+  
 
   Future<Either<Failure, Map<String, dynamic>>> cancelBooking(
     int bookingId,

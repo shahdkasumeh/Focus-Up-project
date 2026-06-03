@@ -8,51 +8,66 @@ class Tabs extends GetView<PackagesController> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 18),
-
-      child: Obx(
-        () => Row(
+    return Obx(
+      () => Container(
+        height: 58,
+        margin: const EdgeInsets.symmetric(horizontal: 18),
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: Colors.transparent.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(22),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
           children: List.generate(controller.tabs.length, (index) {
             final selected = controller.selectedTab.value == index;
 
             return Expanded(
               child: GestureDetector(
                 onTap: () => controller.changeTab(index),
-
-                child: Container(
-                  height: 62,
-
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOut,
+                  height: double.infinity,
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-
-                    borderRadius: BorderRadius.circular(16),
-
-                    border: Border.all(
-                      color: selected
-                          ? Appcolor.primary
-                          : const Color(0xFFE2E2E2),
-
-                      width: selected ? 1.7 : 1,
-                    ),
+                    color: selected ? Appcolor.primary : Colors.transparent,
+                    borderRadius: BorderRadius.circular(17),
+                    boxShadow: selected
+                        ? [
+                            BoxShadow(
+                              color: Appcolor.primaryColor.withValues(
+                                alpha: 0.25,
+                              ),
+                              blurRadius: 12,
+                              offset: const Offset(0, 5),
+                            ),
+                          ]
+                        : [],
                   ),
-
                   child: Center(
-                    child: Text(
-                      controller.tabs[index],
-
-                      textAlign: TextAlign.center,
-
+                    child: AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 220),
                       style: TextStyle(
                         color: selected
-                            ? Appcolor.primary
-                            : const Color(0xFF454545),
-
-                        fontSize: 14,
-
-                        fontWeight: FontWeight.w800,
+                            ? Appcolor.backgroundColor
+                            : const Color(0xFF6A6A6A),
+                        fontSize: 13,
+                        fontWeight: selected
+                            ? FontWeight.w900
+                            : FontWeight.w700,
+                      ),
+                      child: Text(
+                        controller.tabs[index],
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ),

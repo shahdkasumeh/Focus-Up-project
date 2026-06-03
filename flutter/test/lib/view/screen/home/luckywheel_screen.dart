@@ -25,9 +25,25 @@ class LuckywheelScreen extends GetView<LuckyWheelControllerImp> {
             letterSpacing: 1,
           ),
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 18),
-          onPressed: () => Get.back(),
+        leadingWidth: 58,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 12),
+          child: Container(
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.20)),
+            ),
+            child: IconButton(
+              icon: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
+              onPressed: () => Get.back(),
+            ),
+          ),
         ),
       ),
       body: Obx(() {

@@ -25,7 +25,7 @@ class InfoBox extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: Appcolor.accentPurpleColor, size: 24),
+          Icon(icon, color: Appcolor.primaryColor, size: 24),
           const Spacer(),
           Text(
             title,

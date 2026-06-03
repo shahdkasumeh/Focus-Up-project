@@ -467,19 +467,5 @@ class StudyCompanionController extends GetxController {
       },
     );
   }
-
-  void toggleComments(int postId) {
-    if (openComments.contains(postId)) {
-      openComments.remove(postId);
-    } else {
-      openComments.add(postId);
-      getComments(postId);
-    }
-
-    openComments.refresh();
-  }
-
-  void showComments(int postId) {
-    toggleComments(postId);
-  }
 }
+

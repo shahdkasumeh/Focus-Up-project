@@ -1,11 +1,14 @@
 class BuyPackageModel {
   final int id;
   final String status;
-  final int totalHours;
-  final int remainingHours;
-  final int usedHours;
-  final int totalPrice;
-  final int remainingPrice;
+
+  final double totalHours;
+  final double remainingHours;
+  final double usedHours;
+
+  final double totalPrice;    
+  final double remainingPrice;            
+
   final String startsAt;
   final String expiresAt;
   final String createdAt;
@@ -27,11 +30,16 @@ class BuyPackageModel {
     return BuyPackageModel(
       id: int.tryParse(json['id'].toString()) ?? 0,
       status: json['status']?.toString() ?? '',
-      totalHours: int.tryParse(json['total_hours'].toString()) ?? 0,
-      remainingHours: int.tryParse(json['remaining_hours'].toString()) ?? 0,
-      usedHours: int.tryParse(json['used_hours'].toString()) ?? 0,
-      totalPrice: int.tryParse(json['total_price'].toString()) ?? 0,
-      remainingPrice: int.tryParse(json['remaining_price'].toString()) ?? 0,
+
+      totalHours: double.tryParse(json['total_hours'].toString()) ?? 0.0,
+      remainingHours:
+          double.tryParse(json['remaining_hours'].toString()) ?? 0.0,
+      usedHours: double.tryParse(json['used_hours']?.toString() ?? '0') ?? 0.0,
+
+      totalPrice: double.tryParse(json['total_price'].toString()) ?? 0.0,
+      remainingPrice:
+          double.tryParse(json['remaining_price'].toString()) ?? 0.0,
+
       startsAt: json['starts_at']?.toString() ?? '',
       expiresAt: json['expires_at']?.toString() ?? '',
       createdAt: json['created_at']?.toString() ?? '',

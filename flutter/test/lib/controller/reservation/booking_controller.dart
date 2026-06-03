@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:test/controller/home/qrcodecontroller.dart';
+import 'package:test/controller/reservation/room_details_controller.dart';
 import 'package:test/core/class/constant/storagehandler.dart';
 import 'package:test/model/datasource/home/booking_data.dart';
 
@@ -14,19 +15,22 @@ class BookingController extends GetxController {
   final Rxn<TimeOfDay> startTime = Rxn<TimeOfDay>();
   final Rxn<TimeOfDay> endTime = Rxn<TimeOfDay>();
 
+  final Rxn<Map<String, dynamic>> currentBooking = Rxn<Map<String, dynamic>>();
+
   int? bookingId;
 
   @override
   void onInit() {
     super.onInit();
 
-    /// هون رح يجيب حجز المستخدم المسجل حالياً فقط
     final savedBookingId = storage.bookingId;
-
     bookingId = savedBookingId == 0 ? null : savedBookingId;
 
     print("BOOKING CONTROLLER USER ID => ${storage.userId}");
     print("BOOKING CONTROLLER SAVED BOOKING => $bookingId");
+
+    getPendingBookings();
+    
   }
 
   void setDate(DateTime date) {
@@ -45,6 +49,10 @@ class BookingController extends GetxController {
     return DateTime(date.year, date.month, date.day, time.hour, time.minute);
   }
 
+  String _formatDateTime(DateTime value) {
+    return value.toString().split(".")[0];
+  }
+
   bool _validate() {
     if (selectedDate.value == null ||
         startTime.value == null ||
@@ -52,6 +60,7 @@ class BookingController extends GetxController {
       Get.snackbar(
         "خطأ",
         "كمل كل البيانات",
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -66,6 +75,7 @@ class BookingController extends GetxController {
       Get.snackbar(
         "خطأ",
         "وقت النهاية لازم يكون بعد البداية",
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -73,13 +83,13 @@ class BookingController extends GetxController {
     }
 
     final openTime = DateTime(date.year, date.month, date.day, 9, 0);
-
     final closeTime = DateTime(date.year, date.month, date.day, 20, 0);
 
     if (start.isBefore(openTime) || end.isAfter(closeTime)) {
       Get.snackbar(
         "خطأ",
         "الحجز مسموح فقط من 09:00 إلى 20:00",
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -87,6 +97,70 @@ class BookingController extends GetxController {
     }
 
     return true;
+  }
+
+  Future<void> getPendingBookings() async {
+    try {
+      final res = await data.getBookings();
+
+      await res.fold(
+        (failure) async {
+          print("GET BOOKINGS ERROR => ${failure.message}");
+          currentBooking.value = null;
+          bookingId = null;
+        },
+        (success) async {
+          final List bookings = success["data"] ?? [];
+
+          final pendingBookings = bookings.where((e) {
+            return e["status"] == "pending";
+          }).toList();
+
+          if (pendingBookings.isEmpty) {
+            print("NO PENDING BOOKINGS");
+
+            bookingId = null;
+            currentBooking.value = null;
+            await _removeBookingForCurrentUser();
+            return;
+          }
+
+          final booking = pendingBookings.first;
+
+          final dynamic idValue = booking["id"];
+          bookingId = idValue is int
+              ? idValue
+              : int.tryParse(idValue.toString());
+
+          if (bookingId != null) {
+            await _saveBookingForCurrentUser(bookingId!);
+          }
+
+          currentBooking.value = {
+            "id": booking["id"],
+            "status": booking["status"] ?? "pending",
+            "start": booking["scheduled_start"] ?? booking["actual_start"],
+            "end": booking["scheduled_end"] ?? booking["actual_end"],
+            "table_id": booking["table"]?["id"],
+            "table_num": booking["table"]?["table_num"],
+          };
+
+          print("CURRENT PENDING BOOKING => ${currentBooking.value}");
+        },
+      );
+    } catch (e) {
+      print("getPendingBookings Exception => $e");
+      currentBooking.value = null;
+    }
+  }
+
+  Future<void> refreshTablesAfterBookingChange() async {
+    await getPendingBookings();
+
+    if (Get.isRegistered<RoomDetailsController>()) {
+      print("REFRESH TABLES AFTER BOOKING CHANGE");
+      await Get.find<RoomDetailsController>().fetchTables();
+    }
   }
 
   Future<void> _saveBookingForCurrentUser(int id) async {
@@ -136,6 +210,7 @@ class BookingController extends GetxController {
           Get.snackbar(
             "خطأ",
             failure.message,
+            snackPosition: SnackPosition.TOP,
             backgroundColor: Colors.red,
             colorText: Colors.white,
           );
@@ -146,29 +221,56 @@ class BookingController extends GetxController {
           bookingId = idValue is int
               ? idValue
               : int.tryParse(idValue.toString());
+
           if (bookingId == null) {
             Get.snackbar(
               "خطأ",
               "ما وصل رقم الحجز",
+              snackPosition: SnackPosition.TOP,
               backgroundColor: Colors.red,
               colorText: Colors.white,
             );
             return;
           }
 
-          /// هون عم ينخزن الرقم للمستخدم الحالي فقط
           await _saveBookingForCurrentUser(bookingId!);
 
-          print("USER ID => ${storage.userId}");
-          print("NEW BOOKING ID => $bookingId");
+          currentBooking.value = {
+            "id": bookingId,
+            "status": success["data"]?["status"] ?? "pending",
+            "start":
+                success["data"]?["scheduled_start"] ?? _formatDateTime(start),
+            "end": success["data"]?["scheduled_end"] ?? _formatDateTime(end),
+            "table_id": success["data"]?["table"]?["id"] ?? tableId,
+            "table_num": success["data"]?["table"]?["table_num"],
+          };
+
+          selectedDate.value = null;
+          startTime.value = null;
+          endTime.value = null;
+
+          if (Get.isBottomSheetOpen == true) {
+            Get.back();
+          }
 
           Get.snackbar(
             "نجاح",
             success["message"] ?? "تم الحجز",
+            snackPosition: SnackPosition.TOP,
             backgroundColor: Colors.green,
             colorText: Colors.white,
           );
+
+          await refreshTablesAfterBookingChange();
         },
+      );
+    } catch (e) {
+      Get.snackbar(
+        "خطأ",
+        e.toString(),
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
       );
     } finally {
       isLoading.value = false;
@@ -176,13 +278,12 @@ class BookingController extends GetxController {
   }
 
   Future<void> cancelBooking() async {
-    /// بجيب حجز المستخدم الحالي فقط
     bookingId ??= storage.bookingId == 0 ? null : storage.bookingId;
-
     if (bookingId == null) {
       Get.snackbar(
         "خطأ",
         "لا يوجد حجز لإلغائه",
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -199,15 +300,17 @@ class BookingController extends GetxController {
           Get.snackbar(
             "خطأ",
             failure.message,
+            snackPosition: SnackPosition.TOP,
             backgroundColor: Colors.red,
             colorText: Colors.white,
           );
         },
         (success) async {
-          /// بيمسح حجز المستخدم الحالي فقط
           await _removeBookingForCurrentUser();
 
           bookingId = null;
+          currentBooking.value = null;
+
           selectedDate.value = null;
           startTime.value = null;
           endTime.value = null;
@@ -215,10 +318,21 @@ class BookingController extends GetxController {
           Get.snackbar(
             "تم",
             success["message"] ?? "تم إلغاء الحجز",
+            snackPosition: SnackPosition.TOP,
             backgroundColor: Colors.green,
             colorText: Colors.white,
           );
+
+          await refreshTablesAfterBookingChange();
         },
+      );
+    } catch (e) {
+      Get.snackbar(
+        "خطأ",
+        e.toString(),
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
       );
     } finally {
       isLoading.value = false;

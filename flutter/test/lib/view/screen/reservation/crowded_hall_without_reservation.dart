@@ -2,14 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:test/controller/reservation/crowded_hall_with_out_reservation_controller.dart';
 import 'package:test/core/class/constant/appcolor.dart';
+import 'package:test/view/widget/pakages/info_box.dart';
 
-class CrowdedHallWithoutReservation extends StatelessWidget {
+class CrowdedHallWithoutReservation extends GetView<CrowdedHallWithOutReservationControllerImp> {
   CrowdedHallWithoutReservation({super.key});
-
-  final CrowdedHallWithOutReservationControllerImp controller = Get.put(
-    CrowdedHallWithOutReservationControllerImp(),
-  );
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,17 +25,33 @@ class CrowdedHallWithoutReservation extends StatelessWidget {
             ),
           );
         }
-
         final color = controller.getColor(room.percentage);
-
         return CustomScrollView(
           slivers: [
             SliverAppBar(
               expandedHeight: 190,
               pinned: true,
               elevation: 0,
-              backgroundColor: Appcolor.fourthColor,
-              leading: const BackButton(color: Colors.white),
+              backgroundColor: Appcolor.primaryColor,
+              leading: Padding(
+                padding: const EdgeInsets.only(left: 12),
+                child: Container(
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.20)),
+                  ),
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                    onPressed: () => Get.back(),
+                  ),
+                ),
+              ),
               flexibleSpace: FlexibleSpaceBar(
                 centerTitle: true,
                 title: const Text(
@@ -60,7 +72,7 @@ class CrowdedHallWithoutReservation extends StatelessWidget {
                   child: const Center(
                     child: Icon(
                       Icons.groups_rounded,
-                      color: Color(0xFFFFC857),
+                      color: Appcolor.primary,
                       size: 70,
                     ),
                   ),
@@ -110,7 +122,6 @@ class CrowdedHallWithoutReservation extends StatelessWidget {
                           ),
 
                           const SizedBox(height: 18),
-
                           Text(
                             room.roomName,
                             textAlign: TextAlign.center,
@@ -150,7 +161,7 @@ class CrowdedHallWithoutReservation extends StatelessWidget {
                           Row(
                             children: [
                               Expanded(
-                                child: _InfoBox(
+                                child: InfoBox(
                                   title: "الموجود داخل",
                                   value: "${room.currentInside}",
                                   icon: Icons.person_rounded,
@@ -158,7 +169,7 @@ class CrowdedHallWithoutReservation extends StatelessWidget {
                               ),
                               const SizedBox(width: 12),
                               Expanded(
-                                child: _InfoBox(
+                                child: InfoBox(
                                   title: "السعة الكلية",
                                   value: "${room.capacity}",
                                   icon: Icons.event_seat_rounded,
@@ -178,7 +189,9 @@ class CrowdedHallWithoutReservation extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: color.withValues(alpha: 0.10),
                               borderRadius: BorderRadius.circular(18),
-                              border: Border.all(color: color.withValues(alpha: 0.5)),
+                              border: Border.all(
+                                color: color.withValues(alpha: 0.5),
+                              ),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -206,49 +219,6 @@ class CrowdedHallWithoutReservation extends StatelessWidget {
           ],
         );
       }),
-    );
-  }
-}
-
-class _InfoBox extends StatelessWidget {
-  final String title;
-  final String value;
-  final IconData icon;
-
-  const _InfoBox({
-    required this.title,
-    required this.value,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 18),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFD),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: const Color(0xFFFFC857), size: 28),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF0B1F3A),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
-          ),
-        ],
-      ),
     );
   }
 }

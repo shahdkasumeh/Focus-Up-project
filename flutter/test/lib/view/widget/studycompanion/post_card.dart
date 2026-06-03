@@ -1,280 +1,97 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:test/controller/home/study_companion_controller.dart';
-import 'package:test/core/class/constant/appcolor.dart';
 import 'package:test/model/static/studycompanion/post_model.dart';
+import 'package:test/view/widget/studycompanion/action_button.dart';
+import 'package:test/view/widget/studycompanion/build_post_header.dart';
 
 class PostCard extends GetView<StudyCompanionController> {
   final PostModel post;
 
   const PostCard({super.key, required this.post});
 
+  static const Color navyColor = Color(0xFF172F4F);
+  static const Color yellowColor = Color(0xFFF4C542);
+  static const Color backgroundColor = Color(0xFFF7F8FB);
+  static const Color borderColor = Color(0xFFE9EDF3);
+  static const Color greyTextColor = Color(0xFF8792A5);
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-      padding: const EdgeInsets.all(16),
-
+      padding: const EdgeInsets.fromLTRB(15, 15, 15, 14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderColor),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Colors.black.withValues(alpha: 0.035),
             blurRadius: 14,
-            offset: const Offset(0, 6),
+            offset: const Offset(0, 5),
           ),
         ],
       ),
-
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// TOP BAR
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              /// MENU
-              if (post.isOwner)
-                PopupMenuButton<String>(
-                  icon: const Icon(
-                    Icons.more_vert,
-                    color: Colors.grey,
-                    size: 24,
-                  ),
-
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-
-                  onSelected: (value) {
-                    if (value == 'edit') {
-                      controller.startEditPost(post);
-                    }
-
-                    if (value == 'delete') {
-                      controller.confirmDeletePost(post.id);
-                    }
-                  },
-
-                  itemBuilder: (context) => const [
-                    PopupMenuItem(
-                      value: 'edit',
-
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-
-                        children: [
-                          Text(
-                            'تعديل البوست',
-
-                            style: TextStyle(fontWeight: FontWeight.w600),
-                          ),
-
-                          SizedBox(width: 10),
-
-                          Icon(
-                            Icons.edit_outlined,
-                            color: Colors.blue,
-                            size: 20,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    PopupMenuItem(
-                      value: 'delete',
-
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-
-                        children: [
-                          Text(
-                            'حذف البوست',
-
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-
-                          SizedBox(width: 10),
-
-                          Icon(
-                            Icons.delete_outline,
-                            color: Colors.red,
-                            size: 20,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                )
-              else
-                const SizedBox(width: 40),
-
-              const Spacer(),
-
-              /// USER INFO
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-
-                children: [
-                  Text(
-                    post.userName,
-
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                      color: Appcolor.black,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-
-                  Text(
-                    post.createdAt,
-
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ],
-              ),
-
-              const SizedBox(width: 10),
-
-              /// AVATAR
-              CircleAvatar(
-                radius: 24,
-
-                backgroundColor: Appcolor.scondary.withValues(alpha: .12),
-
-                child: Text(
-                  post.userName.isNotEmpty ? post.userName[0] : '?',
-
-                  style: const TextStyle(
-                    color: Appcolor.scondary,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
+          BuildPostHeader(
+            post: post,
+            onEdit: () => controller.startEditPost(post),
+            onDelete: () => controller.confirmDeletePost(post.id),
           ),
 
-          const SizedBox(height: 18),
+          const SizedBox(height: 15),
 
-          /// TITLE
           Text(
             post.title,
-
             textAlign: TextAlign.right,
-
+            textDirection: TextDirection.rtl,
             style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              color: Appcolor.black,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: navyColor,
             ),
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
 
-          /// CONTENT
           Text(
             post.content,
-
             textAlign: TextAlign.right,
-
+            textDirection: TextDirection.rtl,
             style: const TextStyle(
-              fontSize: 15,
+              fontSize: 13.5,
               height: 1.7,
-              color: Color(0xFF555555),
+              color: Color(0xFF586477),
+              fontWeight: FontWeight.w400,
             ),
           ),
 
-          const SizedBox(height: 18),
+          const SizedBox(height: 16),
 
-          /// ACTIONS
+          const Divider(height: 1, color: borderColor),
+
+          const SizedBox(height: 12),
+
           Row(
             children: [
-              /// COMMENTS BUTTON
               Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () {
-                    controller.openComment(post.id);
-                  },
-
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-
-                    side: BorderSide(color: Colors.grey.shade300),
-                  ),
-
-                  icon: const Icon(
-                    Icons.chat_bubble_outline_rounded,
-                    color: Colors.black87,
-                    size: 20,
-                  ),
-
-                  label: Text(
-                    "(${post.commentsCount})",
-
-                    style: const TextStyle(
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w600,
-                    ),
-
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                child: ActionButton(
+                  icon: post.isLiked
+                      ? Icons.favorite_rounded
+                      : Icons.favorite_border_rounded,
+                  text: "${post.likesCount}",
+                  isLiked: post.isLiked,
+                  onTap: () => controller.toggleLike(post.id),
                 ),
               ),
-
-              const SizedBox(width: 12),
-
-              /// LIKE BUTTON
+              const SizedBox(width: 10),
               Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () {
-                    controller.toggleLike(post.id);
-                  },
-
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-
-                    side: BorderSide(
-                      color: post.isLiked
-                          ? Colors.red.withValues(alpha: .25)
-                          : Colors.grey.shade300,
-                    ),
-                  ),
-
-                  icon: Icon(
-                    post.isLiked
-                        ? Icons.favorite
-                        : Icons.favorite_border_rounded,
-
-                    color: post.isLiked ? Colors.red : Colors.black87,
-
-                    size: 21,
-                  ),
-
-                  label: Text(
-                    "${post.likesCount}",
-                    style: TextStyle(
-                      color: post.isLiked ? Colors.red : Colors.black87,
-
-                      fontWeight: FontWeight.w700,
-                    ),
-
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                child: ActionButton(
+                  icon: Icons.chat_bubble_outline_rounded,
+                  text: "${post.commentsCount}",
+                  onTap: () => controller.openComment(post.id),
                 ),
               ),
             ],

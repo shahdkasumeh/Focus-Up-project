@@ -1,15 +1,12 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-
-import 'package:test/core/class/crud.dart';
 import 'package:test/model/datasource/profile/profile_data.dart';
 import 'package:test/model/static/profile/profile_model.dart';
 
 class ProfileController extends GetxController {
-  final ProfileData profileData = ProfileData(Crud());
+  final ProfileData profileData = ProfileData(Get.find());
 
   /// STATES
   RxBool isLoading = false.obs;
@@ -50,9 +47,7 @@ class ProfileController extends GetxController {
     super.onClose();
   }
 
-  /// =========================
-  /// FILL CONTROLLERS
-  /// =========================
+
   void fillControllers() {
     final p = profile.value;
 
@@ -64,9 +59,7 @@ class ProfileController extends GetxController {
     studyLevelController.text = p.studyLevel;
   }
 
-  /// =========================
-  /// SAVE PROFILE
-  /// =========================
+
   Future<void> saveProfile() async {
     if (hasProfile) {
       await updateProfile();
@@ -75,9 +68,7 @@ class ProfileController extends GetxController {
     }
   }
 
-  /// =========================
-  /// CREATE PROFILE
-  /// =========================
+
   Future<void> createProfile() async {
     try {
       isSaving.value = true;
@@ -139,9 +130,7 @@ class ProfileController extends GetxController {
     }
   }
 
-  /// =========================
-  /// UPDATE PROFILE
-  /// =========================
+
   Future<void> updateProfile() async {
     try {
       isSaving.value = true;
@@ -167,9 +156,6 @@ class ProfileController extends GetxController {
     }
   }
 
-  /// =========================
-  /// PICK IMAGE
-  /// =========================
   Future<void> pickImage() async {
     final picker = ImagePicker();
 

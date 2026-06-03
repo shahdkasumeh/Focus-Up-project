@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:get/get.dart';
 import 'package:test/core/class/constant/appcolor.dart';
 
 class Header extends StatelessWidget {
@@ -10,75 +9,118 @@ class Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-
-      padding: const EdgeInsets.only(top: 50, left: 20, right: 20, bottom: 28),
-
+      padding: const EdgeInsets.fromLTRB(20, 52, 20, 30),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Appcolor.scondary, Appcolor.scondary],
-
+          colors: [Appcolor.primaryColor, Appcolor.navyColor],
           begin: Alignment.topRight,
           end: Alignment.bottomLeft,
         ),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
       ),
-
-      child: Row(
+      child: Stack(
         children: [
-          InkWell(
-            onTap: () => Get.back(),
-
-            borderRadius: BorderRadius.circular(14),
-
+          Positioned(
+            top: -18,
+            right: -18,
             child: Container(
-              width: 48,
-              height: 48,
-
+              width: 105,
+              height: 105,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: .12),
-
-                borderRadius: BorderRadius.circular(14),
-
-                border: Border.all(color: Colors.white.withValues(alpha: 25)),
-              ),
-
-              child: const Icon(
-                Icons.arrow_back_ios_new,
-
-                color: Colors.white,
-                size: 18,
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.06),
               ),
             ),
           ),
 
-          const Spacer(),
+          Positioned(
+            bottom: -28,
+            left: 25,
+            child: Container(
+              width: 90,
+              height: 90,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.05),
+              ),
+            ),
+          ),
 
-          const Column(
+          Row(
             children: [
-              Text(
-                'الباقات',
-
-                style: TextStyle(
-                  color: Colors.white,
-
-                  fontSize: 28,
-
-                  fontWeight: FontWeight.w800,
+              InkWell(
+                onTap: () => Get.back(),
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.13),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.22),
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new,
+                    color: Colors.white,
+                    size: 18,
+                  ),
                 ),
               ),
 
-              SizedBox(height: 6),
+              const Spacer(),
 
-              Text(
-                'اختر الباقة المناسبة لك  ',
+              Column(
+                children: [
+                  Container(
+                    width: 54,
+                    height: 54,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.20),
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.workspace_premium_rounded,
+                      color: Colors.white,
+                      size: 29,
+                    ),
+                  ),
 
-                style: TextStyle(color: Colors.white70, fontSize: 15),
+                  const SizedBox(height: 12),
+
+                  const Text(
+                    'الباقات',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 27,
+                      fontWeight: FontWeight.w900,
+                      height: 1,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  Text(
+                    'اختاري الباقة المناسبة لدراستك',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.82),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
+
+              const Spacer(),
+
+              const SizedBox(width: 46),
             ],
           ),
-
-          const Spacer(),
-
-          const SizedBox(width: 48),
         ],
       ),
     );

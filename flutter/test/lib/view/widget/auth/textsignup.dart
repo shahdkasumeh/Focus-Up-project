@@ -26,7 +26,7 @@ class Textsignup extends StatelessWidget {
           child: Text(
             texttwo,
             style: TextStyle(
-              color: Appcolor.scondary,
+              color: Appcolor.primaryColor,
               fontWeight: FontWeight.bold,
             ),
           ),

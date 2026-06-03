@@ -146,13 +146,11 @@ class LuckyWheelControllerImp extends LuckyWheelController {
                 '';
           }
 
-          // 🎯 هنا التعديل الحقيقي
           final random = Random();
           final index = random.nextInt(prizes.length);
 
           final slice = 1 / prizes.length;
 
-          // 🎡 دوران + توقف على جائزة محددة
           turns.value = turns.value + 5 + (index * slice);
 
           await Future.delayed(const Duration(seconds: 4));
@@ -176,7 +174,6 @@ class LuckyWheelControllerImp extends LuckyWheelController {
     }
   }
 
-  // ================= REFRESH =================
   Future<void> refreshWheel() async {
     await initWheel();
   }
