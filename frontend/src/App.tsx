@@ -10,9 +10,7 @@ import { Dashboard } from "./pages/admin/Dashboard";
 import { RoomsManagement } from "./pages/admin/rooms-management";
 import { AdminTablesManagement } from "./pages/admin/Admin-tables-management";
 import { BookingsManagement } from "./pages/admin/bookings-management";
-import { EventsManagement } from "./pages/admin/Events-management";
 import { PackagesManagement } from "./pages/admin/packages-management";
-import { Reports } from "./pages/admin/reports";
 import { WheelManagement } from "./pages/admin/wheel-management";
 
 // Pages - Public
@@ -20,9 +18,9 @@ import { Login } from "./pages/Login";
 import { useAuth } from "./context/GlobalState";
 import { QRScanner } from "./pages/reception/qr-scanner";
 import { ReceptionistDashboard } from "./pages/reception/receptionist-dashboard";
-import { ReceptionistProfile } from "./pages/reception/receptionist-profile";
 import { ActiveStudents } from "./pages/reception/active-students";
 import { ReceptionTablesManagement } from "./pages/reception/Reception-tables-management";
+import { ReceptionistPackageManagement } from "./pages/reception/receptionist-package_management";
 
 function App() {
   const { state } = useAuth();
@@ -39,9 +37,7 @@ function App() {
           <Route path="rooms" element={<RoomsManagement />} />
           <Route path="tables" element={<AdminTablesManagement />} />
           <Route path="bookings" element={<BookingsManagement />} />
-          <Route path="events" element={<EventsManagement />} />
           <Route path="packages" element={<PackagesManagement />} />
-          <Route path="reports" element={<Reports />} />
           <Route path="wheel" element={<WheelManagement />} />
         </Route>
       )}
@@ -55,8 +51,8 @@ function App() {
             element={<ActiveStudents />}
           />
           <Route
-            path="/reception/ReceptionistProfile"
-            element={<ReceptionistProfile />}
+            path="/reception/ReceptionistPackageManagement"
+            element={<ReceptionistPackageManagement />}
           />
           <Route
             path="/reception/TablesManagement"

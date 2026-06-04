@@ -19,7 +19,6 @@ export function Login() {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
 
-  //handle send form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("جاري تسجيل الدخول");
@@ -113,7 +112,6 @@ export function Login() {
               </div>
             </div>
 
-            {/* حقل كلمة المرور */}
             <div>
               <label className="block text-gray-300 text-sm font-medium mb-2">
                 كلمة المرور
@@ -140,29 +138,6 @@ export function Login() {
                   )}
                 </button>
               </div>
-            </div>
-
-            {/* خيارات إضافية */}
-            <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 rounded border-gray-400 bg-white/10 text-[#ffbf1f] focus:ring-[#ffbf1f] focus:ring-offset-0 cursor-pointer"
-                />
-                <span className="text-sm text-gray-300 group-hover:text-white transition-colors">
-                  تذكرني
-                </span>
-              </label>
-
-              <button
-                type="button"
-                onClick={() => console.log("نسيت كلمة المرور")}
-                className="text-sm text-[#ffbf1f] hover:text-[#e9af1c] hover:underline transition-all"
-              >
-                نسيت كلمة المرور؟
-              </button>
             </div>
 
             <div className="flex flex-col items-center justify-center w-full">

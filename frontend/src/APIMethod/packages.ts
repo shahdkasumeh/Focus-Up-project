@@ -13,7 +13,7 @@ export interface AdminPackages {
 export interface ReceptionPackages {
   id: number;
   user_name: string;
-  package_name: string;
+  package_name: string | null;
   status: string;
 }
 
@@ -86,9 +86,7 @@ export const packagesApi = {
     return api.get<ReceptionPackageResponse>("/pending");
   },
 
-  updateReceptionPackage: async (
-    id: number | string,
-  ): Promise<ReceptionPackages> => {
-    return api.put<ReceptionPackages>(`/active/${id}`);
+  updateReceptionPackage: async (id: number): Promise<{ message: string }> => {
+    return api.put(`/active/${id}`);
   },
 };

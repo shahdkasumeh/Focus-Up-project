@@ -1,5 +1,3 @@
-// ReceptionTablesManagement.tsx
-
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -13,43 +11,31 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/GlobalState";
 import { ActionTypes } from "../../context/AppReducer";
-import { tablesApi } from "../../APIMethod/tables";
+import { Tables, tablesApi } from "../../APIMethod/tables";
 import { roomsApi } from "../../APIMethod/rooms";
 import toast from "react-hot-toast";
 
 export function ReceptionTablesManagement() {
   const navigate = useNavigate();
   const { state, dispatch } = useAuth();
-  const { rooms, tables } = state;
   const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [loadingTables, setLoadingTables] = useState(false); // تحميل الطاولات
+  const [loadingTables, setLoadingTables] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [roomsList, setRoomsList] = useState<any[]>([]); // تخزين القاعات محلياً
+  const [roomsList, setRoomsList] = useState<any[]>([]);
 
-  // ========== الخطوة 1: جلب القاعات فقط عند تحميل المكون ==========
   useEffect(() => {
     const fetchRooms = async () => {
       try {
         setLoading(true);
         setError(null);
-
-        console.log("جلب القاعات فقط...");
         const roomsResponse = await roomsApi.getRooms();
-
         console.log("تم جلب القاعات:", roomsResponse.data);
         setRoomsList(roomsResponse.data);
-
-        // تخزين القاعات في الـ state العام
         dispatch({
           type: ActionTypes.SET_ROOMS,
           payload: roomsResponse.data,
         });
-
-        // تحديد أول قاعة تلقائياً
-        if (roomsResponse.data.length > 0) {
-          setSelectedRoomId(roomsResponse.data[0].id);
-        }
       } catch (error) {
         console.error("Error fetching rooms:", error);
         if (error === 403) {
@@ -70,21 +56,13 @@ export function ReceptionTablesManagement() {
       try {
         setLoadingTables(true);
         console.log(`جلب طاولات القاعة ${roomId}...`);
-
-        // جلب جميع الطاولات من الـ API
         const tablesResponse = await tablesApi.getAllTables();
-
-        // تصفية الطاولات التابعة لهذه القاعة فقط
         const roomTables = tablesResponse.data.filter(
           (table: any) => table.room_id === roomId,
         );
-
         console.log(`تم جلب ${roomTables.length} طاولة للقاعة ${roomId}`);
-
-        // تحديث الـ state العام مع دمج الطاولات الجديدة مع القديمة
         const existingTables = state.tables || [];
         const allTables = [...existingTables, ...tablesResponse.data];
-        // إزالة التكرارات (في حالة جلبنا نفس البيانات)
         const uniqueTables = Array.from(
           new Map(allTables.map((table) => [table.id, table])).values(),
         );
@@ -109,13 +87,9 @@ export function ReceptionTablesManagement() {
   const handleRoomSelect = useCallback(
     async (roomId: number) => {
       setSelectedRoomId(roomId);
-
-      // التحقق إذا كانت طاولات هذه القاعة موجودة مسبقاً
       const hasTablesForRoom = state.tables?.some(
         (table) => table.room_id === roomId,
       );
-
-      // إذا لم تكن الطاولات موجودة، قم بجلبها
       if (!hasTablesForRoom) {
         await fetchTablesForRoom(roomId);
       }
@@ -123,7 +97,6 @@ export function ReceptionTablesManagement() {
     [state.tables, fetchTablesForRoom],
   );
 
-  // دمج القاعات مع طاولاتها (استخدام الطاولات الموجودة فقط)
   const roomsWithTables = useMemo(() => {
     if (!roomsList.length) return [];
 
@@ -147,13 +120,11 @@ export function ReceptionTablesManagement() {
     });
   }, [roomsList, state.tables]);
 
-  // الحصول على القاعة الحالية وطاولاتها
   const currentRoom = roomsWithTables.find(
     (room) => room.id === selectedRoomId,
   );
   const currentRoomTables = currentRoom?.tables || [];
 
-  // إحصائيات القاعة الحالية
   const roomStats = useMemo(() => {
     if (!currentRoom) return { total: 0, booked: 0, available: 0 };
     return currentRoom.stats;
@@ -167,7 +138,6 @@ export function ReceptionTablesManagement() {
     }
   }, [selectedRoomId, navigate]);
 
-  // حالة تحميل القاعات
   if (loading) {
     return (
       <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
@@ -179,7 +149,6 @@ export function ReceptionTablesManagement() {
     );
   }
 
-  // حالة الخطأ
   if (error) {
     return (
       <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
@@ -197,7 +166,6 @@ export function ReceptionTablesManagement() {
     );
   }
 
-  // حالة عدم وجود قاعات
   if (roomsList.length === 0) {
     return (
       <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
@@ -239,7 +207,6 @@ export function ReceptionTablesManagement() {
       <div className="max-w-7xl mx-auto p-6">
         <AnimatePresence mode="wait">
           {!selectedRoomId ? (
-            // عرض القاعات
             <motion.div
               key="rooms"
               initial={{ opacity: 0, y: 20 }}
@@ -304,7 +271,6 @@ export function ReceptionTablesManagement() {
               ))}
             </motion.div>
           ) : (
-            // عرض طاولات القاعة المحددة
             <motion.div
               key="tables"
               initial={{ opacity: 0, y: 20 }}
@@ -326,103 +292,67 @@ export function ReceptionTablesManagement() {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                  {currentRoomTables.map(
-                    (
-                      table: {
-                        id: React.Key | null | undefined;
-                        is_occupied: number;
-                        is_active: any;
-                        table_num:
-                          | string
-                          | number
-                          | bigint
-                          | boolean
-                          | React.ReactElement<
-                              unknown,
-                              string | React.JSXElementConstructor<any>
-                            >
-                          | Iterable<React.ReactNode>
-                          | React.ReactPortal
-                          | Promise<
-                              | string
-                              | number
-                              | bigint
-                              | boolean
-                              | React.ReactPortal
-                              | React.ReactElement<
-                                  unknown,
-                                  string | React.JSXElementConstructor<any>
-                                >
-                              | Iterable<React.ReactNode>
-                              | null
-                              | undefined
-                            >
-                          | null
-                          | undefined;
-                      },
-                      index: number,
-                    ) => (
-                      <motion.div
-                        key={table.id}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: index * 0.05 }}
-                        className="cursor-pointer group"
+                  {currentRoomTables.map((table: Tables, index: number) => (
+                    <motion.div
+                      key={table.id}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="cursor-pointer group"
+                    >
+                      <div
+                        className={`rounded-2xl p-6 shadow-md hover:shadow-xl transition-all duration-300 border-2 ${
+                          table.is_occupied === 1
+                            ? "bg-[#ffbf1f] border-[#e6ac1c]"
+                            : !table.is_active
+                              ? "bg-gray-100 border-gray-200 opacity-60"
+                              : "bg-white border-gray-200 hover:border-[#10B981]"
+                        }`}
                       >
-                        <div
-                          className={`rounded-2xl p-6 shadow-md hover:shadow-xl transition-all duration-300 border-2 ${
-                            table.is_occupied === 1
-                              ? "bg-[#ffbf1f] border-[#e6ac1c]"
-                              : !table.is_active
-                                ? "bg-gray-100 border-gray-200 opacity-60"
-                                : "bg-white border-gray-200 hover:border-[#10B981]"
-                          }`}
-                        >
-                          <div className="flex flex-col items-center justify-center space-y-3">
-                            <div
-                              className={`w-16 h-16 rounded-xl flex items-center justify-center transition-all ${
-                                table.is_occupied === 1
-                                  ? "bg-white/20 text-white"
-                                  : !table.is_active
-                                    ? "bg-gray-300 text-gray-500"
-                                    : "bg-gray-100 text-gray-700 group-hover:bg-green-100 group-hover:text-green-600"
-                              }`}
-                            >
-                              <Table className="w-8 h-8" />
-                            </div>
-
-                            <h3
-                              className={`text-xl font-bold ${
-                                table.is_occupied === 1
-                                  ? "text-white"
-                                  : !table.is_active
-                                    ? "text-gray-500"
-                                    : "text-gray-900"
-                              }`}
-                            >
-                              طاولة {table.table_num}
-                            </h3>
-
-                            <div
-                              className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                                table.is_occupied === 1
-                                  ? "bg-white/20 text-white"
-                                  : !table.is_active
-                                    ? "bg-gray-200 text-gray-500"
-                                    : "bg-green-50 text-green-700"
-                              }`}
-                            >
-                              {table.is_occupied === 1
-                                ? "محجوزة"
+                        <div className="flex flex-col items-center justify-center space-y-3">
+                          <div
+                            className={`w-16 h-16 rounded-xl flex items-center justify-center transition-all ${
+                              table.is_occupied === 1
+                                ? "bg-white/20 text-white"
                                 : !table.is_active
-                                  ? "غير نشطة"
-                                  : "متاحة"}
-                            </div>
+                                  ? "bg-gray-300 text-gray-500"
+                                  : "bg-gray-100 text-gray-700 group-hover:bg-green-100 group-hover:text-green-600"
+                            }`}
+                          >
+                            <Table className="w-8 h-8" />
+                          </div>
+
+                          <h3
+                            className={`text-xl font-bold ${
+                              table.is_occupied === 1
+                                ? "text-white"
+                                : !table.is_active
+                                  ? "text-gray-500"
+                                  : "text-gray-900"
+                            }`}
+                          >
+                            طاولة {table.table_num}
+                          </h3>
+
+                          <div
+                            className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                              table.is_occupied === 1
+                                ? "bg-white/20 text-white"
+                                : !table.is_active
+                                  ? "bg-gray-200 text-gray-500"
+                                  : "bg-green-50 text-green-700"
+                            }`}
+                          >
+                            {table.is_occupied === 1
+                              ? "محجوزة"
+                              : !table.is_active
+                                ? "غير نشطة"
+                                : "متاحة"}
                           </div>
                         </div>
-                      </motion.div>
-                    ),
-                  )}
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
               )}
             </motion.div>

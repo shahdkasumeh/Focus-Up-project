@@ -1,30 +1,88 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
+import { useAuth } from "../../context/GlobalState";
 import {
   QrCode,
   Users,
   Table,
   CheckCircle2,
   XCircle,
-  Clock,
-  AlertCircle,
-  User,
-  Settings,
   Package,
+  RefreshCw,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { tablesApi } from "../../APIMethod/tables";
+import { bookingsAPI, BookingDetails } from "../../APIMethod/bookings";
+
+interface DashboardStats {
+  availableTables: number;
+  reservedTables: number;
+  totalTables: number;
+  todayCheckIns: number;
+  todayCheckOuts: number;
+}
 
 export function ReceptionistDashboard() {
   const navigate = useNavigate();
-
-  const [stats] = useState({
-    activeStudents: 45,
-    availableTables: 12,
-    reservedTables: 18,
-    totalTables: 30,
-    todayCheckIns: 67,
-    todayCheckOuts: 52,
+  const { state } = useAuth();
+  const { bookingDetails } = state;
+  const [searchQuery, setSearchQuery] = useState("");
+  const [stats, setStats] = useState<DashboardStats>({
+    availableTables: 0,
+    reservedTables: 0,
+    totalTables: 0,
+    todayCheckIns: 0,
+    todayCheckOuts: 0,
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+
+  const fetchStats = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [tablesRes, bookingsRes] = await Promise.all([
+        tablesApi.getAllTables(),
+        bookingsAPI.getBookingDetails(),
+      ]);
+      const tables = tablesRes.data;
+      const bookings: BookingDetails[] = bookingsRes.data;
+      const availableTables = tables.filter(
+        (t) => t.is_active === 1 && t.is_occupied === 0,
+      ).length;
+      const reservedTables = tables.filter((t) => t.is_occupied === 1).length;
+      const today = new Date().toISOString().split("T")[0];
+      const todayCheckIns = bookings.filter((b) =>
+        b.actual_start?.startsWith(today),
+      ).length;
+      const todayCheckOuts = bookings.filter((b) =>
+        b.actual_end?.startsWith(today),
+      ).length;
+      setStats({
+        availableTables,
+        reservedTables,
+        totalTables: tables.length,
+        todayCheckIns,
+        todayCheckOuts,
+      });
+
+      setLastUpdated(new Date());
+    } catch (err) {
+      console.error("فشل تحميل الإحصائيات:", err);
+      setError("تعذّر تحميل البيانات. تحقق من الاتصال وأعد المحاولة.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const activeStudentsCount = bookingDetails.filter(
+    (b) => b.status === "active",
+  ).length;
 
   const quickActions = [
     {
@@ -61,21 +119,33 @@ export function ReceptionistDashboard() {
       icon: Package,
       color: "from-[#f0f8fc] to-[#e0f2fe]",
       textColor: "text-[#034363]",
-      onClick: () => navigate("/reception/ReceptionistProfile"),
+      onClick: () => navigate("/reception/ReceptionistPackageManagement"),
     },
   ];
 
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-50">
-      {/* Header */}
+      {/* ── Header ── */}
       <div className="bg-linear-to-br from-[#034363] to-[#045a85] text-white p-6 shadow-lg">
         <div className="max-w-7xl mx-auto">
+          {/* Title row */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl mb-2">لوحة موظف الاستقبال</h1>
-              <p className="text-blue-100">مرحباً، أحمد الخالدي</p>
+              <h1 className="text-3xl mb-1">لوحة موظف الاستقبال</h1>
             </div>
+
             <div className="flex items-center gap-3">
+              <button
+                onClick={fetchStats}
+                disabled={loading}
+                className="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors disabled:opacity-50"
+                title="تحديث البيانات"
+              >
+                <RefreshCw
+                  className={`w-5 h-5 ${loading ? "animate-spin" : ""}`}
+                />
+              </button>
+
               <button
                 onClick={() => navigate("/login")}
                 className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors"
@@ -85,7 +155,7 @@ export function ReceptionistDashboard() {
             </div>
           </div>
 
-          {/* Quick Stats */}
+          {/* ── Stats Cards ── */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -95,7 +165,7 @@ export function ReceptionistDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-blue-100 mb-1">الطلاب الحاليين</p>
-                  <p className="text-3xl font-bold">{stats.activeStudents}</p>
+                  <p className="text-3xl font-bold">{activeStudentsCount}</p>
                 </div>
                 <div className="w-12 h-12 bg-[#ffbf1f] rounded-xl flex items-center justify-center">
                   <Users className="w-6 h-6 text-[#034363]" />
@@ -112,7 +182,13 @@ export function ReceptionistDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-blue-100 mb-1">طاولات متاحة</p>
-                  <p className="text-3xl font-bold">{stats.availableTables}</p>
+                  <p className="text-3xl font-bold">
+                    {loading ? (
+                      <span className="animate-pulse">...</span>
+                    ) : (
+                      stats.availableTables
+                    )}
+                  </p>
                 </div>
                 <div className="w-12 h-12 bg-[#10B981] rounded-xl flex items-center justify-center">
                   <CheckCircle2 className="w-6 h-6 text-white" />
@@ -129,7 +205,13 @@ export function ReceptionistDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-blue-100 mb-1">تسجيلات اليوم</p>
-                  <p className="text-3xl font-bold">{stats.todayCheckIns}</p>
+                  <p className="text-3xl font-bold">
+                    {loading ? (
+                      <span className="animate-pulse">...</span>
+                    ) : (
+                      stats.todayCheckIns
+                    )}
+                  </p>
                 </div>
                 <div className="w-12 h-12 bg-[#ffbf1f] rounded-xl flex items-center justify-center">
                   <CheckCircle2 className="w-6 h-6 text-[#034363]" />
@@ -146,7 +228,13 @@ export function ReceptionistDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-blue-100 mb-1">مغادرات اليوم</p>
-                  <p className="text-3xl font-bold">{stats.todayCheckOuts}</p>
+                  <p className="text-3xl font-bold">
+                    {loading ? (
+                      <span className="animate-pulse">...</span>
+                    ) : (
+                      stats.todayCheckOuts
+                    )}
+                  </p>
                 </div>
                 <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
                   <XCircle className="w-6 h-6 text-white" />
@@ -157,9 +245,10 @@ export function ReceptionistDashboard() {
         </div>
       </div>
 
-      {/* Quick Actions */}
+      {/* ── Quick Actions ── */}
       <div className="max-w-7xl mx-auto p-6">
         <h2 className="text-2xl text-gray-900 mb-6">الإجراءات السريعة</h2>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {quickActions.map((action, index) => (
             <motion.button
@@ -175,7 +264,11 @@ export function ReceptionistDashboard() {
               >
                 <div className="flex flex-col items-center text-center">
                   <div
-                    className={`w-16 h-16 ${action.textColor === "text-white" ? "bg-white/20" : "bg-[#034363]/10"} rounded-2xl flex items-center justify-center mb-4`}
+                    className={`w-16 h-16 ${
+                      action.textColor === "text-white"
+                        ? "bg-white/20"
+                        : "bg-[#034363]/10"
+                    } rounded-2xl flex items-center justify-center mb-4`}
                   >
                     <action.icon className={`w-8 h-8 ${action.textColor}`} />
                   </div>
@@ -191,158 +284,6 @@ export function ReceptionistDashboard() {
               </div>
             </motion.button>
           ))}
-        </div>
-
-        {/* Recent Activity */}
-        <div className="mt-8">
-          <h2 className="text-2xl text-gray-900 mb-6">النشاط الأخير</h2>
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <div className="space-y-4">
-              {[
-                {
-                  name: "محمد أحمد",
-                  action: "تسجيل دخول",
-                  time: "منذ 5 دقائق",
-                  table: "A-12",
-                  status: "checkin",
-                },
-                {
-                  name: "فاطمة علي",
-                  action: "تسجيل خروج",
-                  time: "منذ 12 دقيقة",
-                  table: "B-05",
-                  status: "checkout",
-                },
-                {
-                  name: "خالد سعيد",
-                  action: "تسجيل دخول",
-                  time: "منذ 18 دقيقة",
-                  table: "C-08",
-                  status: "checkin",
-                },
-                {
-                  name: "نورة حسن",
-                  action: "تسجيل خروج",
-                  time: "منذ 25 دقيقة",
-                  table: "A-15",
-                  status: "checkout",
-                },
-              ].map((activity, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
-                >
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                        activity.status === "checkin"
-                          ? "bg-[#10B981]/10"
-                          : "bg-[#034363]/10"
-                      }`}
-                    >
-                      {activity.status === "checkin" ? (
-                        <CheckCircle2 className="w-5 h-5 text-[#10B981]" />
-                      ) : (
-                        <XCircle className="w-5 h-5 text-[#034363]" />
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-gray-900 font-medium">
-                        {activity.name}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {activity.action} - طاولة {activity.table}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 text-gray-500">
-                    <Clock className="w-4 h-4" />
-                    <span className="text-sm">{activity.time}</span>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Table Status Overview */}
-        <div className="mt-8">
-          <h2 className="text-2xl text-gray-900 mb-6">
-            نظرة عامة على الطاولات
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">متاحة</h3>
-                <div className="w-10 h-10 bg-[#10B981]/10 rounded-xl flex items-center justify-center">
-                  <CheckCircle2 className="w-5 h-5 text-[#10B981]" />
-                </div>
-              </div>
-              <p className="text-4xl font-bold text-[#10B981] mb-2">
-                {stats.availableTables}
-              </p>
-              <p className="text-sm text-gray-600">
-                من أصل {stats.totalTables} طاولة
-              </p>
-              <div className="mt-4 h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-[#10B981] rounded-full"
-                  style={{
-                    width: `${(stats.availableTables / stats.totalTables) * 100}%`,
-                  }}
-                />
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">محجوزة</h3>
-                <div className="w-10 h-10 bg-[#ffbf1f]/10 rounded-xl flex items-center justify-center">
-                  <AlertCircle className="w-5 h-5 text-[#ffbf1f]" />
-                </div>
-              </div>
-              <p className="text-4xl font-bold text-[#ffbf1f] mb-2">
-                {stats.reservedTables}
-              </p>
-              <p className="text-sm text-gray-600">
-                من أصل {stats.totalTables} طاولة
-              </p>
-              <div className="mt-4 h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-[#ffbf1f] rounded-full"
-                  style={{
-                    width: `${(stats.reservedTables / stats.totalTables) * 100}%`,
-                  }}
-                />
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  نسبة الإشغال
-                </h3>
-                <div className="w-10 h-10 bg-[#034363]/10 rounded-xl flex items-center justify-center">
-                  <Table className="w-5 h-5 text-[#034363]" />
-                </div>
-              </div>
-              <p className="text-4xl font-bold text-[#034363] mb-2">
-                {Math.round((stats.reservedTables / stats.totalTables) * 100)}%
-              </p>
-              <p className="text-sm text-gray-600">معدل الاستخدام الحالي</p>
-              <div className="mt-4 h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-[#034363] rounded-full"
-                  style={{
-                    width: `${(stats.reservedTables / stats.totalTables) * 100}%`,
-                  }}
-                />
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

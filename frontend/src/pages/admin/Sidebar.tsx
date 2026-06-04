@@ -24,7 +24,6 @@ const menuItems = [
   { id: "bookings", label: "إدارة الحجوزات", icon: Calendar },
   { id: "packages", label: "إدارة الباقات", icon: Package },
   { id: "wheel", label: "إدارة عجلة الحظ", icon: Gift },
-  { id: "reports", label: "التقارير", icon: FileText },
 ];
 
 export function Sidebar({ activePage, onNavigate }: SidebarProps) {

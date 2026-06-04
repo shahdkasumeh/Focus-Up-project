@@ -1,27 +1,21 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { useAuth } from "../../context/GlobalState";
 import { ActionTypes } from "../../context/AppReducer";
 import toast from "react-hot-toast";
-import { Button } from "../../components/Button";
 
-import {
-  packagesApi,
-  UpdateReceptionPackageData,
-} from "../../APIMethod/packages";
+import { packagesApi } from "../../APIMethod/packages";
 import {
   ArrowRight,
   Package,
-  Users,
-  Check,
   AlertCircle,
   CheckCircle2,
   UserRound,
-  RefreshCw, // ✅ التعديل 1: إضافة أيقونة التحديث
+  RefreshCw,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-export function ReceptionistProfile() {
+export function ReceptionistPackageManagement() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const { state, dispatch } = useAuth();
@@ -48,10 +42,9 @@ export function ReceptionistProfile() {
         type: ActionTypes.SET_RECEPTION_PACKAGE,
         payload: packagesData,
       });
-
-      console.log("✅ State updated ");
+      console.log(response);
     } catch (error) {
-      console.error("❌ Failed To Retrieve The Packages", error);
+      console.error(" Failed To Retrieve The Packages", error);
       toast.error("فشل تحميل الباقات");
     } finally {
       setLoading(false);
@@ -67,54 +60,27 @@ export function ReceptionistProfile() {
     currentStatus: string,
   ) => {
     if (updatingPackageId === packageId) return;
-
     setUpdatingPackageId(packageId);
-    const newStatus = currentStatus === "active" ? "pending" : "active";
-    const packageData: UpdateReceptionPackageData = { status: newStatus };
-
-    // ✅ التعديل 5: توضيح العملية في console
-    console.log(
-      `🔄 Changing package ${packageId} status from ${currentStatus} to ${newStatus}`,
-    );
-
+    const loadingToast = toast.loading("جاري تغيير حالة الباقة...");
     try {
-      const loadingToast = toast.loading("جاري تغيير حالة الباقة...");
-
-      // ✅ التعديل 6: أولاً تحديث الواجهة (Optimistic Update)
+      await packagesApi.updateReceptionPackage(packageId);
+      const newStatus = currentStatus === "active" ? "pending" : "active";
       dispatch({
         type: ActionTypes.UPDATE_RECEPTION_PACKAGE,
         payload: { id: packageId, status: newStatus },
       });
-      console.log(
-        `⚡ Optimistic update: Package ${packageId} status changed to ${newStatus} in UI`,
-      );
-
-      // ✅ التعديل 7: إرسال الطلب إلى API
-      const apiResponse = await packagesApi.updateReceptionPackage(packageId);
-      console.log(`✅ API Response for update:`, apiResponse);
-
       toast.success("تم تغيير الحالة بنجاح", { id: loadingToast });
-
-      // ✅ التعديل 8: تتبع الباقة التي تم تحديثها
       setLastUpdatedPackage(packageId);
-
-      // ✅ التعديل 9: إعادة تحميل البيانات من السيرفر
       await fetchPackages();
-
-      // ✅ التعديل 10: إزالة التمييز بعد 3 ثواني
-      setTimeout(() => setLastUpdatedPackage(null), 3000);
-
-      console.log(`✨ Package ${packageId} update completed successfully`);
     } catch (error) {
-      console.error(`❌ Failed to update package ${packageId}:`, error);
-      toast.error("فشل تغيير حالة الباقة");
-      await fetchPackages(); // إعادة تحميل لاستعادة الحالة الصحيحة
+      console.error(`Failed to update package ${packageId}:`, error);
+      toast.error("فشل تغيير حالة الباقة", { id: loadingToast });
+      await fetchPackages();
     } finally {
       setUpdatingPackageId(null);
     }
   };
 
-  // ✅ التعديل 11: إضافة دالة لتحديث يدوي
   const handleManualRefresh = async () => {
     toast.loading("جاري تحديث البيانات...", { id: "refresh" });
     await fetchPackages();
@@ -129,20 +95,12 @@ export function ReceptionistProfile() {
   ).length;
   const totalPackages = ReceptionPackages.length;
 
-  // ✅ التعديل 12: إحصائيات إضافية للـ console
-  console.log(
-    "📊 Current stats - Active:",
-    activePackages,
-    "Pending:",
-    pendingPackages,
-    "Total:",
-    totalPackages,
-  );
-
   const filteredPackages = ReceptionPackages.filter((thePackage) => {
-    const matchesSearch = thePackage.package_name
-      ?.toLowerCase()
-      .includes(searchQuery.toLowerCase());
+    const matchesSearch =
+      searchQuery === "" ||
+      (thePackage.package_name ?? "")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
 
     const matchesStatus =
       statusFilter === "all" || thePackage.status === statusFilter;
@@ -171,7 +129,6 @@ export function ReceptionistProfile() {
               </div>
             </div>
 
-            {/* ✅ التعديل 13: إضافة زر التحديث اليدوي */}
             <button
               onClick={handleManualRefresh}
               className="p-2 hover:bg-white/10 rounded-xl transition-colors"
@@ -273,7 +230,6 @@ export function ReceptionistProfile() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                // ✅ التعديل 14: إضافة تأثير بصري للباقة التي تم تحديثها
                 className={`bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col h-full ${
                   lastUpdatedPackage === eachPackage.id
                     ? "ring-2 ring-green-500 ring-offset-2"
@@ -303,7 +259,7 @@ export function ReceptionistProfile() {
                           : "bg-yellow-100 text-yellow-700"
                       }`}
                     >
-                      {eachPackage.status === "active" ? "✅ فعال" : "⏳ معلق"}
+                      {eachPackage.status === "active" ? " فعال" : " معلق"}
                     </div>
                   </div>
                 </div>

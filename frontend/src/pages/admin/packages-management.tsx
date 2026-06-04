@@ -27,8 +27,6 @@ import {
 export function PackagesManagement() {
   const { state, dispatch } = useAuth();
   const { AdminPackages } = state;
-
-  //const [packageToEdit, setPackageToEdit] = useState(null);
   const [packageToEdit, setPackageToEdit] = useState<any>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -56,14 +54,12 @@ export function PackagesManagement() {
     try {
       const loadingToast = toast.loading("The Package Is Being added ...");
       const result = await packagesApi.addPackage(packageData);
-
       dispatch({ type: ActionTypes.ADD_PACKAGE, payload: result.data });
       setShowAddModal(false);
-
       toast.success("The package has been successfully added", {
         id: loadingToast,
       });
-      await fetchPackages(); // تحديث البيانات
+      await fetchPackages();
     } catch (error) {
       console.error("Add Failed", error);
       toast.error("Failed To Add The Package");
@@ -96,9 +92,7 @@ export function PackagesManagement() {
     try {
       const loadingToast = toast.loading("The Package Is Being Deleted ...");
       await packagesApi.deletePackage(packageId);
-
       dispatch({ type: ActionTypes.DELETE_PACKAGE, payload: packageId });
-
       toast.success("The Package Has Been successfully Deleted", {
         id: loadingToast,
       });
@@ -122,9 +116,7 @@ export function PackagesManagement() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl text-gray-900 mb-2">إدارة الباقات</h1>
-          <p className="text-gray-600">
-            إدارة باقات الاشتراكات الأسبوعية والشهرية
-          </p>
+          <p className="text-gray-600">إدارة باقات الاشتراكات الأسبوعية</p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
@@ -148,31 +140,9 @@ export function PackagesManagement() {
           </h3>
           <p className="text-gray-600 text-sm">إجمالي الباقات</p>
         </div>
-
-        <div className="bg-white rounded-2xl shadow-md p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-              <DollarSign className="w-6 h-6 text-green-600" />
-            </div>
-            <TrendingUp className="w-5 h-5 text-green-500" />
-          </div>
-
-          <p className="text-gray-600 text-sm">إجمالي المشتركين</p>
-        </div>
-
-        <div className="bg-white rounded-2xl shadow-md p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-              <Star className="w-6 h-6 text-purple-600" />
-            </div>
-            <TrendingUp className="w-5 h-5 text-green-500" />
-          </div>
-
-          <p className="text-gray-600 text-sm">باقات مميزة</p>
-        </div>
       </div>
 
-      {/* Search & Filters - إضافة */}
+      {/* Search & Filters*/}
       <div className="bg-white rounded-2xl shadow-md p-6">
         <div className="flex gap-4">
           <div className="flex-1 relative">

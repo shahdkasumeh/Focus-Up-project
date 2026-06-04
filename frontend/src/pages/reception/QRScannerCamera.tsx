@@ -30,10 +30,8 @@ export const QRScannerCamera: React.FC<QRScannerCameraProps> = ({
     };
   }, []);
 
-  // بدء المسح عندما تصبح الكاميرا نشطة
   useEffect(() => {
     if (cameraActive && !scannerRef.current) {
-      // تأخير صغير للتأكد من أن العنصر موجود
       setTimeout(() => {
         startScanner();
       }, 200);
@@ -49,47 +47,37 @@ export const QRScannerCamera: React.FC<QRScannerCameraProps> = ({
   const startScanner = () => {
     if (!cameraActive) return;
 
-    addDebugLog(" بدء تشغيل الماسح...");
+    addDebugLog("بدء تشغيل الماسح...");
 
-    // حذف أي عنصر سابق
     const existingContainer = document.getElementById(containerId);
     if (existingContainer) {
       existingContainer.innerHTML = "";
     }
 
-    //  إعدادات معدلة للعمل على اللابتوب
     const scanner = new Html5QrcodeScanner(
       containerId,
       {
-        fps: 30, // زيادة الإطارات
-        qrbox: { width: 300, height: 300 }, // زيادة حجم الصندوق
+        fps: 30,
+        qrbox: { width: 300, height: 300 },
         aspectRatio: 1,
         disableFlip: false,
-        // التغيير الأهم: استخدام "user" بدلاً من "environment"
         videoConstraints: {
-          facingMode: "user", // ← غيّرنا من "environment" إلى "user"
+          facingMode: "user",
         },
       },
-      true, // تفعيل logging verbose لرؤية المزيد من التفاصيل
+      true,
     );
 
     scanner.render(onScanSuccess, onScanError);
     scannerRef.current = scanner;
-    addDebugLog(" الماسح يعمل، قرب QR Code من الكاميرا");
+    addDebugLog("الماسح يعمل، قرب QR Code من الكاميرا");
   };
 
   const onScanSuccess = (decodedText: string) => {
-    // منع المسح المتكرر
-    if (hasScanned || isScanning) {
-      addDebugLog(" مسح قيد التقدم بالفعل");
-      return;
-    }
-
-    addDebugLog(` تم قراءة QR Code: ${decodedText}`);
+    if (hasScanned || isScanning) return;
+    if (!decodedText?.trim()) return;
 
     setHasScanned(true);
-
-    // تأخير بسيط للتأكد من أن كل شيء جاهز
     setTimeout(() => {
       onScan(decodedText);
       stopCamera();
@@ -97,7 +85,6 @@ export const QRScannerCamera: React.FC<QRScannerCameraProps> = ({
   };
 
   const onScanError = (error: string) => {
-    // تجاهل أخطاء المسح العادية
     if (
       error.includes("No MultiFormat Readers") ||
       error.includes("NotFoundException") ||
@@ -105,40 +92,32 @@ export const QRScannerCamera: React.FC<QRScannerCameraProps> = ({
     ) {
       return;
     }
-    addDebugLog(` خطأ: ${error.substring(0, 50)}...`);
+    addDebugLog(`خطأ: ${error.substring(0, 50)}...`);
   };
 
   const startCamera = async () => {
     setCameraError(null);
     setHasScanned(false);
-    addDebugLog(" جاري تشغيل الكاميرا...");
+    addDebugLog("جاري تشغيل الكاميرا...");
 
     try {
-      // التحقق من وجود كاميرا
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = devices.filter(
         (device) => device.kind === "videoinput",
       );
 
-      addDebugLog(` عدد الكاميرات: ${videoDevices.length}`);
+      addDebugLog(`عدد الكاميرات: ${videoDevices.length}`);
 
       if (videoDevices.length === 0) {
         setCameraError("لم يتم العثور على كاميرا على هذا الجهاز.");
         return;
       }
 
-      // عرض معلومات عن الكاميرات المتاحة
-      videoDevices.forEach((device, index) => {
-        addDebugLog(`كاميرا ${index + 1}: ${device.label || "بدون اسم"}`);
-      });
-
       setCameraActive(true);
     } catch (err: any) {
       console.error("Camera error:", err);
       if (err.name === "NotAllowedError") {
-        setCameraError(
-          "لم يتم منح الإذن لاستخدام الكاميرا. يرجى السماح بالوصول إلى الكاميرا.",
-        );
+        setCameraError("لم يتم منح الإذن لاستخدام الكاميرا.");
       } else if (err.name === "NotFoundError") {
         setCameraError("لم يتم العثور على كاميرا على هذا الجهاز.");
       } else {
@@ -148,7 +127,7 @@ export const QRScannerCamera: React.FC<QRScannerCameraProps> = ({
   };
 
   const stopCamera = () => {
-    addDebugLog(" إيقاف الكاميرا");
+    addDebugLog("إيقاف الكاميرا");
     if (scannerRef.current) {
       scannerRef.current.clear();
       scannerRef.current = null;
@@ -158,7 +137,6 @@ export const QRScannerCamera: React.FC<QRScannerCameraProps> = ({
     if (onClose) onClose();
   };
 
-  // إذا لم تكن الكاميرا نشطة، نعرض زر التشغيل
   if (!cameraActive) {
     return (
       <div className="text-center">
@@ -181,7 +159,6 @@ export const QRScannerCamera: React.FC<QRScannerCameraProps> = ({
     );
   }
 
-  // إذا كانت الكاميرا نشطة، نعرض واجهة المسح
   return (
     <div>
       <div className="relative mb-6">
@@ -189,7 +166,6 @@ export const QRScannerCamera: React.FC<QRScannerCameraProps> = ({
           <div id={containerId} className="w-full h-full"></div>
         </div>
 
-        {/* طبقة التحميل أثناء المعالجة */}
         {isScanning && (
           <div className="absolute inset-0 bg-black/50 rounded-2xl flex items-center justify-center">
             <div className="text-center">
@@ -199,13 +175,11 @@ export const QRScannerCamera: React.FC<QRScannerCameraProps> = ({
           </div>
         )}
 
-        {/* إرشادات المسح */}
         <div className="absolute bottom-2 left-0 right-0 text-center text-white text-xs bg-black/50 py-1 rounded">
           قرب رمز QR من الكاميرا
         </div>
       </div>
 
-      {/* شريط حالة التشخيص */}
       {debugLog && (
         <div className="mb-3 p-2 bg-blue-50 text-blue-700 rounded-xl text-center text-sm">
           {debugLog}

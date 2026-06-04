@@ -25,17 +25,17 @@ export interface BookingCheckInResponse {
   data: {
     id: number;
     status: "active" | "completed" | "cancelled";
-    scheduled_start: string;
-    scheduled_end: string;
+    scheduled_start: string | null;
+    scheduled_end: string | null;
     actual_start: string;
     actual_end: string | null;
     hours: string | null;
-    total_price: string | null;
+    raw_price: null | string;
     discount_percent: string;
     discount_amount: string;
+    total_price: string | null;
+    payment_label: null | string;
     action: "check_in" | "check_out";
-    table: Table;
-    room: any;
   };
   message: string;
 }
@@ -44,37 +44,52 @@ export interface BookingCheckOutResponse {
   data: {
     id: number;
     status: "completed";
-    scheduled_start: string;
-    scheduled_end: string;
+    scheduled_start: string | null;
+    scheduled_end: string | null;
     actual_start: string;
     actual_end: string;
     hours: string;
-    total_price: string;
+    raw_price: string | null;
     discount_percent: string;
     discount_amount: string;
+    total_price: string;
+    payment_label: string | null;
     action: "check_out";
-    table: Table;
-    room: any;
+    table: Table | null;
+    room: any | null;
   };
   message: string;
 }
 
-export interface BookingDetailsResponse {
-  data: BookingDetails;
+export interface BookingRevenues {
+  data: {
+    bookings: number[];
+    revenue: number[];
+  };
   message?: string;
 }
 
 export const bookingsAPI = {
-  checkIn: async (bookingId: string): Promise<BookingCheckInResponse> => {
-    return api.post<BookingCheckInResponse>(`/bookings/check_out`, {
-      booking_id: bookingId,
-    });
+  checkIn: async (
+    bookingId: number | null,
+    studentToken: string,
+  ): Promise<BookingCheckInResponse> => {
+    return api.post<BookingCheckInResponse>(
+      `/bookings/check_in`,
+      { booking_id: bookingId },
+      studentToken, // ← مرره للـ client
+    );
   },
 
-  checkOut: async (bookingId: string): Promise<BookingCheckOutResponse> => {
-    return api.post<BookingCheckOutResponse>(`/bookings/check_out`, {
-      booking_id: bookingId,
-    });
+  checkOut: async (
+    bookingId: number | null,
+    studentToken: string, // ← أضف token
+  ): Promise<BookingCheckOutResponse> => {
+    return api.post<BookingCheckOutResponse>(
+      `/bookings/check_out`,
+      { booking_id: bookingId },
+      studentToken, // ← مرره للـ client
+    );
   },
 
   getBooking: async (bookingId: string) => {
@@ -83,6 +98,10 @@ export const bookingsAPI = {
 
   getBookingDetails: async (): Promise<{ data: BookingDetails[] }> => {
     return api.get<{ data: BookingDetails[] }>(`/bookings/managment`);
+  },
+
+  getBookingRevenues: async (): Promise<BookingRevenues> => {
+    return api.get<BookingRevenues>(`admin/bookings/last-week`);
   },
 };
 

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import {
   Search,
-  Filter,
   Calendar,
   CheckCircle2,
   XCircle,
@@ -12,12 +11,10 @@ import {
 import { useAuth } from "../../context/GlobalState";
 import { ActionTypes } from "../../context/AppReducer";
 import toast from "react-hot-toast";
-
 import { BookingDetails, bookingsAPI } from "../../APIMethod/bookings";
 
 export function BookingsManagement() {
   const { state, dispatch } = useAuth();
-
   const { bookingDetails } = state;
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -51,11 +48,6 @@ export function BookingsManagement() {
         color: "bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/20",
         icon: Clock,
       },
-      confirmed: {
-        text: "مؤكد",
-        color: "bg-[#10B981]/10 text-[#10B981] border-[#10B981]/20",
-        icon: CheckCircle2,
-      },
       active: {
         text: "نشط",
         color: "bg-[#3B82F6]/10 text-[#3B82F6] border-[#3B82F6]/20",
@@ -72,8 +64,6 @@ export function BookingsManagement() {
         icon: XCircle,
       },
     };
-
-    // إذا كانت الحالة غير معرفة، نعرض حالة افتراضية
     const defaultBadge = {
       text: status || "غير معروف",
       color: "bg-gray-100 text-gray-600 border-gray-200",
@@ -179,20 +169,8 @@ export function BookingsManagement() {
               className="w-full pl-4 pr-11 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
             />
           </div>
-          <select
-            className="px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="all">جميع الحالات</option>
-            <option value="confirmed">مؤكدة</option>
-            <option value="pending">معلقة</option>
-            <option value="cancelled">ملغاة</option>
-          </select>
-          <input
-            type="date"
-            className="px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
-          />
+
+          
         </div>
       </div>
 

@@ -1,18 +1,26 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { motion } from "motion/react";
 import { ActionTypes } from "../../context/AppReducer";
-import { Building2, Grid3x3, Plus, Users } from "lucide-react";
+import { Building2, Grid3x3, Plus, Users, Pencil, Trash2 } from "lucide-react";
 import { useAuth } from "../../context/GlobalState";
 import { Button } from "../../components/Button";
 import { AddTable } from "./components/AddTable";
+import { EditTable } from "./components/EditTable";
 import toast from "react-hot-toast";
-import { Table, tablesApi } from "../../APIMethod/tables";
+import { Tables, tablesApi } from "../../APIMethod/tables";
 
 export function AdminTablesManagement() {
   const { state, dispatch } = useAuth();
-  const { tables } = state;
   const [selectedRoom, setSelectedRoom] = useState<string>("");
   const [showAddTableModal, setShowAddTableModal] = useState(false);
+  const [editingTable, setEditingTable] = useState<{
+    id: string;
+    number: number;
+    is_active: number;
+    is_occupied: number;
+    room_id: number;
+  } | null>(null);
+  const [deletingTableId, setDeletingTableId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,7 +41,6 @@ export function AdminTablesManagement() {
     }
   }
 
-  // دمج القاعات والطاولات
   const roomsWithTables = useMemo(() => {
     if (!state.rooms || !state.tables) return [];
 
@@ -49,18 +56,17 @@ export function AdminTablesManagement() {
           isBooked: table.is_occupied === 1,
           is_active: table.is_active,
           is_occupied: table.is_occupied,
+          room_id: table.room_id,
         })),
     }));
   }, [state.rooms, state.tables]);
 
-  // تحديد أول قاعة
   useEffect(() => {
     if (roomsWithTables.length > 0 && !selectedRoom) {
       setSelectedRoom(roomsWithTables[0].id);
     }
   }, [roomsWithTables, selectedRoom]);
 
-  // فحص عدم وجود قاعات
   if (roomsWithTables.length === 0) {
     return (
       <div className="p-6">
@@ -78,10 +84,30 @@ export function AdminTablesManagement() {
     currentRoom?.tables.filter((t) => t.isBooked).length || 0;
   const availableTables = (currentRoom?.tables.length || 0) - bookedTables;
 
-  const handleTableAdded = (newTable: Table) => {
+  const handleTableAdded = (newTable: Tables) => {
     dispatch({ type: ActionTypes.ADD_TABLE, payload: newTable });
     setShowAddTableModal(false);
     toast.success("تمت إضافة الطاولة بنجاح");
+  };
+
+  const handleTableUpdated = (updatedTable: Tables) => {
+    dispatch({ type: ActionTypes.UPDATE_TABLE, payload: updatedTable });
+    setEditingTable(null);
+    toast.success("تم تعديل الطاولة بنجاح");
+  };
+
+  const handleDeleteTable = async (tableId: string) => {
+    setDeletingTableId(tableId);
+    try {
+      await tablesApi.deleteTable(parseInt(tableId));
+      dispatch({ type: ActionTypes.DELETE_TABLES, payload: parseInt(tableId) });
+      toast.success("تم حذف الطاولة بنجاح");
+    } catch (error) {
+      console.error("فشل في حذف الطاولة:", error);
+      toast.error("فشل في حذف الطاولة");
+    } finally {
+      setDeletingTableId(null);
+    }
   };
 
   return (
@@ -100,7 +126,7 @@ export function AdminTablesManagement() {
         </Button>
       </div>
 
-      {/* Stats - استخدم roomsWithTables */}
+      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white rounded-2xl shadow-md p-6">
           <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
@@ -150,7 +176,7 @@ export function AdminTablesManagement() {
         </div>
       </div>
 
-      {/* Room Selector - بطاقات القاعات */}
+      {/* Room Selector */}
       <div className="bg-white rounded-2xl shadow-md p-6">
         <div className="flex items-center gap-4 mb-6">
           <Building2 className="w-6 h-6 text-[#ffbf1f]" />
@@ -177,7 +203,7 @@ export function AdminTablesManagement() {
               >
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-lg text-gray-900">{room.name}</h3>
-                  <div className="w-10 h-10 bg-gradient-to-br from-[#034363] to-[#045a85] rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-linear-to-br from-[#034363] to-[#045a85] rounded-xl flex items-center justify-center">
                     <Building2 className="w-5 h-5 text-white" />
                   </div>
                 </div>
@@ -192,7 +218,7 @@ export function AdminTablesManagement() {
                   </div>
                   <div className="h-2 bg-gray-200 rounded-full overflow-hidden mt-2">
                     <div
-                      className="h-full bg-gradient-to-r from-red-500 to-red-600"
+                      className="h-full bg-linear-to-r from-red-500 to-red-600"
                       style={{ width: `${occupancyPercentage}%` }}
                     />
                   </div>
@@ -203,7 +229,7 @@ export function AdminTablesManagement() {
         </div>
       </div>
 
-      {/* Tables Grid - طاولات القاعة المختارة */}
+      {/* Tables Grid */}
       {currentRoom && (
         <div className="bg-white rounded-2xl shadow-md p-6">
           <div className="flex items-center justify-between mb-6">
@@ -232,9 +258,9 @@ export function AdminTablesManagement() {
                 className="relative group"
               >
                 <div
-                  className={`aspect-square rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer transition-all ${
+                  className={`aspect-square rounded-2xl p-4 flex flex-col items-center justify-center transition-all ${
                     table.is_active === 1 && table.is_occupied === 1
-                      ? "bg-gradient-to-br from-red-500 to-red-600 hover:shadow-xl"
+                      ? "bg-linear-to-br from-red-500 to-red-600 hover:shadow-xl"
                       : "bg-gray-300 hover:bg-gray-400 hover:shadow-lg"
                   }`}
                 >
@@ -260,6 +286,37 @@ export function AdminTablesManagement() {
                     </p>
                   </div>
                 </div>
+
+                <div className="absolute inset-0 rounded-2xl bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                  <button
+                    onClick={() =>
+                      setEditingTable({
+                        id: table.id,
+                        number: table.number,
+                        is_active: table.is_active,
+                        is_occupied: table.is_occupied,
+                        room_id: table.room_id,
+                      })
+                    }
+                    className="w-9 h-9 bg-white/20 hover:bg-[#ffbf1f] rounded-xl flex items-center justify-center transition-colors"
+                    title="تعديل الطاولة"
+                  >
+                    <Pencil className="w-4 h-4 text-white" />
+                  </button>
+
+                  <button
+                    onClick={() => handleDeleteTable(table.id)}
+                    disabled={deletingTableId === table.id}
+                    className="w-9 h-9 bg-white/20 hover:bg-red-500 rounded-xl flex items-center justify-center transition-colors disabled:opacity-50"
+                    title="حذف الطاولة"
+                  >
+                    {deletingTableId === table.id ? (
+                      <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <Trash2 className="w-4 h-4 text-white" />
+                    )}
+                  </button>
+                </div>
               </motion.div>
             ))}
           </div>
@@ -267,16 +324,13 @@ export function AdminTablesManagement() {
       )}
 
       {/* Legend */}
-      <div className="bg-gradient-to-r from-[#034363] to-[#045a85] rounded-2xl shadow-md p-6 text-white">
+      <div className="bg-linear-to-r from-[#034363] to-[#045a85] rounded-2xl shadow-md p-6 text-white">
         <h3 className="text-lg mb-4">إرشادات الاستخدام</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div className="flex items-start gap-3">
             <div className="w-8 h-8 bg-red-500 rounded-lg shrink-0"></div>
             <div>
               <p className="mb-1">الطاولات المحجوزة</p>
-              <p className="text-white/70 text-xs">
-                مرر الماوس لعرض تفاصيل الحجز
-              </p>
             </div>
           </div>
           <div className="flex items-start gap-3">
@@ -288,10 +342,19 @@ export function AdminTablesManagement() {
           </div>
         </div>
       </div>
+
       {showAddTableModal && (
         <AddTable
           onClose={() => setShowAddTableModal(false)}
           onSuccess={handleTableAdded}
+        />
+      )}
+
+      {editingTable && (
+        <EditTable
+          table={editingTable}
+          onClose={() => setEditingTable(null)}
+          onSuccess={handleTableUpdated}
         />
       )}
     </div>

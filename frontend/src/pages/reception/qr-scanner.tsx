@@ -1,5 +1,4 @@
-// src/pages/reception/components/qr-scanner.tsx (النسخة المعدلة)
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   QrCode,
@@ -9,7 +8,6 @@ import {
   User,
   Calendar,
   Clock,
-  MapPin,
   AlertCircle,
 } from "lucide-react";
 import { Button } from "../../components/Button";
@@ -22,34 +20,34 @@ export function QRScanner() {
   const [scanMode, setScanMode] = useState<ScanMode>("checkin");
   const [showCamera, setShowCamera] = useState(false);
 
-  // استخدام الـ Hook
   const { isScanning, scanResult, loading, processQRData, resetScan } =
     useQRScanner();
 
-  const handleBack = () => {
-    navigate(-1);
-  };
+  const handleBack = () => navigate(-1);
 
-  // بدء المسح - فتح الكاميرا
   const handleStartScan = () => {
-    resetScan(); // إعادة تعيين النتائج السابقة
-    setShowCamera(true); // فتح الكاميرا
+    resetScan();
+    setShowCamera(true);
   };
 
-  // معالجة نتيجة المسح
+  const isProcessingRef = useRef(false);
+
   const handleScanComplete = async (qrData: string) => {
-    console.log("QR Data received in parent:", qrData);
-    await processQRData(qrData, scanMode);
+    if (isProcessingRef.current) return;
+    isProcessingRef.current = true;
+
     setShowCamera(false);
+
+    await processQRData(scanMode, qrData);
+
+    isProcessingRef.current = false;
   };
 
-  // مسح جديد
   const handleNewScan = () => {
     resetScan();
     setShowCamera(false);
   };
 
-  // تغيير نوع العملية
   const handleModeChange = (mode: ScanMode) => {
     setScanMode(mode);
     resetScan();
@@ -58,7 +56,7 @@ export function QRScanner() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-50">
-      {/* Header - نفس الكود */}
+      {/* Header */}
       <div className="bg-linear-to-br from-[#034363] to-[#045a85] text-white p-6 shadow-lg">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-4 mb-4">
@@ -77,7 +75,7 @@ export function QRScanner() {
       </div>
 
       <div className="max-w-4xl mx-auto p-6">
-        {/* Mode Selector - نفس الكود */}
+        {/* Mode Selector */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
           <h2 className="text-xl text-gray-900 mb-4">اختر نوع العملية</h2>
           <div className="grid grid-cols-2 gap-4">
@@ -155,7 +153,6 @@ export function QRScanner() {
                 className="text-center"
               >
                 {!showCamera ? (
-                  // شاشة البداية (بدون كاميرا)
                   <>
                     <div className="relative inline-block mb-6">
                       <div
@@ -177,21 +174,17 @@ export function QRScanner() {
                           }`}
                         />
                       </div>
-
-                      {/* Corner Markers */}
                       <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-[#ffbf1f] rounded-tl-xl" />
                       <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-[#ffbf1f] rounded-tr-xl" />
                       <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-[#ffbf1f] rounded-bl-xl" />
                       <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-[#ffbf1f] rounded-br-xl" />
                     </div>
-
                     <h3 className="text-2xl text-gray-900 mb-3">
                       {`جاهز لـ${scanMode === "checkin" ? "تسجيل الدخول" : "تسجيل الخروج"}`}
                     </h3>
                     <p className="text-gray-600 mb-6">
                       قم بوضع رمز QR الخاص بالطالب أمام الكاميرا
                     </p>
-
                     <Button
                       onClick={handleStartScan}
                       variant="primary"
@@ -203,7 +196,6 @@ export function QRScanner() {
                     </Button>
                   </>
                 ) : (
-                  // واجهة الكاميرا
                   <QRScannerCamera
                     onScan={handleScanComplete}
                     isScanning={loading}
@@ -212,7 +204,6 @@ export function QRScanner() {
                 )}
               </motion.div>
             ) : (
-              // شاشة النتيجة - نفس الكود الأصلي مع إضافة حقول جديدة
               <motion.div
                 key="result"
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -255,18 +246,6 @@ export function QRScanner() {
                           <User className="w-5 h-5 text-[#034363]" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm text-gray-600">اسم الطالب</p>
-                          <p className="text-lg font-semibold text-gray-900">
-                            {scanResult.studentName}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-[#ffbf1f]/10 rounded-xl flex items-center justify-center">
-                          <Calendar className="w-5 h-5 text-[#ffbf1f]" />
-                        </div>
-                        <div className="flex-1">
                           <p className="text-sm text-gray-600">رقم الحجز</p>
                           <p className="text-lg font-semibold text-gray-900">
                             {scanResult.studentId}
@@ -274,53 +253,94 @@ export function QRScanner() {
                         </div>
                       </div>
 
-                      {scanResult.tableName && (
+                      {scanResult.status && (
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-[#10B981]/10 rounded-xl flex items-center justify-center">
-                            <MapPin className="w-5 h-5 text-[#10B981]" />
+                            <CheckCircle2 className="w-5 h-5 text-[#10B981]" />
                           </div>
                           <div className="flex-1">
-                            <p className="text-sm text-gray-600">الطاولة</p>
+                            <p className="text-sm text-gray-600">الحالة</p>
                             <p className="text-lg font-semibold text-gray-900">
-                              {scanResult.tableName}
+                              {scanResult.status === "active"
+                                ? "نشط"
+                                : scanResult.status}
                             </p>
                           </div>
                         </div>
                       )}
 
-                      {scanResult.checkInTime && (
+                      {scanResult.action && (
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-[#034363]/10 rounded-xl flex items-center justify-center">
-                            <Clock className="w-5 h-5 text-[#034363]" />
+                          <div className="w-10 h-10 bg-[#ffbf1f]/10 rounded-xl flex items-center justify-center">
+                            <QrCode className="w-5 h-5 text-[#ffbf1f]" />
                           </div>
                           <div className="flex-1">
-                            <p className="text-sm text-gray-600">
-                              وقت تسجيل الدخول
-                            </p>
+                            <p className="text-sm text-gray-600">نوع العملية</p>
                             <p className="text-lg font-semibold text-gray-900">
-                              {scanResult.checkInTime}
+                              {scanResult.action === "check_in"
+                                ? "تسجيل دخول"
+                                : "تسجيل خروج"}
                             </p>
                           </div>
                         </div>
                       )}
 
-                      {scanResult.checkOutTime && (
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-[#EF4444]/10 rounded-xl flex items-center justify-center">
-                            <Clock className="w-5 h-5 text-[#EF4444]" />
+                      {scanResult.checkInTime &&
+                        scanResult.checkInTime !== "---" && (
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-[#034363]/10 rounded-xl flex items-center justify-center">
+                              <Clock className="w-5 h-5 text-[#034363]" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm text-gray-600">
+                                وقت تسجيل الدخول
+                              </p>
+                              <p className="text-lg font-semibold text-gray-900">
+                                {scanResult.checkInTime}
+                              </p>
+                            </div>
                           </div>
-                          <div className="flex-1">
-                            <p className="text-sm text-gray-600">
-                              وقت تسجيل الخروج
-                            </p>
-                            <p className="text-lg font-semibold text-gray-900">
-                              {scanResult.checkOutTime}
-                            </p>
-                          </div>
-                        </div>
-                      )}
+                        )}
 
-                      {scanResult.duration && (
+                      {scanResult.checkOutTime &&
+                        scanResult.checkOutTime !== "---" && (
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-[#EF4444]/10 rounded-xl flex items-center justify-center">
+                              <Clock className="w-5 h-5 text-[#EF4444]" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm text-gray-600">
+                                وقت تسجيل الخروج
+                              </p>
+                              <p className="text-lg font-semibold text-gray-900">
+                                {scanResult.checkOutTime}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                      {scanResult.scheduledStart &&
+                        scanResult.scheduledStart !== "---" && (
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-[#ffbf1f]/10 rounded-xl flex items-center justify-center">
+                              <Calendar className="w-5 h-5 text-[#ffbf1f]" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm text-gray-600">
+                                الموعد المجدول
+                              </p>
+                              <p className="text-lg font-semibold text-gray-900">
+                                {scanResult.scheduledStart}
+                                {scanResult.scheduledEnd &&
+                                scanResult.scheduledEnd !== "---"
+                                  ? ` - ${scanResult.scheduledEnd}`
+                                  : ""}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                      {scanResult.hours && (
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-[#ffbf1f]/10 rounded-xl flex items-center justify-center">
                             <Clock className="w-5 h-5 text-[#ffbf1f]" />
@@ -328,23 +348,78 @@ export function QRScanner() {
                           <div className="flex-1">
                             <p className="text-sm text-gray-600">المدة</p>
                             <p className="text-lg font-semibold text-gray-900">
-                              {scanResult.duration}
+                              {scanResult.hours} ساعة
                             </p>
                           </div>
                         </div>
                       )}
 
+                      {scanResult.rawPrice && (
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-[#10B981]/10 rounded-xl flex items-center justify-center">
+                            <span className="text-sm font-bold text-[#10B981]">
+                              ر
+                            </span>
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm text-gray-600">
+                              السعر الأصلي
+                            </p>
+                            <p className="text-lg font-semibold text-gray-900">
+                              {scanResult.rawPrice} ريال
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {scanResult.discountPercent &&
+                        scanResult.discountPercent !== "0.00" && (
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-[#EF4444]/10 rounded-xl flex items-center justify-center">
+                              <span className="text-sm font-bold text-[#EF4444]">
+                                %
+                              </span>
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm text-gray-600">
+                                نسبة الخصم
+                              </p>
+                              <p className="text-lg font-semibold text-gray-900">
+                                {scanResult.discountPercent}%
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
                       {scanResult.totalPrice && (
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-[#10B981]/10 rounded-xl flex items-center justify-center">
-                            <span className="text-lg"></span>
+                            <span className="text-sm font-bold text-[#10B981]">
+                              ر
+                            </span>
                           </div>
                           <div className="flex-1">
                             <p className="text-sm text-gray-600">
                               السعر الإجمالي
                             </p>
                             <p className="text-lg font-semibold text-gray-900">
-                              {scanResult.totalPrice}
+                              {scanResult.totalPrice} ريال
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {scanResult.paymentLabel && (
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-[#034363]/10 rounded-xl flex items-center justify-center">
+                            <span className="text-sm font-bold text-[#034363]">
+                              💳
+                            </span>
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm text-gray-600">طريقة الدفع</p>
+                            <p className="text-lg font-semibold text-gray-900">
+                              {scanResult.paymentLabel}
                             </p>
                           </div>
                         </div>
@@ -376,7 +451,6 @@ export function QRScanner() {
           </AnimatePresence>
         </div>
 
-        {/* Instructions */}
         {!scanResult && !showCamera && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}

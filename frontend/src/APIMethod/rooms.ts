@@ -35,6 +35,19 @@ export interface DeleteRoomResponse {
   message: string;
 }
 
+export interface CrowdingRoom {
+  room_id: number;
+  room_name: string;
+  room_type: string;
+  capacity: number;
+  total_tables: number;
+  occupied_tables: number;
+  percentage: number;
+  color: string;
+  status: string;
+  message: string;
+}
+
 export const roomsApi = {
   addRoom: async (roomData: CreateRoomData): Promise<CreateRoomResponse> => {
     return api.post<CreateRoomResponse>("/rooms", roomData);
@@ -54,5 +67,9 @@ export const roomsApi = {
     const { id, ...data } = roomData;
 
     return api.put<UpdateRoomResponse>(`/rooms/${id}`, data);
+  },
+
+  getCrowding: async (): Promise<{ data: CrowdingRoom[] }> => {
+    return api.get<{ data: CrowdingRoom[] }>("/crowding");
   },
 };

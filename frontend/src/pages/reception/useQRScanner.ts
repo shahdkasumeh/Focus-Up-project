@@ -1,5 +1,5 @@
 // src/pages/reception/components/useQRScanner.ts
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { bookingsAPI } from "../../APIMethod/bookings";
 
 export type ScanMode = "checkin" | "checkout";
@@ -8,11 +8,20 @@ export interface ScanResult {
   success: boolean;
   studentName: string;
   studentId: string;
+  status?: string;
   tableName?: string;
+  scheduledStart?: string;
+  scheduledEnd?: string;
   checkInTime?: string;
   checkOutTime?: string;
+  hours?: string;
+  rawPrice?: string;
+  discountPercent?: string;
+  discountAmount?: string;
   duration?: string;
   totalPrice?: string;
+  paymentLabel?: string;
+  action?: string;
   message: string;
 }
 
@@ -21,27 +30,20 @@ export const useQRScanner = () => {
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const scannedIdRef = useRef<number | null>(null);
 
-  // استخراج معرف الحجز من QR Code (يدعم الأرقام والنصوص)
   const extractBookingId = useCallback((qrData: string): string | null => {
     if (!qrData) return null;
-
-    // إذا كان النص يحتوي على أرقام فقط، نعيده كرقم
     if (/^\d+$/.test(qrData)) {
       return qrData;
     }
-
-    // إذا كان النص يحتوي على أرقام ضمنه، نستخرج الرقم الأول
     const match = qrData.match(/\d+/);
     if (match) {
       return match[0];
     }
-
-    // في حالة النص الخالص (مثل "lanaalhabbal")، نعيد النص كما هو
     return qrData;
   }, []);
 
-  // تنسيق التاريخ والوقت
   const formatDateTime = useCallback(
     (dateTimeString: string | null): string => {
       if (!dateTimeString) return "---";
@@ -55,55 +57,76 @@ export const useQRScanner = () => {
     [],
   );
 
-  // معالجة استجابة تسجيل الدخول
   const handleCheckInResponse = useCallback(
     (response: any): ScanResult => {
       const { data, message } = response;
 
-      return {
-        success: true,
-        studentName: `حجز رقم ${data.id}`,
-        studentId: `#${data.id}`,
-        tableName: `طاولة رقم ${data.table?.table_num || "غير محدد"}`,
-        checkInTime: formatDateTime(data.actual_start),
-        message: message || "تم تسجيل الدخول بنجاح",
-      };
-    },
-    [formatDateTime],
-  );
-
-  // معالجة استجابة تسجيل الخروج
-  const handleCheckOutResponse = useCallback(
-    (response: any): ScanResult => {
-      const { data, message } = response;
-
-      const hours = parseFloat(data.hours || "0");
-      const totalPrice = parseFloat(data.total_price || "0");
-
-      let detailsMessage = "";
-      if (hours > 0) {
-        detailsMessage = ` - المدة: ${hours.toFixed(2)} ساعة`;
-        if (totalPrice > 0) {
-          detailsMessage += ` - السعر: ${totalPrice.toFixed(2)} ريال`;
-        }
+      if (!data) {
+        return {
+          success: false,
+          studentName: "---",
+          studentId: "---",
+          message: message || "لا توجد جلسة نشطة",
+        };
       }
 
       return {
         success: true,
         studentName: `حجز رقم ${data.id}`,
         studentId: `#${data.id}`,
-        tableName: `طاولة رقم ${data.table?.table_num || "غير محدد"}`,
+        status: data.status,
+        scheduledStart: formatDateTime(data.scheduled_start),
+        scheduledEnd: formatDateTime(data.scheduled_end),
         checkInTime: formatDateTime(data.actual_start),
         checkOutTime: formatDateTime(data.actual_end),
-        duration: `${hours.toFixed(2)} ساعة`,
-        totalPrice: `${totalPrice.toFixed(2)} ريال`,
-        message: (message || " تم تسجيل الخروج بنجاح") + detailsMessage,
+        hours: data.hours,
+        rawPrice: data.raw_price,
+        discountPercent: data.discount_percent,
+        discountAmount: data.discount_amount,
+        totalPrice: data.total_price,
+        paymentLabel: data.payment_label,
+        action: data.action,
+        message: message || "تم تسجيل الدخول بنجاح",
       };
     },
     [formatDateTime],
   );
 
-  // معالجة الخطأ
+  const handleCheckOutResponse = useCallback(
+    (response: any): ScanResult => {
+      const { data, message } = response;
+
+      if (!data) {
+        return {
+          success: false,
+          studentName: "---",
+          studentId: "---",
+          message: message || "لا توجد جلسة",
+        };
+      }
+
+      return {
+        success: true,
+        studentName: `حجز رقم ${data.id}`,
+        studentId: `#${data.id}`,
+        status: data.status,
+        action: data.action, 
+        checkInTime: formatDateTime(data.actual_start),
+        checkOutTime: formatDateTime(data.actual_end),
+        scheduledStart: formatDateTime(data.scheduled_start),
+        scheduledEnd: formatDateTime(data.scheduled_end),
+        hours: data.hours,
+        rawPrice: data.raw_price, 
+        discountPercent: data.discount_percent, 
+        discountAmount: data.discount_amount,
+        totalPrice: data.total_price,
+        paymentLabel: data.payment_label, 
+        message: message || "تم تسجيل الخروج بنجاح",
+      };
+    },
+    [formatDateTime],
+  );
+
   const handleError = useCallback((error: any): ScanResult => {
     let errorMessage = " فشلت العملية";
 
@@ -121,9 +144,8 @@ export const useQRScanner = () => {
     };
   }, []);
 
-  // معالجة بيانات QR Code الأساسية
   const processQRData = useCallback(
-    async (qrData: string, mode: ScanMode) => {
+    async (mode: ScanMode, qrData: string) => {
       if (loading) return;
 
       setLoading(true);
@@ -132,41 +154,53 @@ export const useQRScanner = () => {
       setScanResult(null);
 
       try {
-        const bookingId = extractBookingId(qrData);
+        let parsedData: { booking_id: number | null; token: string };
 
-        if (!bookingId) {
-          throw new Error("بيانات QR غير صالحة");
+        try {
+          parsedData = JSON.parse(qrData);
+        } catch {
+          setScanResult({
+            success: false,
+            studentName: "---",
+            studentId: "---",
+            message: "QR Code غير صالح",
+          });
+          return;
         }
+
+        const { booking_id, token } = parsedData;
+
+        if (!token) {
+          setScanResult({
+            success: false,
+            studentName: "---",
+            studentId: "---",
+            message: "بيانات QR ناقصة",
+          });
+          return;
+        }
+
+        scannedIdRef.current = booking_id;
 
         let response;
         if (mode === "checkin") {
-          response = await bookingsAPI.checkIn(bookingId);
-          const result = handleCheckInResponse(response);
-          setScanResult(result);
+          response = await bookingsAPI.checkIn(booking_id, token); 
+          setScanResult(handleCheckInResponse(response));
         } else {
-          response = await bookingsAPI.checkOut(bookingId);
-          const result = handleCheckOutResponse(response);
-          setScanResult(result);
+          response = await bookingsAPI.checkOut(booking_id, token); 
+          setScanResult(handleCheckOutResponse(response));
         }
       } catch (err: any) {
-        console.error("QR Scan Error:", err);
-        const errorResult = handleError(err);
-        setScanResult(errorResult);
+        setScanResult(handleError(err));
       } finally {
         setLoading(false);
         setIsScanning(false);
+        scannedIdRef.current = null;
       }
     },
-    [
-      loading,
-      extractBookingId,
-      handleCheckInResponse,
-      handleCheckOutResponse,
-      handleError,
-    ],
+    [loading, handleCheckInResponse, handleCheckOutResponse, handleError],
   );
 
-  // إعادة تعيين حالة المسح
   const resetScan = useCallback(() => {
     setScanResult(null);
     setError(null);

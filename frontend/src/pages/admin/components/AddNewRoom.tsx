@@ -33,7 +33,6 @@ export function AddNewRoom({
       return;
     }
 
-    // تجهيز البيانات للإرسال
     const roomData = {
       name: formData.name,
       capacity: Number(formData.capacity),
@@ -76,14 +75,27 @@ export function AddNewRoom({
 
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Input
-                label="حالة القاعة"
-                placeholder="مثال: قاعة الهدوء"
-                value={formData.type}
-                onChange={(e) =>
-                  setFormData({ ...formData, type: e.target.value })
-                }
-              />
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-700">
+                  حالة القاعة
+                </label>
+                <select
+                  value={formData.type}
+                  onChange={(e) =>
+                    setFormData({ ...formData, type: e.target.value })
+                  }
+                  className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="" disabled>
+                    اختر حالة القاعة
+                  </option>
+                  <option value="quiet">Quiet</option>
+                  <option value="social_smoking">Social Smoking</option>
+                  <option value="social_no_smoking">Social No Smoking</option>
+                  <option value="discussion">Discussion</option>
+                  <option value="social">Social</option>
+                </select>
+              </div>
             </div>
 
             <div className="space-y-2">

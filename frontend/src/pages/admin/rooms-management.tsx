@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { Button } from "../../components/Button";
-import { Plus, Search, Edit2, Trash2, MapPin, Users } from "lucide-react";
+import { Plus, Search, Trash2, MapPin, Users } from "lucide-react";
 import { AddNewRoom } from "./components/AddNewRoom";
+import { Room } from "../../APIMethod/rooms";
 import {
   roomsApi,
   UpdateRoomData,
@@ -11,7 +12,6 @@ import {
 import { useAuth } from "../../context/GlobalState";
 import { ActionTypes } from "../../context/AppReducer";
 import toast from "react-hot-toast";
-import { UpdateRoom } from "./components/UpdateRoom";
 
 export function RoomsManagement() {
   const { state, dispatch } = useAuth();
@@ -21,7 +21,7 @@ export function RoomsManagement() {
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("all");
   const [EditRoom, setEditRoom] = useState(false);
-  const [selectedRoom, setSelectedRoom] = useState(null);
+  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
 
   useEffect(() => {
     fetchRooms();
@@ -47,11 +47,8 @@ export function RoomsManagement() {
 
       console.log("إضافة قاعة جديدة:", roomData);
       const result = await roomsApi.addRoom(roomData);
-
       dispatch({ type: ActionTypes.ADD_ROOM, payload: result.data });
-
       setShowAddRoomModal(false);
-
       toast.success("تمت إضافة القاعة بنجاح", { id: loadingToast });
 
       await fetchRooms();
@@ -61,38 +58,14 @@ export function RoomsManagement() {
     }
   };
 
-  const handleUpdateRoom = async (updatedRoom: UpdateRoomData) => {
-    try {
-      const loadingToast = toast.loading("جاري تعديل القاعة...");
-
-      await roomsApi.updateRooms(updatedRoom);
-
-      dispatch({ type: ActionTypes.UPDATE_ROOM, payload: updatedRoom });
-
-      setEditRoom(false);
-      setSelectedRoom(null);
-
-      toast.success("تم تعديل القاعة بنجاح", { id: loadingToast });
-
-      await fetchRooms();
-    } catch (error) {
-      console.error("فشل التعديل:", error);
-      toast.error("فشل في تعديل القاعة");
-    }
-  };
-
   const handleDeleteRoom = async (roomId: number) => {
     try {
       const loadingToast = toast.loading("جاري حذف القاعة...");
-
       await roomsApi.deleteRoom(roomId);
-
-      // تحديث الـ state
       dispatch({
         type: ActionTypes.DELETE_ROOM,
         payload: roomId,
       });
-
       toast.success("تم حذف القاعة بنجاح", { id: loadingToast });
     } catch (error) {
       console.error("فشل في حذف القاعة:", error);
@@ -101,18 +74,13 @@ export function RoomsManagement() {
   };
 
   const filteredRooms = rooms.filter((room) => {
-    const matchesSearch = room.name
+    const roomName = room.name || "";
+
+    const matchesSearch = roomName
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
-    const matchesStatus =
-      filterStatus === "all" ||
-      (filterStatus === "active" &&
-        room.is_active === 1 &&
-        room.is_occupied === 1) ||
-      (filterStatus === "inactive" &&
-        room.is_active === 0 &&
-        room.is_occupied === 1);
-    return matchesSearch && matchesStatus;
+
+    return matchesSearch;
   });
 
   return (
@@ -121,7 +89,7 @@ export function RoomsManagement() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl text-gray-900 mb-2">إدارة القاعات</h1>
-          <p className="text-gray-600">إضافة وتعديل وحذف القاعات الدراسية</p>
+          <p className="text-gray-600">إضافة وحذف القاعات الدراسية</p>
         </div>
         <Button variant="primary" onClick={() => setShowAddRoomModal(true)}>
           <Plus className="w-5 h-5 ml-2" />
@@ -142,15 +110,6 @@ export function RoomsManagement() {
               className="w-full pr-11 pl-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#ffbf1f]"
             />
           </div>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#ffbf1f]"
-          >
-            <option value="all">جميع الحالات</option>
-            <option value="active">نشطة</option>
-            <option value="inactive">غير نشطة</option>
-          </select>
         </div>
       </div>
 
@@ -185,17 +144,6 @@ export function RoomsManagement() {
                     <h3 className="text-lg text-gray-900 mb-1">{room.name}</h3>
                     <p className="text-sm text-gray-500">{room.type}</p>
                   </div>
-                  <div
-                    className={`px-2 py-0.5 rounded-full text-xs ${
-                      room.is_active === 1 && room.is_occupied === 1
-                        ? "bg-[#10B981] text-white"
-                        : "bg-gray-400 text-white"
-                    }`}
-                  >
-                    {room.is_active === 1 && room.is_occupied === 1
-                      ? "نشط"
-                      : "غير نشط"}
-                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mb-4">
@@ -205,23 +153,12 @@ export function RoomsManagement() {
                   </div>
                 </div>
 
-                <div className="flex gap-2 pt-4 border-t border-gray-100">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => {
-                      setEditRoom(true);
-                    }}
-                  >
-                    <Edit2 className="w-4 h-4 ml-1" />
-                    تعديل
-                  </Button>
+                <div className="flex gap-1 pt-4 border-t border-gray-100">
                   <Button
                     variant="outline"
                     size="sm"
                     className="flex-1 text-red-600 border-red-600 hover:bg-red-500 hover:text-white"
-                    onClick={() => handleDeleteRoom(room.id)} // ✅ تغيير: استخدام الدالة الجديدة
+                    onClick={() => handleDeleteRoom(room.id)}
                   >
                     <Trash2 className="w-4 h-4 ml-1" />
                     حذف
@@ -233,24 +170,11 @@ export function RoomsManagement() {
         </div>
       )}
 
-      {/* Update Room Modal */}
-      {EditRoom &&
-        selectedRoom && ( // ✅ تغيير: إضافة التحقق من وجود selectedRoom
-          <UpdateRoom
-            room={selectedRoom} // ✅新增: تمرير القاعة المطلوب تعديلها
-            onClose={() => {
-              setEditRoom(false);
-              setSelectedRoom(null); // ✅ تنظيف القاعة المحددة
-            }}
-            onUpdateRoom={handleUpdateRoom} // ✅ تغيير: استخدام الدالة الجديدة
-          />
-        )}
-
       {/* Add Room Modal */}
       {showAddRoomModal && (
         <AddNewRoom
           onClose={() => setShowAddRoomModal(false)}
-          onAddRoom={handleAddRoom} // ✅ تغيير: استخدام الدالة الجديدة بدلاً من handleRoomAdded
+          onAddRoom={handleAddRoom}
         />
       )}
     </div>

@@ -1,7 +1,7 @@
 // APIMethod/tables.ts
 import { api } from "./client";
 
-export interface Table {
+export interface Tables {
   id: number;
   table_num: number;
   is_active: number;
@@ -15,7 +15,7 @@ export interface AddTableData {
 }
 
 export interface AddTableResponse {
-  data: Table;
+  data: Tables;
   message: string;
 }
 
@@ -31,12 +31,12 @@ export interface UpdateTableData {
 }
 
 export interface UpdateTableResponse {
-  data: Table;
+  data: Tables;
 }
 
 export const tablesApi = {
-  getAllTables: async (): Promise<{ data: Table[] }> => {
-    return api.get<{ data: Table[] }>("/tables");
+  getAllTables: async (): Promise<{ data: Tables[] }> => {
+    return api.get<{ data: Tables[] }>("/tables");
   },
   addTable: async (tableData: AddTableData): Promise<AddTableResponse> => {
     return api.post<AddTableResponse>("/tables", tableData);

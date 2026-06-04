@@ -4,6 +4,8 @@ import { Table } from "../APIMethod/tables";
 import { AdminPackages } from "../APIMethod/packages";
 import { BookingDetails } from "../APIMethod/bookings";
 import { ReceptionPackages } from "../APIMethod/packages";
+import { BookingRevenues } from "../APIMethod/bookings";
+import { Prizes } from "../APIMethod/prizes";
 
 //typescript
 export interface User {
@@ -23,6 +25,8 @@ export interface AuthState {
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
+  BookingRevenues: BookingRevenues | null;
+  prizes: Prizes[];
 }
 
 export interface AuthAction {
@@ -44,6 +48,8 @@ export const initialState: AuthState = {
   isAuthenticated: !!initialUser,
   loading: false,
   error: null,
+  BookingRevenues: null,
+  prizes: [],
 };
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -68,6 +74,11 @@ export enum ActionTypes {
   SET_BOOKINGDETAILS = "SET_BOOKINGDETAILS",
   SET_RECEPTION_PACKAGE = "SET_RECEPTION_PACKAGE",
   UPDATE_RECEPTION_PACKAGE = "UPDATE_RECEPTION_PACKAGE",
+  SET_BOOKING_REVENUES = "SET_BOOKING_REVENUES",
+  SET_PRIZES = "SET_PRIZES",
+  ADD_PRIZE = "ADD_PRIZE",
+  UPDATE_PRIZE = "UPDATE_PRIZE",
+  DELETE_PRIZE = "DELETE_PRIZE",
 }
 
 const AppReducer = (
@@ -210,6 +221,36 @@ const AppReducer = (
         ...state,
         ReceptionPackages: state.ReceptionPackages.map((packages) =>
           packages.id === action.payload.id ? action.payload : packages,
+        ),
+      };
+    case ActionTypes.SET_BOOKING_REVENUES:
+      return {
+        ...state,
+        BookingRevenues: action.payload,
+      };
+
+    case ActionTypes.SET_PRIZES:
+      return {
+        ...state,
+        prizes: action.payload,
+      };
+
+    case ActionTypes.DELETE_PRIZE:
+      return {
+        ...state,
+        prizes: state.prizes.filter((prizes) => prizes.id !== action.payload),
+      };
+    case ActionTypes.ADD_PRIZE:
+      return {
+        ...state,
+        prizes: [action.payload, ...state.prizes],
+      };
+
+    case ActionTypes.UPDATE_PRIZE:
+      return {
+        ...state,
+        prizes: state.prizes.map((prizes) =>
+          prizes.id === action.payload.id ? action.payload : prizes,
         ),
       };
 
