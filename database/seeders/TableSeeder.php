@@ -20,6 +20,7 @@ class TableSeeder extends Seeder
             for ($i = 1; $i <= 10; $i++) {
                 Table::create([
                     'table_num' => $i,
+                    'chairs_num'=>rand(2,6),
                     'room_id' => $room->id,
                     'is_active' => true,
                     'is_occupied' => false,

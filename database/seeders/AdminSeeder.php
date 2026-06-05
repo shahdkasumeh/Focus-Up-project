@@ -21,7 +21,7 @@ class AdminSeeder extends Seeder
             'phone'=>'0000000000'
         ]);
 
-        $admin->assignRole(['admin']);
+        $admin->assignRole('admin');
     }
 
 

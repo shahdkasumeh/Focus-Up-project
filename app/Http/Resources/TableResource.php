@@ -18,6 +18,7 @@ class TableResource extends JsonResource
 
         "id"=>$this->id,
         "table_num"=>$this->table_num,
+        "chairs_num"=>$this->chairs_num,
         'is_active'=>$this->is_active,
         'is_occupied'=>$this->is_occupied,
         "room_id"=>$this->room_id

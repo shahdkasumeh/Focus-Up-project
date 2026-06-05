@@ -23,5 +23,10 @@ public static function delete(Room $room){
     return $room->delete();
 }
 
+public function scopeAvailable($query)
+{
+    return $query->where('is_active', true);
+}
+
 }
 

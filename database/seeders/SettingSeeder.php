@@ -15,7 +15,7 @@ class SettingSeeder extends Seeder
     {
         Setting::updateOrCreate(
             ['key' => 'default_price_per_hour'],
-            ['value' => '10']
+            ['value' => '6000']
         );
     }
 }

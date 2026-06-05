@@ -16,15 +16,17 @@ class BookingController extends Controller
     // 1. List user bookings
     // =========================================================
     public function indexUser()
-    {
-        $bookings = Booking::with('table')->where('user_id', Auth::id())
-            ->latest()
-            ->get();
+{
+    $bookings = Booking::with('table')
+        ->where('user_id', Auth::id())
+        ->where('status', 'pending')
+        ->latest()
+        ->get();
 
-        return $this->success(
-            BookingResource::collection($bookings)
-        );
-    }
+    return $this->success(
+        BookingResource::collection($bookings)
+    );
+}
 
     public function indexManagement()
     {
@@ -116,7 +118,7 @@ class BookingController extends Controller
         );
 
         return $this->success(
-            BookingResource::make($booking)
+            BookingResource::make($booking),'تم الغاء الحجز بنجاح'
         );
     }
     private function authorizeBooking(Booking $booking): void

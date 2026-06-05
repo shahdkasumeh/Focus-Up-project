@@ -13,41 +13,41 @@ class PackagesSeeder extends Seeder
      */
     public function run(): void
     {
-            
+
         DB::table('packages')->insert([
 
             [
                 'name' => 'باقة 40 ساعة',
                 'hours' => 40,
-                'price' => 1200,
+                'price' => 120000,
                 'duration_days' => 30,
                 'type' => 'hourly',
             ],
             [
                 'name' => 'باقة 60 ساعة',
                 'hours' => 60,
-                'price' => 1700,
+                'price' => 170000,
                 'duration_days' => 30,
                 'type' => 'hourly',
             ],
             [
                 'name' => 'باقة 80 ساعة',
                 'hours' => 80,
-                'price' => 2200,
+                'price' => 220000,
                 'duration_days' => 30,
                 'type' => 'hourly',
             ],
             [
                 'name' => 'باقة 100 ساعة',
                 'hours' => 100,
-                'price' => 2600,
+                'price' => 260000,
                 'duration_days' => 30,
                 'type' => 'hourly',
             ],
             [
                 'name' => 'باقة 150 ساعة',
                 'hours' => 150,
-                'price' => 3600,
+                'price' => 360000,
                 'duration_days' => 30,
                 'type' => 'hourly',
             ],

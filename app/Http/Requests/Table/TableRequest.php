@@ -23,6 +23,7 @@ class TableRequest extends FormRequest
     {
         return [
             'table_num'=>'required|integer',
+            'chairs_num'=>'required|integer',
             'is_active'=>'somtimes|boolean',
             "room_id"=>'required|exists:rooms,id'
         ];

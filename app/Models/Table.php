@@ -9,6 +9,7 @@ class Table extends Model
 
 protected $fillable = [
         'table_num',
+        'chairs_num',
         'is_active',
         'is_occupied',
         'room_id'

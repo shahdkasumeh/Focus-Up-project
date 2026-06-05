@@ -113,7 +113,7 @@ if ($start->copy()->startOfDay()->addHours(9)->gt($start) ||
         // =========================
         if ($tableId) {
 
-            // 🔒 Lock resource
+            //  Lock resource
             $table = Table::where('id', $tableId)
                 ->lockForUpdate()
                 ->firstOrFail();
@@ -122,7 +122,7 @@ if ($start->copy()->startOfDay()->addHours(9)->gt($start) ||
                 throw new \Exception('الطاولة غير متاحة.');
             }
 
-            // 🔥 منع التداخل الزمني
+            //  منع التداخل الزمني
             $tableConflict = Booking::where('table_id', $tableId)
                 ->whereIn('status', ['pending', 'active'])
                 ->where(function ($q) use ($start, $end) {
@@ -158,7 +158,7 @@ if ($start->copy()->startOfDay()->addHours(9)->gt($start) ||
                 throw new \Exception('هذه الغرفة لا تقبل الحجز المسبق.');
             }
 
-            // 🔥 منع التداخل الزمني
+            //  منع التداخل الزمني
             $roomConflict = Booking::where('room_id', $roomId)
                 ->whereIn('status', ['pending', 'active'])
                 ->where(function ($q) use ($start, $end) {
@@ -217,7 +217,7 @@ if ($start->copy()->startOfDay()->addHours(9)->gt($start) ||
 //     // 3. CHECK IN (QR start for scheduled booking)
 //     // =========================================================
 
-   public static function checkIn(
+    public static function checkIn(
     int $userId,
     ?int $bookingId = null
 ): Booking {

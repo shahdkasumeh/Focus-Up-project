@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('tables', function (Blueprint $table) {
             $table->id();
             $table->integer('table_num');
+            $table->integer('chairs_num');
             $table->boolean('is_active')->default(true);
             $table->boolean('is_occupied')->default(false);
             $table->foreignId('room_id')->constrained('rooms')->cascadeOnDelete();
